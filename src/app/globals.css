@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Fraunces", "Noto Serif SC", serif;
-  --font-sans: "IBM Plex Sans", "Noto Sans SC", sans-serif;
-  --font-mono: "IBM Plex Mono", "Noto Sans SC", monospace;
+  --font-display: "Fraunces", "Noto Serif SC", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
 
   --color-paper: #faf7ee;
   --color-surface: #ffffff;
@@ -12,189 +12,145 @@
   --color-line-strong: #d8d2bf;
 
   --color-ink-50: #f7f5ee;
-  --color-ink-100: #ece9dd;
-  --color-ink-200: #d8d2bf;
-  --color-ink-300: #b8b09a;
-  --color-ink-400: #958c74;
-  --color-ink-500: #736a54;
-  --color-ink-600: #564e3b;
-  --color-ink-700: #3d3726;
-  --color-ink-800: #252114;
+  --color-ink-100: #ecebe1;
+  --color-ink-200: #d6d2c4;
+  --color-ink-300: #b5b1a3;
+  --color-ink-400: #8a877c;
+  --color-ink-500: #5e5b54;
+  --color-ink-600: #3d3b36;
+  --color-ink-700: #282721;
+  --color-ink-800: #1a1916;
   --color-ink-900: #0e0d0b;
 
   --color-navy-50: #eef2f8;
-  --color-navy-100: #d4dfef;
-  --color-navy-200: #a9bfdf;
-  --color-navy-300: #7e9fcf;
-  --color-navy-400: #4a6fa0;
+  --color-navy-100: #d5dde9;
+  --color-navy-200: #a5b3c9;
+  --color-navy-300: #6c80a3;
+  --color-navy-400: #3d547d;
   --color-navy-500: #1f3661;
-  --color-navy-600: #162a4e;
+  --color-navy-600: #14274a;
   --color-navy-700: #0b1f3a;
-  --color-navy-800: #071527;
-  --color-navy-900: #030b14;
+  --color-navy-800: #07172d;
+  --color-navy-900: #050f1f;
 
-  --color-gold-50: #fdf8ee;
-  --color-gold-100: #f8edd4;
-  --color-gold-200: #f0d9a8;
-  --color-gold-300: #dbb56c;
-  --color-gold-400: #c49a42;
+  --color-gold-50: #fbf6e8;
+  --color-gold-100: #f4e9c5;
+  --color-gold-200: #e8d28a;
+  --color-gold-300: #d8b85b;
+  --color-gold-400: #c8a24b;
   --color-gold-500: #ad8638;
   --color-gold-600: #876528;
-  --color-gold-700: #614a1e;
-  --color-gold-800: #3d2f12;
-  --color-gold-900: #1e1709;
+  --color-gold-700: #5f471c;
 
-  --color-moss-50: #edf5ed;
-  --color-moss-100: #d4e8d4;
-  --color-moss-200: #a9d1a9;
-  --color-moss-300: #7eba7e;
-  --color-moss-400: #5a9f5a;
+  --color-moss-50: #eef5ec;
+  --color-moss-100: #d5e6cf;
   --color-moss-500: #4f8a4f;
-  --color-moss-600: #3d6b3d;
+  --color-moss-600: #3a6c3a;
   --color-moss-700: #285028;
-  --color-moss-800: #1a361a;
-  --color-moss-900: #0d1b0d;
 
-  --color-rust-50: #fdf2f2;
-  --color-rust-100: #f8d4d4;
-  --color-rust-200: #f0a9a9;
-  --color-rust-300: #d46b6b;
-  --color-rust-400: #c45050;
-  --color-rust-500: #b23a3a;
-  --color-rust-600: #8c2e2e;
-  --color-rust-700: #662222;
-  --color-rust-800: #401515;
-  --color-rust-900: #1e0a0a;
-
-  --color-cobalt-50: #eef3fc;
-  --color-cobalt-100: #d4e1f8;
-  --color-cobalt-200: #a9c3f0;
-  --color-cobalt-300: #7ea5e8;
-  --color-cobalt-400: #5380d0;
+  --color-cobalt-50: #ecf1fa;
+  --color-cobalt-100: #cbd9ef;
   --color-cobalt-500: #335aaf;
-  --color-cobalt-600: #264489;
-  --color-cobalt-700: #1a3063;
-  --color-cobalt-800: #0f1d3d;
-  --color-cobalt-900: #070e1e;
+  --color-cobalt-600: #25448a;
+  --color-cobalt-700: #1a3268;
 
-  --color-amber-50: #fef9ee;
-  --color-amber-100: #fcf0d4;
-  --color-amber-200: #f8dfa8;
-  --color-amber-300: #f0c46c;
-  --color-amber-400: #e0a83a;
+  --color-amber-50: #fbf3e2;
+  --color-amber-100: #f4e0b1;
   --color-amber-500: #c98e2c;
-  --color-amber-600: #9e6e22;
-  --color-amber-700: #735018;
-  --color-amber-800: #48320f;
-  --color-amber-900: #241907;
+  --color-amber-600: #9d6b1d;
+  --color-amber-700: #6e4912;
+
+  --color-rust-50: #f8eded;
+  --color-rust-100: #ecc8c8;
+  --color-rust-500: #b23a3a;
+  --color-rust-600: #8e2c2c;
+  --color-rust-700: #5f1d1d;
+}
+
+:root {
+  color-scheme: light dark;
+  font-feature-settings: "ss01", "cv02", "cv11";
 }
 
 :root.dark {
-  --color-paper: #12110e;
-  --color-surface: #1a1916;
-  --color-surface-sunk: #0e0d0b;
-  --color-line: #2e2c26;
-  --color-line-strong: #3d3a32;
+  --color-paper: #0f1117;
+  --color-surface: #161924;
+  --color-surface-sunk: #0a0c12;
+  --color-line: #232735;
+  --color-line-strong: #313647;
 
-  --color-ink-50: #1a1916;
-  --color-ink-100: #2e2c26;
-  --color-ink-200: #3d3a32;
-  --color-ink-300: #564e3b;
-  --color-ink-400: #736a54;
-  --color-ink-500: #958c74;
-  --color-ink-600: #b8b09a;
-  --color-ink-700: #d8d2bf;
-  --color-ink-800: #ece9dd;
-  --color-ink-900: #faf7ee;
+  --color-ink-50: #161924;
+  --color-ink-100: #1f2330;
+  --color-ink-200: #313647;
+  --color-ink-300: #4a5060;
+  --color-ink-400: #6e7484;
+  --color-ink-500: #9aa0b0;
+  --color-ink-600: #c2c7d4;
+  --color-ink-700: #dee2eb;
+  --color-ink-800: #ecf0f6;
+  --color-ink-900: #f7f9fc;
 
-  --color-navy-50: #0a1525;
-  --color-navy-100: #0f1f38;
-  --color-navy-200: #162a4e;
-  --color-navy-300: #1f3661;
-  --color-navy-400: #4a6fa0;
-  --color-navy-500: #7e9fcf;
-  --color-navy-600: #a9bfdf;
-  --color-navy-700: #d4dfef;
-  --color-navy-800: #eef2f8;
-  --color-navy-900: #f7fafd;
+  --color-moss-50: #0e1a0e;
+  --color-moss-100: #1a2e1a;
+  --color-moss-500: #6fb46f;
+  --color-moss-600: #9bd09b;
+  --color-moss-700: #c1e2c1;
 
-  --color-gold-50: #1e1709;
-  --color-gold-100: #3d2f12;
-  --color-gold-200: #614a1e;
-  --color-gold-300: #876528;
-  --color-gold-400: #c49a42;
-  --color-gold-500: #dbb56c;
-  --color-gold-600: #f0d9a8;
-  --color-gold-700: #f8edd4;
-  --color-gold-800: #fdf8ee;
-  --color-gold-900: #fdf8ee;
+  --color-cobalt-50: #0d1528;
+  --color-cobalt-100: #162040;
+  --color-cobalt-500: #6b8fdc;
+  --color-cobalt-600: #9bb4ea;
+  --color-cobalt-700: #c2d2f3;
 
-  --color-rust-50: #1e0a0a;
-  --color-rust-100: #401515;
-  --color-rust-200: #662222;
-  --color-rust-300: #8c2e2e;
-  --color-rust-400: #b23a3a;
-  --color-rust-500: #c45050;
-  --color-rust-600: #d46b6b;
-  --color-rust-700: #f0a9a9;
-  --color-rust-800: #f8d4d4;
-  --color-rust-900: #fdf2f2;
+  --color-amber-50: #1c1508;
+  --color-amber-100: #2e2210;
+  --color-amber-500: #e0a850;
+  --color-amber-600: #ecc380;
+  --color-amber-700: #f3d9a8;
 
-  --color-cobalt-50: #070e1e;
-  --color-cobalt-100: #0f1d3d;
-  --color-cobalt-200: #1a3063;
-  --color-cobalt-300: #264489;
-  --color-cobalt-400: #335aaf;
-  --color-cobalt-500: #5380d0;
-  --color-cobalt-600: #7ea5e8;
-  --color-cobalt-700: #a9c3f0;
-  --color-cobalt-800: #d4e1f8;
-  --color-cobalt-900: #eef3fc;
+  --color-rust-50: #1e0e0e;
+  --color-rust-100: #361818;
+  --color-rust-500: #db5e5e;
+  --color-rust-600: #e88787;
+  --color-rust-700: #f1adad;
+}
 
-  --color-moss-50: #0d1b0d;
-  --color-moss-100: #1a361a;
-  --color-moss-200: #285028;
-  --color-moss-300: #3d6b3d;
-  --color-moss-400: #4f8a4f;
-  --color-moss-500: #5a9f5a;
-  --color-moss-600: #7eba7e;
-  --color-moss-700: #a9d1a9;
-  --color-moss-800: #d4e8d4;
-  --color-moss-900: #edf5ed;
-
-  --color-amber-50: #241907;
-  --color-amber-100: #48320f;
-  --color-amber-200: #735018;
-  --color-amber-300: #9e6e22;
-  --color-amber-400: #c98e2c;
-  --color-amber-500: #e0a83a;
-  --color-amber-600: #f0c46c;
-  --color-amber-700: #f8dfa8;
-  --color-amber-800: #fcf0d4;
-  --color-amber-900: #fef9ee;
+html {
+  background: var(--color-paper);
+  color: var(--color-ink-800);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink-800);
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
 }
 
+.font-display {
+  font-feature-settings: "ss01", "cv02", "cv11", "salt";
+}
+
 .tracked-label {
   font-family: var(--font-mono);
   font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-}
-
-.font-display {
-  font-family: var(--font-display);
-  font-feature-settings: "ss01", "cv02", "cv11";
+  color: var(--color-ink-500);
 }
 
 ::selection {
   background: var(--color-gold-200);
+  color: var(--color-navy-800);
+}
+
+:root.dark ::selection {
+  background: var(--color-gold-500);
   color: var(--color-ink-900);
+}
+
+.scroll-hairline {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
 }

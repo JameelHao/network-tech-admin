@@ -1,8 +1,6 @@
 import { Fragment } from "react";
-import { ThemeToggle } from "./ThemeToggle";
-import { LangToggle } from "./LangToggle";
-import { LogoutButton } from "./LogoutButton";
 import { MobileNavToggle } from "./MobileNav";
+import { TopbarActions } from "./TopbarActions";
 import type { Dict, Lang } from "@/lib/i18n/dict";
 
 export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: string }[]; t: Dict; lang: Lang }) {
@@ -30,11 +28,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
-          <ThemeToggle t={t} />
-          <LangToggle lang={lang} />
-          <LogoutButton t={t} />
-        </div>
+        <TopbarActions t={t} lang={lang} />
       </div>
     </header>
   );
