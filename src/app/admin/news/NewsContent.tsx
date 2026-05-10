@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
-type NewsItem = { title: string; link: string; snippet: string };
+type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
 
 function extractDomain(url: string): string {
   try { return new URL(url).hostname.replace("www.", ""); }
@@ -27,6 +27,8 @@ export function NewsContent() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
+  const [source, setSource] = useState("");
 
   useEffect(() => {
     fetch("/api/news")
@@ -39,20 +41,66 @@ export function NewsContent() {
       .finally(() => setLoading(false));
   }, []);
 
+  const sources = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of items) {
+      if (item.source) set.add(item.source);
+    }
+    return Array.from(set).sort();
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    let list = items;
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      list = list.filter((item) =>
+        item.title.toLowerCase().includes(kw) || item.snippet.toLowerCase().includes(kw)
+      );
+    }
+    if (source) {
+      list = list.filter((item) => item.source === source);
+    }
+    return list;
+  }, [items, keyword, source]);
+
   return (
     <div className="rounded-lg border border-line bg-surface">
-      <div className="px-5 pt-4 pb-3 border-b border-line">
-        <h1 className="font-display text-[17px] tracking-tight text-ink-800">网络科技新闻</h1>
+      <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
+        <h1 className="font-display text-[17px] tracking-tight text-ink-800">
+          网络科技新闻
+          <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
+        </h1>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            placeholder="搜索..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-36"
+          />
+          {sources.length > 1 && (
+            <select
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
+            >
+              <option value="">全部来源</option>
+              {sources.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
       {loading ? (
         <Skeleton />
       ) : error ? (
         <div className="px-5 py-10 text-center text-sm text-ink-400">{error}</div>
-      ) : items.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-ink-400">暂无数据</div>
+      ) : filtered.length === 0 ? (
+        <div className="px-5 py-10 text-center text-sm text-ink-400">暂无匹配新闻</div>
       ) : (
         <div className="divide-y divide-line">
-          {items.map((item) => (
+          {filtered.map((item) => (
             <a
               key={item.link}
               href={item.link}
@@ -61,8 +109,14 @@ export function NewsContent() {
               className="block px-5 py-4 hover:bg-paper/40 transition-colors"
             >
               <p className="text-[13px] font-medium text-ink-800">{item.title}</p>
-              <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
-              <p className="text-[11px] text-ink-300 mt-1.5 font-mono">{extractDomain(item.link)}</p>
+              {item.snippet && (
+                <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
+              )}
+              <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
+                {item.source && <span className="text-navy-500">{item.source}</span>}
+                {item.source && " · "}
+                {extractDomain(item.link)}
+              </p>
             </a>
           ))}
         </div>
