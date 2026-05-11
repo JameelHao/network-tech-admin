@@ -1,12 +1,15 @@
 import { Sidebar } from "@/components/admin/Sidebar";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 import { getDict } from "@/lib/i18n/server";
+import { buildSearchIndex } from "@/lib/admin/command-search";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { t } = await getDict();
+  const [{ t }, searchIndex] = await Promise.all([getDict(), buildSearchIndex()]);
 
   return (
     <div className="min-h-dvh flex bg-paper text-ink-800">
       <Sidebar t={t} />
+      <CommandPalette items={searchIndex} labels={t.command} />
       <div className="flex-1 min-w-0 flex flex-col">{children}</div>
       <script
         dangerouslySetInnerHTML={{
