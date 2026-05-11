@@ -6,10 +6,12 @@ import { MiniBar } from "@/components/admin/charts/MiniBar";
 import { MiniLine } from "@/components/admin/charts/MiniLine";
 import { MiniPie } from "@/components/admin/charts/MiniPie";
 import { Funnel } from "@/components/admin/charts/Funnel";
+import { Heatmap } from "@/components/admin/charts/Heatmap";
 import {
   getPaperMonthlyTrend,
   getPaperTopTopics,
   getPaperVenueDistribution,
+  getPaperTopicHeatmap,
   getConferenceQuarterlyTrend,
   getConferenceTierDistribution,
   getConferenceCategoryTrend,
@@ -65,6 +67,7 @@ export default async function InsightsPage() {
     paperTrend,
     paperTopics,
     paperVenues,
+    paperHeatmap,
     confQuarterly,
     confTiers,
     confCategories,
@@ -81,6 +84,7 @@ export default async function InsightsPage() {
     getPaperMonthlyTrend(),
     getPaperTopTopics(),
     getPaperVenueDistribution(),
+    getPaperTopicHeatmap(),
     getConferenceQuarterlyTrend(),
     getConferenceTierDistribution(),
     getConferenceCategoryTrend(),
@@ -126,6 +130,15 @@ export default async function InsightsPage() {
             <MiniPie data={paperVenues} />
           </ChartCard>
         </div>
+        {paperHeatmap.length > 0 && (
+          <ChartCard label={t.insights.topicHeatmap}>
+            <Heatmap
+              data={paperHeatmap}
+              xLabels={[...new Set(paperHeatmap.map((p) => p.month))].sort()}
+              yLabels={[...new Set(paperHeatmap.map((p) => p.topic))]}
+            />
+          </ChartCard>
+        )}
       </SectionCard>
 
       {/* Conferences */}

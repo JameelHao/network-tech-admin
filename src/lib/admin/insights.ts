@@ -88,6 +88,52 @@ export async function getPaperTopTopics(limit = 10): Promise<ChartPoint[]> {
   return countArrayField(data ?? [], "topics", limit);
 }
 
+export type HeatmapPoint = { topic: string; month: string; count: number };
+
+export async function getPaperTopicHeatmap(months = 12): Promise<HeatmapPoint[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("papers")
+    .select("topics, published_date")
+    .not("published_date", "is", null)
+    .limit(5000);
+
+  const topTopics = countArrayField(data ?? [], "topics", 10).map((p) => p.name);
+
+  const now = new Date();
+  const monthKeys: string[] = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthKeys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+
+  const counts = new Map<string, number>();
+  for (const t of topTopics) {
+    for (const m of monthKeys) {
+      counts.set(`${t}|${m}`, 0);
+    }
+  }
+
+  for (const row of data ?? []) {
+    const m = monthKey((row as { published_date: string }).published_date);
+    if (!monthKeys.includes(m)) continue;
+    const topics = (row as { topics: string[] }).topics;
+    if (!Array.isArray(topics)) continue;
+    for (const t of topics) {
+      if (!topTopics.includes(t)) continue;
+      const key = `${t}|${m}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+
+  const result: HeatmapPoint[] = [];
+  for (const [key, count] of counts) {
+    const [topic, month] = key.split("|");
+    result.push({ topic, month, count });
+  }
+  return result;
+}
+
 export async function getPaperVenueDistribution(): Promise<ChartPoint[]> {
   const supabase = await createClient();
   const { data } = await supabase

@@ -19,6 +19,10 @@ export default async function PapersPage() {
           noMatch: t.papers.noMatch,
           exportCSV: t.common.exportCSV,
           exportJSON: t.common.exportJSON,
+          viewList: t.papers.viewList,
+          viewCluster: t.papers.viewCluster,
+          papersCount: t.papers.papersCount,
+          dateRange: t.papers.dateRange,
         }} />
       </main>
     </>

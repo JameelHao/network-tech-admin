@@ -60,6 +60,18 @@ export async function fetchAndSyncPapers(): Promise<Paper[]> {
   return (all as Paper[]) ?? [];
 }
 
+export async function listAllPapersLight(): Promise<Paper[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("papers")
+    .select("id, title, topics, published_date, authors, venue, url, abstract, notes, created_at")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw error;
+  return (data as Paper[]) ?? [];
+}
+
 export async function getPaper(id: string): Promise<Paper | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
