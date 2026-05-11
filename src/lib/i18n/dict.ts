@@ -186,6 +186,9 @@ const en = {
     batchImport: "Batch Import",
     batchPlaceholder: "One paper per line, tab-separated: title\\tauthors(comma)\\ttopics(comma)\\turl(optional)",
     importedCount: "Successfully imported {count} entries",
+    rows: "rows",
+    page: "page",
+    of: "of",
   },
   talent: {
     noTalents: "No talent leads yet",
@@ -392,6 +395,9 @@ const zh: typeof en = {
     batchImport: "批量导入",
     batchPlaceholder: "每行一篇论文，用 Tab 分隔：标题\\t作者(逗号)\\t议题(逗号)\\t链接(可选)",
     importedCount: "成功导入 {count} 篇",
+    rows: "条",
+    page: "页",
+    of: "/",
   },
   talent: {
     noTalents: "暂无人才线索",

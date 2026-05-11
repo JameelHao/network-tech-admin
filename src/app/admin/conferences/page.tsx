@@ -1,27 +1,40 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { RefreshAllButton } from "@/components/admin/RefreshAllButton";
 import { listConferences } from "@/lib/admin/conferences";
+import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 const CATEGORY_KEYS: (TopicCategory | "all")[] = ["all", "network-systems", "measurement", "security", "emerging", "infrastructure"];
 
-export default async function ConferencesPage({ searchParams }: { searchParams: Promise<{ cat?: string }> }) {
-  const { cat } = await searchParams;
+export default async function ConferencesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const cat = typeof sp.cat === "string" ? sp.cat : undefined;
   const { lang, t } = await getDict();
-  const allConferences = await listConferences();
+  const params = parsePaginationParams(sp);
 
   const activeCategory = CATEGORY_KEYS.includes(cat as TopicCategory) ? cat as TopicCategory : "all";
-  const conferences = activeCategory === "all"
-    ? allConferences
-    : allConferences.filter((c) => (c as unknown as { category: string }).category === activeCategory);
+  const result = await listConferences(params, { category: activeCategory });
+  const conferences = result.data;
+
+  const supabase = await createClient();
+  const { count: totalCount } = await supabase.from("conferences").select("*", { count: "exact", head: true });
+  const total = totalCount ?? 0;
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = allConferences.filter((c) => (c.end_date ?? c.start_date) >= today).length;
-  const past = allConferences.length - upcoming;
+  const { count: upcomingCount } = await supabase.from("conferences").select("*", { count: "exact", head: true }).gte("end_date", today);
+  const upcoming = upcomingCount ?? 0;
+  const past = total - upcoming;
+
+  const { count: topCount } = await supabase.from("conferences").select("*", { count: "exact", head: true }).eq("tier", "top");
+
+  const filterParams: Record<string, string> = {};
+  if (activeCategory !== "all") filterParams.cat = activeCategory;
 
   return (
     <>
@@ -36,7 +49,6 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
           </p>
         </header>
 
-        {/* Stats */}
         <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
           <div className="px-5 py-3 border-b border-line bg-paper/30">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
@@ -44,14 +56,13 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
-            <Stat label={t.conf.total} value={allConferences.length} sub={t.conf.tracked} />
+            <Stat label={t.conf.total} value={total} sub={t.conf.tracked} />
             <Stat label={t.conf.upcoming} value={upcoming} sub={t.conf.scheduledAhead} />
             <Stat label={t.conf.past} value={past} sub={t.conf.completed} />
-            <Stat label={t.conf.topTier} value={allConferences.filter((c) => (c as unknown as { tier: string }).tier === "top").length} sub={t.conf.highestTier} />
+            <Stat label={t.conf.topTier} value={topCount ?? 0} sub={t.conf.highestTier} />
           </div>
         </section>
 
-        {/* Table */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
             <div className="flex items-center gap-2 overflow-x-auto">
@@ -139,6 +150,18 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
               </tbody>
             </table>
           </div>
+
+          {result.totalPages > 1 && (
+            <Pagination
+              page={result.page}
+              totalPages={result.totalPages}
+              total={result.total}
+              pageSize={result.pageSize}
+              basePath="/admin/conferences"
+              searchParams={filterParams}
+              labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
+            />
+          )}
         </section>
       </main>
     </>

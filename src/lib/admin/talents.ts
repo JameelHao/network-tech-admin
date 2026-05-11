@@ -1,15 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
+import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { TalentLead } from "./types";
 
-export async function listTalentLeads(): Promise<TalentLead[]> {
+export async function listTalentLeads(
+  params?: PaginationParams,
+  filter?: { stage?: string },
+): Promise<PaginatedResult<TalentLead>> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const page = params?.page ?? 1;
+  const pageSize = params?.pageSize ?? 50;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
     .from("talent_leads")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("updated_at", { ascending: false });
 
+  if (filter?.stage) {
+    query = query.eq("stage", filter.stage);
+  }
+
+  const { data, error, count } = await query.range(from, to);
+
   if (error) throw error;
-  return data as TalentLead[];
+  return buildResult((data as TalentLead[]) ?? [], count ?? 0, { page, pageSize });
 }
 
 export async function getTalentLead(id: string): Promise<TalentLead | null> {
