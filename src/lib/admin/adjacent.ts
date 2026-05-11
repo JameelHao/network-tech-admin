@@ -20,7 +20,8 @@ export async function getAdjacentItems(
 
   if (!current) return { prev: null, next: null };
 
-  const val = current[sortColumn];
+  const row = current as unknown as Record<string, unknown>;
+  const val = row[sortColumn];
 
   const prevQuery = supabase
     .from(table)
@@ -47,8 +48,12 @@ export async function getAdjacentItems(
     nextQuery,
   ]);
 
-  const toItem = (rows: typeof prevData): AdjacentItem =>
+  type Row = Record<string, string>;
+  const toItem = (rows: Row[] | null): AdjacentItem =>
     rows?.[0] ? { id: rows[0].id, label: rows[0][labelColumn] ?? rows[0].id } : null;
 
-  return { prev: toItem(prevData), next: toItem(nextData) };
+  return {
+    prev: toItem(prevData as unknown as Row[] | null),
+    next: toItem(nextData as unknown as Row[] | null),
+  };
 }
