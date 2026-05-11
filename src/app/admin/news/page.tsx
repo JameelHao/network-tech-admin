@@ -9,7 +9,7 @@ export default async function NewsPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.news }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <NewsContent labels={{
+        <NewsContent lang={lang} labels={{
           title: t.news.title,
           searchPlaceholder: t.news.searchPlaceholder,
           allSources: t.news.allSources,

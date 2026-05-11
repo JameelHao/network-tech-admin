@@ -269,6 +269,16 @@ const en = {
   mobile: {
     filter: "Filter",
   },
+  list: {
+    ongoing: "Ongoing",
+    expired: "Expired",
+    link: "Link",
+    source: "Source",
+    createdAt: "Created",
+    publishedAt: "Published",
+    repo: "Repo",
+    linkedin: "LinkedIn",
+  },
   meta: {
     siteTitle: "Network Technology Radar",
     siteDescription: "Track cutting-edge networking technology trends",
@@ -544,6 +554,16 @@ const zh: typeof en = {
   },
   mobile: {
     filter: "筛选",
+  },
+  list: {
+    ongoing: "进行中",
+    expired: "过期",
+    link: "链接",
+    source: "来源",
+    createdAt: "创建时间",
+    publishedAt: "发布时间",
+    repo: "仓库",
+    linkedin: "LinkedIn",
   },
   meta: {
     siteTitle: "网络技术雷达",

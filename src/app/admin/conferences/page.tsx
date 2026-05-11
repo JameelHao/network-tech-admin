@@ -11,6 +11,7 @@ import { parsePaginationParams } from "@/lib/admin/pagination";
 import { parseMonthKey } from "@/lib/admin/calendar-utils";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
+import { conferenceStatus, formatDateRange } from "@/lib/admin/format";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
@@ -131,15 +132,18 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   <tr className="border-b border-line bg-paper/30">
                     <Th>{t.conf.conference}</Th>
                     <Th>{t.conf.status}</Th>
+                    <Th>{t.conf.category}</Th>
                     <Th>{t.conf.tier}</Th>
                     <Th>{t.detail.topics}</Th>
                     <Th>{t.detail.location}</Th>
                     <Th>{t.detail.date}</Th>
+                    <Th>{t.list.link}</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {conferences.map((c) => {
-                    const isPast = (c.end_date ?? c.start_date) < today;
+                    const status = conferenceStatus(c.start_date, c.end_date, lang);
+                    const statusColor = status.variant === "ongoing" ? "text-blue-700" : status.variant === "upcoming" ? "text-moss-700" : "text-ink-500";
                     return (
                       <tr key={c.id} className="group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors">
                         <Td>
@@ -153,9 +157,16 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                           </Link>
                         </Td>
                         <Td>
-                          <span className={`font-mono text-[10.5px] uppercase tracking-[0.16em] ${isPast ? "text-ink-500" : "text-moss-700"}`}>
-                            {isPast ? t.conf.pastLabel : t.conf.upcomingLabel}
+                          <span className={`font-mono text-[10.5px] uppercase tracking-[0.16em] ${statusColor}`}>
+                            {status.label}
                           </span>
+                        </Td>
+                        <Td>
+                          {c.category ? (
+                            <span className="rounded-full bg-ink-100 px-2 py-0.5 font-mono text-[10px] text-ink-600">
+                              {TOPIC_CATEGORIES[c.category]?.[lang] ?? c.category}
+                            </span>
+                          ) : <span className="text-ink-400">—</span>}
                         </Td>
                         <Td>
                           <TierBadge tier={(c as unknown as { tier: "top" | "good" | "workshop" }).tier ?? "good"} lang={lang} />
@@ -167,12 +178,19 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                           </div>
                         </Td>
                         <Td><span className="text-ink-700">{c.location ?? "—"}</span></Td>
-                        <Td><span className="font-mono text-[11.5px] tabular-nums text-ink-700">{c.start_date}</span></Td>
+                        <Td><span className="font-mono text-[11.5px] tabular-nums text-ink-700">{formatDateRange(c.start_date, c.end_date)}</span></Td>
+                        <Td>
+                          {c.url ? (
+                            <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-navy-500 hover:text-navy-700">
+                              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 3.5h-2a1.5 1.5 0 0 0-1.5 1.5v7a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5v-2m-4-7h5m0 0v5m0-5-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            </a>
+                          ) : <span className="text-ink-300">—</span>}
+                        </Td>
                       </tr>
                     );
                   })}
                   {conferences.length === 0 && (
-                    <tr><td colSpan={7} className="px-6 py-20 text-center">
+                    <tr><td colSpan={8} className="px-6 py-20 text-center">
                       <div className="font-display text-[20px] text-ink-700">{t.conf.empty}</div>
                       <p className="mt-1 text-[13px] text-ink-500">{t.conf.emptyHint}</p>
                     </td></tr>
