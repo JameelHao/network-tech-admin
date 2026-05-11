@@ -9,9 +9,9 @@ import {
   filterItems,
   groupByType,
   type SearchableItem,
+  type NewsItemLight,
 } from "../command-search";
 import type { Conference, Paper, Lead, TalentLead, OpenSource } from "../types";
-import type { NewsItemLight } from "../news-items";
 
 describe("mapConferences", () => {
   it("maps conference with abbreviation", () => {

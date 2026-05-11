@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/admin/Sidebar";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { getDict } from "@/lib/i18n/server";
-import { buildSearchIndex } from "@/lib/admin/command-search";
+import { buildSearchIndex } from "@/lib/admin/command-search-server";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const [{ t }, searchIndex] = await Promise.all([getDict(), buildSearchIndex()]);
