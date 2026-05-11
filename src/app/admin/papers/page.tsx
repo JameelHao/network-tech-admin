@@ -25,6 +25,8 @@ export default async function PapersPage() {
           dateRange: t.papers.dateRange,
           filter: t.mobile.filter,
           publishedAt: t.list.publishedAt,
+          sortLabel: t.sort.sortBy,
+          titleLabel: t.common.title,
         }} />
       </main>
     </>

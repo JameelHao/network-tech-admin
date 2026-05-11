@@ -1,7 +1,11 @@
+export type SortDir = "asc" | "desc";
+
 export type PaginationParams = {
   page: number;
   pageSize: number;
   search?: string;
+  sort?: string;
+  dir?: SortDir;
 };
 
 export type PaginatedResult<T> = {
@@ -21,7 +25,23 @@ export function parsePaginationParams(
   const rawSize = typeof sp.size === "string" ? parseInt(sp.size, 10) : NaN;
   const pageSize = [25, 50, 100].includes(rawSize) ? rawSize : (defaults.pageSize ?? 50);
   const search = typeof sp.search === "string" && sp.search.trim() ? sp.search.trim() : undefined;
-  return { page, pageSize, search };
+  const sort = typeof sp.sort === "string" && sp.sort ? sp.sort : undefined;
+  const rawDir = typeof sp.dir === "string" ? sp.dir : undefined;
+  const dir: SortDir | undefined = rawDir === "asc" || rawDir === "desc" ? rawDir : undefined;
+  return { page, pageSize, search, sort, dir };
+}
+
+export function validateSort(
+  sort: string | undefined,
+  dir: SortDir | undefined,
+  allowed: readonly string[],
+  defaultSort: string,
+  defaultDir: SortDir,
+): { column: string; ascending: boolean } {
+  if (sort && allowed.includes(sort) && dir) {
+    return { column: sort, ascending: dir === "asc" };
+  }
+  return { column: defaultSort, ascending: defaultDir === "asc" };
 }
 
 export function buildResult<T>(data: T[], total: number, params: PaginationParams): PaginatedResult<T> {

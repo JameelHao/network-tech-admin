@@ -269,6 +269,9 @@ const en = {
   mobile: {
     filter: "Filter",
   },
+  sort: {
+    sortBy: "Sort by",
+  },
   list: {
     ongoing: "Ongoing",
     expired: "Expired",
@@ -554,6 +557,9 @@ const zh: typeof en = {
   },
   mobile: {
     filter: "筛选",
+  },
+  sort: {
+    sortBy: "排序",
   },
   list: {
     ongoing: "进行中",

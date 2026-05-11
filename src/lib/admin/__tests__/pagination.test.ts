@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { parsePaginationParams, buildResult } from "../pagination";
+import { parsePaginationParams, buildResult, validateSort } from "../pagination";
 
 describe("parsePaginationParams", () => {
   it("returns defaults when no params provided", () => {
     const result = parsePaginationParams({});
-    expect(result).toEqual({ page: 1, pageSize: 50, search: undefined });
+    expect(result).toEqual({ page: 1, pageSize: 50, search: undefined, sort: undefined, dir: undefined });
   });
 
   it("parses valid page and size", () => {
     const result = parsePaginationParams({ page: "3", size: "25" });
-    expect(result).toEqual({ page: 3, pageSize: 25, search: undefined });
+    expect(result).toEqual({ page: 3, pageSize: 25, search: undefined, sort: undefined, dir: undefined });
   });
 
   it("rejects invalid page values", () => {
@@ -45,6 +45,29 @@ describe("parsePaginationParams", () => {
     const result = parsePaginationParams({ page: ["1", "2"] as unknown as string });
     expect(result.page).toBe(1);
   });
+
+  it("parses sort and dir params", () => {
+    const result = parsePaginationParams({ sort: "name", dir: "asc" });
+    expect(result.sort).toBe("name");
+    expect(result.dir).toBe("asc");
+  });
+
+  it("accepts desc direction", () => {
+    const result = parsePaginationParams({ sort: "stars", dir: "desc" });
+    expect(result.sort).toBe("stars");
+    expect(result.dir).toBe("desc");
+  });
+
+  it("rejects invalid dir values", () => {
+    const result = parsePaginationParams({ sort: "name", dir: "invalid" });
+    expect(result.sort).toBe("name");
+    expect(result.dir).toBeUndefined();
+  });
+
+  it("returns undefined sort for empty string", () => {
+    const result = parsePaginationParams({ sort: "" });
+    expect(result.sort).toBeUndefined();
+  });
 });
 
 describe("buildResult", () => {
@@ -67,5 +90,34 @@ describe("buildResult", () => {
   it("handles exact division", () => {
     const result = buildResult([], 100, { page: 1, pageSize: 50 });
     expect(result.totalPages).toBe(2);
+  });
+});
+
+describe("validateSort", () => {
+  const allowed = ["name", "stars", "created_at"] as const;
+
+  it("returns requested sort when column is allowed", () => {
+    expect(validateSort("name", "asc", allowed, "created_at", "desc"))
+      .toEqual({ column: "name", ascending: true });
+  });
+
+  it("returns desc as ascending=false", () => {
+    expect(validateSort("stars", "desc", allowed, "created_at", "desc"))
+      .toEqual({ column: "stars", ascending: false });
+  });
+
+  it("falls back to default when column is not in allowed list", () => {
+    expect(validateSort("hacked", "asc", allowed, "created_at", "desc"))
+      .toEqual({ column: "created_at", ascending: false });
+  });
+
+  it("falls back to default when sort is undefined", () => {
+    expect(validateSort(undefined, undefined, allowed, "created_at", "desc"))
+      .toEqual({ column: "created_at", ascending: false });
+  });
+
+  it("falls back to default when dir is missing", () => {
+    expect(validateSort("name", undefined, allowed, "created_at", "desc"))
+      .toEqual({ column: "created_at", ascending: false });
   });
 });

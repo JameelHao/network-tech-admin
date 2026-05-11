@@ -4,16 +4,23 @@ import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { listLeads } from "@/lib/admin/leads";
 import { parsePaginationParams } from "@/lib/admin/pagination";
+import { SortableHeader } from "@/components/admin/SortableHeader";
 import { getDict } from "@/lib/i18n/server";
 import { relativeTime } from "@/lib/admin/format";
 import Link from "next/link";
+import type { SortDir } from "@/lib/admin/pagination";
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   const { lang, t } = await getDict();
   const params = parsePaginationParams(sp);
+  const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
+  const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
   const result = await listLeads(params);
   const leads = result.data;
+
+  const filterParams: Record<string, string> = {};
+  if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
 
   return (
     <>
@@ -30,11 +37,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.title}</th>
+                <SortableHeader column="title" label={t.common.title} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.source}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.stage}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.createdAt}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.updatedAt}</th>
+                <SortableHeader column="stage" label={t.leads.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
+                <SortableHeader column="created_at" label={t.list.createdAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
+                <SortableHeader column="updated_at" label={t.leads.updatedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -67,6 +74,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             total={result.total}
             pageSize={result.pageSize}
             basePath="/admin/leads"
+            searchParams={filterParams}
             labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
           />
         </div>

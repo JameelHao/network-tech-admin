@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
+import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { OpenSource } from "./types";
+
+export const OS_SORTABLE = ["name", "stars", "last_active", "language"] as const;
 
 export async function listOpenSource(params?: PaginationParams): Promise<PaginatedResult<OpenSource>> {
   const supabase = await createClient();
@@ -8,11 +10,12 @@ export async function listOpenSource(params?: PaginationParams): Promise<Paginat
   const pageSize = params?.pageSize ?? 50;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const { column, ascending } = validateSort(params?.sort, params?.dir, OS_SORTABLE, "stars", "desc");
 
   const { data, error, count } = await supabase
     .from("opensource")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
+    .order(column, { ascending })
     .range(from, to);
 
   if (error) throw error;

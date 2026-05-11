@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
+import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Lead, LeadStage } from "./types";
+
+export const LEAD_SORTABLE = ["title", "stage", "updated_at", "created_at"] as const;
 
 export async function listLeads(params?: PaginationParams): Promise<PaginatedResult<Lead>> {
   const supabase = await createClient();
@@ -8,11 +10,12 @@ export async function listLeads(params?: PaginationParams): Promise<PaginatedRes
   const pageSize = params?.pageSize ?? 50;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const { column, ascending } = validateSort(params?.sort, params?.dir, LEAD_SORTABLE, "updated_at", "desc");
 
   const { data, error, count } = await supabase
     .from("leads")
     .select("*", { count: "exact" })
-    .order("updated_at", { ascending: false })
+    .order(column, { ascending })
     .range(from, to);
 
   if (error) throw error;

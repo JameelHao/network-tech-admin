@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
+import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Conference, ConferenceSession } from "./types";
+
+export const CONF_SORTABLE = ["name", "start_date", "tier", "category"] as const;
 
 export async function listConferences(
   params?: PaginationParams,
@@ -11,11 +13,12 @@ export async function listConferences(
   const pageSize = params?.pageSize ?? 50;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const { column, ascending } = validateSort(params?.sort, params?.dir, CONF_SORTABLE, "start_date", "desc");
 
   let query = supabase
     .from("conferences")
     .select("*", { count: "exact" })
-    .order("start_date", { ascending: false });
+    .order(column, { ascending });
 
   if (filter?.category && filter.category !== "all") {
     query = query.eq("category", filter.category);
