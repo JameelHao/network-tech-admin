@@ -5,6 +5,8 @@ import { TopicTag } from "@/components/admin/TopicTag";
 import { listOpenSource } from "@/lib/admin/opensource";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
+import { FilterSummary } from "@/components/admin/FilterSummary";
+import { FilterSelect, FilterNumberRange } from "@/components/admin/FilterControls";
 import { getDict } from "@/lib/i18n/server";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -15,11 +17,37 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
   const params = parsePaginationParams(sp);
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
-  const result = await listOpenSource(params);
+  const langFilter = typeof sp.language === "string" ? sp.language : undefined;
+  const topicFilter = typeof sp.topic === "string" ? sp.topic : undefined;
+  const starsMin = typeof sp.starsMin === "string" ? sp.starsMin : undefined;
+  const starsMax = typeof sp.starsMax === "string" ? sp.starsMax : undefined;
+  const result = await listOpenSource(params, {
+    language: langFilter,
+    topic: topicFilter,
+    starsMin: starsMin ? parseInt(starsMin, 10) : undefined,
+    starsMax: starsMax ? parseInt(starsMax, 10) : undefined,
+  });
   const projects = result.data;
 
+  const allLanguages = Array.from(new Set(projects.map((o) => o.language).filter(Boolean) as string[])).sort();
+  const allTopics = Array.from(new Set(projects.flatMap((o) => o.topics))).sort();
+
   const filterParams: Record<string, string> = {};
+  if (langFilter) filterParams.language = langFilter;
+  if (topicFilter) filterParams.topic = topicFilter;
+  if (starsMin) filterParams.starsMin = starsMin;
+  if (starsMax) filterParams.starsMax = starsMax;
   if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
+
+  const activeFilters: { label: string; value: string }[] = [];
+  if (langFilter) activeFilters.push({ label: t.detail.language, value: langFilter });
+  if (topicFilter) activeFilters.push({ label: t.detail.topics, value: topicFilter });
+  if (starsMin) activeFilters.push({ label: "Stars ≥", value: starsMin });
+  if (starsMax) activeFilters.push({ label: "Stars ≤", value: starsMax });
+
+  const clearParams = new URLSearchParams();
+  if (sortCol && sortDir) { clearParams.set("sort", sortCol); clearParams.set("dir", sortDir); }
+  const clearHref = clearParams.toString() ? `/admin/opensource?${clearParams.toString()}` : "/admin/opensource";
 
   return (
     <>
@@ -33,6 +61,16 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
               <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
+            {allLanguages.length > 1 && (
+              <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
+            )}
+            {allTopics.length > 1 && (
+              <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+            )}
+            <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
+          </div>
+          <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">

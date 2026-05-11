@@ -6,7 +6,7 @@ export const TALENT_SORTABLE = ["name", "company", "stage"] as const;
 
 export async function listTalentLeads(
   params?: PaginationParams,
-  filter?: { stage?: string },
+  filter?: { stage?: string; company?: string; topic?: string },
 ): Promise<PaginatedResult<TalentLead>> {
   const supabase = await createClient();
   const page = params?.page ?? 1;
@@ -20,9 +20,9 @@ export async function listTalentLeads(
     .select("*", { count: "exact" })
     .order(column, { ascending });
 
-  if (filter?.stage) {
-    query = query.eq("stage", filter.stage);
-  }
+  if (filter?.stage) query = query.eq("stage", filter.stage);
+  if (filter?.company) query = query.ilike("company", `%${filter.company}%`);
+  if (filter?.topic) query = query.contains("topics", [filter.topic]);
 
   const { data, error, count } = await query.range(from, to);
 

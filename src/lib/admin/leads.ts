@@ -4,7 +4,10 @@ import type { Lead, LeadStage } from "./types";
 
 export const LEAD_SORTABLE = ["title", "stage", "updated_at", "created_at"] as const;
 
-export async function listLeads(params?: PaginationParams): Promise<PaginatedResult<Lead>> {
+export async function listLeads(
+  params?: PaginationParams,
+  filter?: { stage?: string; sourceType?: string; dateFrom?: string; dateTo?: string },
+): Promise<PaginatedResult<Lead>> {
   const supabase = await createClient();
   const page = params?.page ?? 1;
   const pageSize = params?.pageSize ?? 50;
@@ -12,11 +15,17 @@ export async function listLeads(params?: PaginationParams): Promise<PaginatedRes
   const to = from + pageSize - 1;
   const { column, ascending } = validateSort(params?.sort, params?.dir, LEAD_SORTABLE, "updated_at", "desc");
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("leads")
     .select("*", { count: "exact" })
-    .order(column, { ascending })
-    .range(from, to);
+    .order(column, { ascending });
+
+  if (filter?.stage) query = query.eq("stage", filter.stage);
+  if (filter?.sourceType) query = query.eq("source_type", filter.sourceType);
+  if (filter?.dateFrom) query = query.gte("created_at", filter.dateFrom);
+  if (filter?.dateTo) query = query.lte("created_at", filter.dateTo);
+
+  const { data, error, count } = await query.range(from, to);
 
   if (error) throw error;
   return buildResult((data as Lead[]) ?? [], count ?? 0, { page, pageSize });

@@ -3,9 +3,11 @@
 import { useState, useMemo } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
+import { FilterSummary } from "@/components/admin/FilterSummary";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
 import { relativeTime, isCurrentYear } from "@/lib/admin/format";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
+import { useFilterParams } from "@/hooks/useFilterParams";
 import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
 import type { Lang } from "@/lib/i18n/dict";
@@ -27,12 +29,19 @@ type PapersLabels = {
   publishedAt: string;
   sortLabel: string;
   titleLabel: string;
+  activeFilters: string;
+  clearAll: string;
+  dateFrom: string;
+  dateTo: string;
 };
 
 export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
-  const [keyword, setKeyword] = useState("");
-  const [venue, setVenue] = useState("");
-  const [topic, setTopic] = useState("");
+  const fp = useFilterParams();
+  const keyword = fp.get("keyword");
+  const venue = fp.get("venue");
+  const topic = fp.get("topic");
+  const dateFrom = fp.get("dateFrom");
+  const dateTo = fp.get("dateTo");
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
 
   const venues = useMemo(() => {
@@ -68,8 +77,14 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
     if (topic) {
       list = list.filter((p) => p.topics.includes(topic));
     }
+    if (dateFrom) {
+      list = list.filter((p) => p.published_date && p.published_date >= dateFrom);
+    }
+    if (dateTo) {
+      list = list.filter((p) => p.published_date && p.published_date <= dateTo);
+    }
     return list;
-  }, [papers, keyword, venue, topic]);
+  }, [papers, keyword, venue, topic, dateFrom, dateTo]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<Paper>(filtered, { key: "published_date", dir: "desc" });
 
@@ -106,15 +121,17 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
           <MobileFilterBar label={labels.filter}>
             <input
               type="text"
+              key={keyword}
+              defaultValue={keyword}
               placeholder={labels.searchPlaceholder}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
               className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-40"
             />
             {venues.length > 1 && (
               <select
                 value={venue}
-                onChange={(e) => setVenue(e.target.value)}
+                onChange={(e) => fp.set("venue", e.target.value)}
                 className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
               >
                 <option value="">{labels.allSources}</option>
@@ -126,7 +143,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
             {topics.length > 1 && (
               <select
                 value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+                onChange={(e) => fp.set("topic", e.target.value)}
                 className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
               >
                 <option value="">{labels.allCategories}</option>
@@ -135,9 +152,38 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
                 ))}
               </select>
             )}
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => fp.set("dateFrom", e.target.value)}
+                aria-label={labels.dateFrom}
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              />
+              <span className="text-ink-400 text-[10px]">–</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => fp.set("dateTo", e.target.value)}
+                aria-label={labels.dateTo}
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              />
+            </div>
           </MobileFilterBar>
         </div>
       </div>
+
+      <FilterSummary
+        filters={[
+          ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
+          ...(venue ? [{ label: labels.allSources, value: venue }] : []),
+          ...(topic ? [{ label: labels.allCategories, value: topic }] : []),
+          ...(dateFrom ? [{ label: labels.dateFrom, value: dateFrom }] : []),
+          ...(dateTo ? [{ label: labels.dateTo, value: dateTo }] : []),
+        ]}
+        labels={{ activeFilters: labels.activeFilters, clearAll: labels.clearAll }}
+        onClear={fp.clearAll}
+      />
 
       {viewMode === "list" && sorted.length > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">

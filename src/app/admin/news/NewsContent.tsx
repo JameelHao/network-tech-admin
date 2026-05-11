@@ -3,9 +3,11 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
+import { FilterSummary } from "@/components/admin/FilterSummary";
 import { PaginationClient } from "@/components/admin/PaginationClient";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { relativeTime } from "@/lib/admin/format";
+import { useFilterParams } from "@/hooks/useFilterParams";
 import { useSortable } from "@/hooks/useSortable";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -45,14 +47,21 @@ type NewsLabels = {
   titleLabel: string;
   sourceLabel: string;
   pubDateLabel: string;
+  activeFilters: string;
+  clearAll: string;
+  dateFrom: string;
+  dateTo: string;
 };
 
 export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }) {
+  const fp = useFilterParams();
+  const keyword = fp.get("keyword");
+  const source = fp.get("source");
+  const dateFrom = fp.get("dateFrom");
+  const dateTo = fp.get("dateTo");
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [keyword, setKeyword] = useState("");
-  const [source, setSource] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -98,8 +107,14 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
     if (source) {
       list = list.filter((item) => item.source === source);
     }
+    if (dateFrom) {
+      list = list.filter((item) => item.pubDate && item.pubDate >= dateFrom);
+    }
+    if (dateTo) {
+      list = list.filter((item) => item.pubDate && item.pubDate <= dateTo);
+    }
     return list;
-  }, [items, keyword, source]);
+  }, [items, keyword, source, dateFrom, dateTo]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<NewsItem>(filtered, { key: "pubDate", dir: "desc" });
 
@@ -116,15 +131,17 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
           <MobileFilterBar label={labels.filter}>
             <input
               type="text"
+              key={keyword}
+              defaultValue={keyword}
               placeholder={labels.searchPlaceholder}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
               className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-40"
             />
             {sources.length > 1 && (
               <select
                 value={source}
-                onChange={(e) => setSource(e.target.value)}
+                onChange={(e) => fp.set("source", e.target.value)}
                 className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
               >
                 <option value="">{labels.allSources}</option>
@@ -133,9 +150,36 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
                 ))}
               </select>
             )}
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => fp.set("dateFrom", e.target.value)}
+                aria-label={labels.dateFrom}
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              />
+              <span className="text-ink-400 text-[10px]">–</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => fp.set("dateTo", e.target.value)}
+                aria-label={labels.dateTo}
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              />
+            </div>
           </MobileFilterBar>
         </div>
       </div>
+      <FilterSummary
+        filters={[
+          ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
+          ...(source ? [{ label: labels.allSources, value: source }] : []),
+          ...(dateFrom ? [{ label: labels.dateFrom, value: dateFrom }] : []),
+          ...(dateTo ? [{ label: labels.dateTo, value: dateTo }] : []),
+        ]}
+        labels={{ activeFilters: labels.activeFilters, clearAll: labels.clearAll }}
+        onClear={fp.clearAll}
+      />
       {!loading && !error && sorted.length > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">
           <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-400">{labels.sortLabel}</span>
