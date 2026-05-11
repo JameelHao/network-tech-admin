@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { PaginationClient } from "@/components/admin/PaginationClient";
 
 type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
@@ -31,6 +32,8 @@ type NewsLabels = {
   noMatch: string;
   rows: string;
   page: string;
+  exportCSV: string;
+  exportJSON: string;
 };
 
 export function NewsContent({ labels }: { labels: NewsLabels }) {
@@ -95,6 +98,8 @@ export function NewsContent({ labels }: { labels: NewsLabels }) {
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{total}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <ExportButton entity="news" format="csv" label={labels.exportCSV} />
+          <ExportButton entity="news" format="json" label={labels.exportJSON} />
           <input
             type="text"
             placeholder={labels.searchPlaceholder}

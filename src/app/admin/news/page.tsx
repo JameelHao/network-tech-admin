@@ -16,6 +16,8 @@ export default async function NewsPage() {
           noMatch: t.news.noMatch,
           rows: t.common.rows,
           page: t.common.page,
+          exportCSV: t.common.exportCSV,
+          exportJSON: t.common.exportJSON,
         }} />
       </main>
     </>

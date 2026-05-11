@@ -2,6 +2,7 @@ import { Topbar } from "@/components/admin/Topbar";
 import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { TierBadge } from "@/components/admin/TierBadge";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { RefreshAllButton } from "@/components/admin/RefreshAllButton";
 import { listConferences } from "@/lib/admin/conferences";
 import { parsePaginationParams } from "@/lib/admin/pagination";
@@ -85,6 +86,8 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
               })}
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <ExportButton entity="conferences" format="csv" filters={filterParams} label={t.common.exportCSV} />
+              <ExportButton entity="conferences" format="json" filters={filterParams} label={t.common.exportJSON} />
               <RefreshAllButton label={t.conf.refresh} />
               <Link
                 href="/admin/conferences/new"

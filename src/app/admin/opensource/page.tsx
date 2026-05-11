@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { listOpenSource } from "@/lib/admin/opensource";
@@ -18,8 +19,12 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.opensource }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10">
         <div className="rounded-lg border border-line bg-surface">
-          <div className="px-5 pt-4 pb-3 border-b border-line">
+          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.opensource}</h1>
+            <div className="flex items-center gap-2">
+              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+            </div>
           </div>
           <table className="w-full text-[13px]">
             <thead>
