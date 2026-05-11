@@ -4,7 +4,9 @@ import { useState, useMemo } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
+import { relativeTime, isCurrentYear } from "@/lib/admin/format";
 import type { Paper } from "@/lib/admin/types";
+import type { Lang } from "@/lib/i18n/dict";
 
 type PapersLabels = {
   title: string;
@@ -19,9 +21,10 @@ type PapersLabels = {
   papersCount: string;
   dateRange: string;
   filter: string;
+  publishedAt: string;
 };
 
-export function PapersClient({ papers, labels }: { papers: Paper[]; labels: PapersLabels }) {
+export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
   const [keyword, setKeyword] = useState("");
   const [venue, setVenue] = useState("");
   const [topic, setTopic] = useState("");
@@ -136,7 +139,7 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
       ) : viewMode === "list" ? (
         <div className="divide-y divide-line">
           {filtered.map((p) => (
-            <PaperRow key={p.id} paper={p} />
+            <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} />
           ))}
         </div>
       ) : (
@@ -164,7 +167,7 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
               </summary>
               <div className="divide-y divide-line border-t border-line">
                 {cluster.papers.map((p) => (
-                  <PaperRow key={p.id} paper={p} />
+                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} />
                 ))}
               </div>
             </details>
@@ -175,7 +178,11 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
   );
 }
 
-function PaperRow({ paper: p }: { paper: Paper }) {
+function PaperRow({ paper: p, lang, publishedLabel }: { paper: Paper; lang: Lang; publishedLabel: string }) {
+  const yearBadge = p.published_date && !isCurrentYear(p.published_date)
+    ? new Date(p.published_date).getFullYear().toString()
+    : null;
+
   return (
     <a
       href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
@@ -183,10 +190,16 @@ function PaperRow({ paper: p }: { paper: Paper }) {
       rel="noopener noreferrer"
       className="block px-5 py-4 hover:bg-paper/40 transition-colors"
     >
-      <p className="text-[13px] font-medium text-ink-800">{p.title}</p>
+      <div className="flex items-start gap-2">
+        <p className="text-[13px] font-medium text-ink-800 flex-1">{p.title}</p>
+        {yearBadge && (
+          <span className="shrink-0 rounded-full bg-ink-100 px-1.5 py-0.5 font-mono text-[9px] text-ink-500">{yearBadge}</span>
+        )}
+      </div>
       <p className="text-[12px] text-ink-500 mt-1">
         {p.authors.slice(0, 5).join(", ")}{p.authors.length > 5 ? ` +${p.authors.length - 5}` : ""}
         {p.venue && <> · <span className="text-navy-500">{p.venue}</span></>}
+        {p.published_date && <> · <span className="text-ink-400">{relativeTime(p.published_date, lang)}</span></>}
       </p>
       {p.abstract && (
         <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{p.abstract}</p>

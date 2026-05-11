@@ -5,6 +5,7 @@ import { StatusPill } from "@/components/admin/StatusPill";
 import { listLeads } from "@/lib/admin/leads";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
+import { relativeTime } from "@/lib/admin/format";
 import Link from "next/link";
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -32,6 +33,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.title}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.source}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.stage}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.createdAt}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.updatedAt}</th>
               </tr>
             </thead>
@@ -53,6 +55,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   <td className="px-5 py-3">
                     <StatusPill label={l.stage} />
                   </td>
+                  <td className="px-5 py-3 text-ink-500 text-[12px]">{relativeTime(l.created_at, lang)}</td>
                   <td className="px-5 py-3 text-ink-500 tabular-nums text-[12px]">{l.updated_at.slice(0, 10)}</td>
                 </tr>
               ))}

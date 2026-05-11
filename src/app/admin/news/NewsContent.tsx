@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { PaginationClient } from "@/components/admin/PaginationClient";
+import { relativeTime } from "@/lib/admin/format";
+import type { Lang } from "@/lib/i18n/dict";
 
 type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
 
@@ -38,7 +40,7 @@ type NewsLabels = {
   filter: string;
 };
 
-export function NewsContent({ labels }: { labels: NewsLabels }) {
+export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }) {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -149,6 +151,7 @@ export function NewsContent({ labels }: { labels: NewsLabels }) {
                 {item.source && <span className="text-navy-500">{item.source}</span>}
                 {item.source && " · "}
                 {extractDomain(item.link)}
+                {item.pubDate && <> · <span className="text-ink-400">{relativeTime(item.pubDate, lang)}</span></>}
               </p>
             </a>
           ))}

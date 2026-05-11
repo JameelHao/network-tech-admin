@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { PaginationClient } from "@/components/admin/PaginationClient";
+import { relativeTime, isExpired } from "@/lib/admin/format";
+import type { Lang } from "@/lib/i18n/dict";
 
 type JobItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
 
@@ -33,9 +35,10 @@ type JobsLabels = {
   rows: string;
   page: string;
   filter: string;
+  expired: string;
 };
 
-export function JobsContent({ labels }: { labels: JobsLabels }) {
+export function JobsContent({ labels, lang }: { labels: JobsLabels; lang: Lang }) {
   const [items, setItems] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,25 +131,34 @@ export function JobsContent({ labels }: { labels: JobsLabels }) {
         <div className="px-5 py-10 text-center text-sm text-ink-400">{labels.noMatch}</div>
       ) : (
         <div className="divide-y divide-line">
-          {filtered.map((item) => (
-            <a
-              key={item.link}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block px-5 py-4 hover:bg-paper/40 transition-colors"
-            >
-              <p className="text-[13px] font-medium text-ink-800">{item.title}</p>
-              {item.snippet && (
-                <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
-              )}
-              <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
-                {item.source && <span className="text-navy-500">{item.source}</span>}
-                {item.source && " · "}
-                {extractDomain(item.link)}
-              </p>
-            </a>
-          ))}
+          {filtered.map((item) => {
+            const expired = isExpired(item.pubDate, 30);
+            return (
+              <a
+                key={item.link}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`block px-5 py-4 hover:bg-paper/40 transition-colors ${expired ? "opacity-60" : ""}`}
+              >
+                <div className="flex items-start gap-2">
+                  <p className={`text-[13px] font-medium flex-1 ${expired ? "text-ink-500" : "text-ink-800"}`}>{item.title}</p>
+                  {expired && (
+                    <span className="shrink-0 rounded-full bg-ink-100 px-1.5 py-0.5 font-mono text-[9px] text-ink-500">{labels.expired}</span>
+                  )}
+                </div>
+                {item.snippet && (
+                  <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
+                )}
+                <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
+                  {item.source && <span className="text-navy-500">{item.source}</span>}
+                  {item.source && " · "}
+                  {extractDomain(item.link)}
+                  {item.pubDate && <> · <span className="text-ink-400">{relativeTime(item.pubDate, lang)}</span></>}
+                </p>
+              </a>
+            );
+          })}
         </div>
       )}
       <PaginationClient
