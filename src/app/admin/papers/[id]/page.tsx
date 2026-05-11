@@ -1,7 +1,9 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { DetailNav } from "@/components/admin/DetailNav";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { getPaper, listAllPapersLight } from "@/lib/admin/papers";
 import { findSimilarPapers } from "@/lib/admin/paper-utils";
+import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +11,11 @@ import Link from "next/link";
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { lang, t } = await getDict();
-  const [paper, allPapers] = await Promise.all([getPaper(id), listAllPapersLight()]);
+  const [paper, allPapers, adjacent] = await Promise.all([
+    getPaper(id),
+    listAllPapersLight(),
+    getAdjacentItems("papers", id, "title", "created_at", false),
+  ]);
   if (!paper) notFound();
 
   const relatedPapers = findSimilarPapers(paper, allPapers);
@@ -21,6 +27,14 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
         { label: t.nav.papers, href: "/admin/papers" },
         { label: paper.title.slice(0, 40) },
       ]} t={t} lang={lang} />
+      <DetailNav
+        backHref="/admin/papers"
+        backLabel={t.nav.papers}
+        prev={adjacent.prev}
+        next={adjacent.next}
+        basePath="/admin/papers"
+        labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
+      />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full space-y-6">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
           <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{paper.title}</h1>

@@ -1,13 +1,18 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { DetailNav } from "@/components/admin/DetailNav";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { getOpenSource } from "@/lib/admin/opensource";
+import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 
 export default async function OpenSourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { lang, t } = await getDict();
-  const project = await getOpenSource(id);
+  const [project, adjacent] = await Promise.all([
+    getOpenSource(id),
+    getAdjacentItems("opensource", id, "name", "stars", false),
+  ]);
   if (!project) notFound();
 
   return (
@@ -17,6 +22,14 @@ export default async function OpenSourceDetailPage({ params }: { params: Promise
         { label: t.nav.opensource, href: "/admin/opensource" },
         { label: project.name },
       ]} t={t} lang={lang} />
+      <DetailNav
+        backHref="/admin/opensource"
+        backLabel={t.nav.opensource}
+        prev={adjacent.prev}
+        next={adjacent.next}
+        basePath="/admin/opensource"
+        labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
+      />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
           <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{project.name}</h1>
