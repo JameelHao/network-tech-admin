@@ -272,6 +272,21 @@ const en = {
   sort: {
     sortBy: "Sort by",
   },
+  filter: {
+    activeFilters: "Filtering",
+    clearAll: "Clear all",
+    dateFrom: "From",
+    dateTo: "To",
+    upcoming: "Upcoming",
+    past: "Past",
+    allStatuses: "All statuses",
+    allLanguages: "All languages",
+    allTopics: "All topics",
+    starsRange: "Stars",
+    allSourceTypes: "All types",
+    allStages: "All stages",
+    companyPlaceholder: "Search company...",
+  },
   list: {
     ongoing: "Ongoing",
     expired: "Expired",
@@ -560,6 +575,21 @@ const zh: typeof en = {
   },
   sort: {
     sortBy: "排序",
+  },
+  filter: {
+    activeFilters: "筛选中",
+    clearAll: "清除全部",
+    dateFrom: "开始",
+    dateTo: "结束",
+    upcoming: "即将举办",
+    past: "已结束",
+    allStatuses: "全部状态",
+    allLanguages: "全部语言",
+    allTopics: "全部主题",
+    starsRange: "Stars",
+    allSourceTypes: "全部类型",
+    allStages: "全部阶段",
+    companyPlaceholder: "搜索公司...",
   },
   list: {
     ongoing: "进行中",

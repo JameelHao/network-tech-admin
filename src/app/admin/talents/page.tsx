@@ -6,6 +6,8 @@ import { TopicTag } from "@/components/admin/TopicTag";
 import { listTalentLeads } from "@/lib/admin/talents";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
+import { FilterSummary } from "@/components/admin/FilterSummary";
+import { FilterInput, FilterSelect } from "@/components/admin/FilterControls";
 import { getDict } from "@/lib/i18n/server";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
@@ -16,15 +18,30 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
   const filterStage = typeof sp.stage === "string" ? sp.stage : undefined;
   const { lang, t } = await getDict();
   const params = parsePaginationParams(sp);
-  const result = await listTalentLeads(params, { stage: filterStage });
+  const companyFilter = typeof sp.company === "string" ? sp.company : undefined;
+  const topicFilter = typeof sp.topic === "string" ? sp.topic : undefined;
+  const result = await listTalentLeads(params, { stage: filterStage, company: companyFilter, topic: topicFilter });
   const talents = result.data;
 
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
 
+  const allTopics = Array.from(new Set(talents.flatMap((t) => t.topics))).sort();
+
   const filterParams: Record<string, string> = {};
   if (filterStage) filterParams.stage = filterStage;
+  if (companyFilter) filterParams.company = companyFilter;
+  if (topicFilter) filterParams.topic = topicFilter;
   if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
+
+  const activeFilters: { label: string; value: string }[] = [];
+  if (filterStage) activeFilters.push({ label: t.common.stage, value: filterStage });
+  if (companyFilter) activeFilters.push({ label: t.common.company, value: companyFilter });
+  if (topicFilter) activeFilters.push({ label: t.common.topics, value: topicFilter });
+
+  const clearParams = new URLSearchParams();
+  if (sortCol && sortDir) { clearParams.set("sort", sortCol); clearParams.set("dir", sortDir); }
+  const clearHref = clearParams.toString() ? `/admin/talents?${clearParams.toString()}` : "/admin/talents";
 
   return (
     <>
@@ -45,27 +62,26 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             </div>
           </div>
 
-          <div className="flex items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
-            <Link
-              href="/admin/talents"
-              className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${
-                !filterStage ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
-            >
-              {t.common.all}
-            </Link>
-            {LEAD_STAGES.map((s) => (
-              <Link
-                key={s}
-                href={`/admin/talents?stage=${s}`}
-                className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${
-                  filterStage === s ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-                }`}
-              >
-                {s}
-              </Link>
-            ))}
+          <div className="flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
+            {[undefined, ...LEAD_STAGES].map((s) => {
+              const isActive = filterStage === s;
+              const p = new URLSearchParams(filterParams);
+              p.delete("stage"); p.delete("page");
+              if (s) p.set("stage", s);
+              const href = p.toString() ? `/admin/talents?${p.toString()}` : "/admin/talents";
+              return (
+                <Link key={s ?? "all"} href={href} className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${isActive ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"}`}>
+                  {s ?? t.common.all}
+                </Link>
+              );
+            })}
+            <span className="text-ink-300 text-[10px]">|</span>
+            <FilterInput paramKey="company" value={companyFilter ?? ""} placeholder={t.filter.companyPlaceholder} searchParams={filterParams} />
+            {allTopics.length > 1 && (
+              <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+            )}
           </div>
+          <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 
           <table className="w-full text-[13px]">
             <thead>

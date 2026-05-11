@@ -13,6 +13,8 @@ import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
 import { conferenceStatus, formatDateRange } from "@/lib/admin/format";
 import { SortableHeader } from "@/components/admin/SortableHeader";
+import { FilterSummary } from "@/components/admin/FilterSummary";
+import { FilterDateRange } from "@/components/admin/FilterControls";
 import { CONF_SORTABLE } from "@/lib/admin/conferences";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -29,7 +31,10 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
   const params = parsePaginationParams(sp);
 
   const activeCategory = CATEGORY_KEYS.includes(cat as TopicCategory) ? cat as TopicCategory : "all";
-  const result = await listConferences(params, { category: activeCategory });
+  const statusFilter = typeof sp.status === "string" ? sp.status : undefined;
+  const dateFrom = typeof sp.dateFrom === "string" ? sp.dateFrom : undefined;
+  const dateTo = typeof sp.dateTo === "string" ? sp.dateTo : undefined;
+  const result = await listConferences(params, { category: activeCategory, status: statusFilter, dateFrom, dateTo });
   const conferences = result.data;
 
   const supabase = await createClient();
@@ -48,7 +53,21 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
 
   const filterParams: Record<string, string> = {};
   if (activeCategory !== "all") filterParams.cat = activeCategory;
+  if (statusFilter) filterParams.status = statusFilter;
+  if (dateFrom) filterParams.dateFrom = dateFrom;
+  if (dateTo) filterParams.dateTo = dateTo;
   if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
+
+  const activeFilters: { label: string; value: string }[] = [];
+  if (activeCategory !== "all") activeFilters.push({ label: t.conf.category, value: TOPIC_CATEGORIES[activeCategory][lang] });
+  if (statusFilter) activeFilters.push({ label: t.conf.status, value: statusFilter === "upcoming" ? t.conf.upcomingLabel : t.conf.pastLabel });
+  if (dateFrom) activeFilters.push({ label: t.filter.dateFrom, value: dateFrom });
+  if (dateTo) activeFilters.push({ label: t.filter.dateTo, value: dateTo });
+
+  const clearParams = new URLSearchParams();
+  if (sortCol && sortDir) { clearParams.set("sort", sortCol); clearParams.set("dir", sortDir); }
+  if (view === "calendar") clearParams.set("view", "calendar");
+  const clearHref = clearParams.toString() ? `/admin/conferences?${clearParams.toString()}` : "/admin/conferences";
 
   const now = new Date();
   let calYear = now.getFullYear();
@@ -99,10 +118,14 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                 {CATEGORY_KEYS.map((key) => {
                   const isActive = key === activeCategory;
                   const label = key === "all" ? t.conf.filterAll : TOPIC_CATEGORIES[key][lang];
+                  const p = new URLSearchParams(filterParams);
+                  p.delete("cat"); p.delete("page");
+                  if (key !== "all") p.set("cat", key);
+                  const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
                   return (
                     <Link
                       key={key}
-                      href={key === "all" ? "/admin/conferences" : `/admin/conferences?cat=${key}`}
+                      href={href}
                       className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
                         isActive
                           ? "bg-navy-700 text-navy-50"
@@ -113,6 +136,26 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                     </Link>
                   );
                 })}
+                <span className="text-ink-300 text-[10px]">|</span>
+                {(["", "upcoming", "past"] as const).map((s) => {
+                  const isActive = (statusFilter ?? "") === s;
+                  const label = s === "" ? t.filter.allStatuses : s === "upcoming" ? t.filter.upcoming : t.filter.past;
+                  const p = new URLSearchParams(filterParams);
+                  p.delete("status"); p.delete("page");
+                  if (s) p.set("status", s);
+                  const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
+                  return (
+                    <Link key={s} href={href} className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${isActive ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"}`}>
+                      {label}
+                    </Link>
+                  );
+                })}
+                <FilterDateRange
+                  fromKey="dateFrom" toKey="dateTo"
+                  fromValue={dateFrom ?? ""} toValue={dateTo ?? ""}
+                  fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo}
+                  searchParams={filterParams}
+                />
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <ViewToggle
@@ -133,6 +176,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
               </div>
             </header>
 
+            <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
             <div className="overflow-x-auto">
               <table className="w-full text-[13.5px]">
                 <thead>

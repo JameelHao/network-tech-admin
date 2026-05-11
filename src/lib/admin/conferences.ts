@@ -6,7 +6,7 @@ export const CONF_SORTABLE = ["name", "start_date", "tier", "category"] as const
 
 export async function listConferences(
   params?: PaginationParams,
-  filter?: { category?: string },
+  filter?: { category?: string; status?: string; dateFrom?: string; dateTo?: string },
 ): Promise<PaginatedResult<Conference>> {
   const supabase = await createClient();
   const page = params?.page ?? 1;
@@ -23,6 +23,13 @@ export async function listConferences(
   if (filter?.category && filter.category !== "all") {
     query = query.eq("category", filter.category);
   }
+  if (filter?.status) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (filter.status === "upcoming") query = query.gte("end_date", today);
+    else if (filter.status === "past") query = query.lt("end_date", today);
+  }
+  if (filter?.dateFrom) query = query.gte("start_date", filter.dateFrom);
+  if (filter?.dateTo) query = query.lte("start_date", filter.dateTo);
 
   const { data, error, count } = await query.range(from, to);
 
