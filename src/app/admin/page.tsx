@@ -7,10 +7,12 @@ import { listPapers } from "@/lib/admin/papers";
 import { listOpenSource } from "@/lib/admin/opensource";
 import { listLeads, getStageCounts } from "@/lib/admin/leads";
 import { getDict } from "@/lib/i18n/server";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 export default async function DashboardPage() {
   const { lang, t } = await getDict();
+  const supabase = await createClient();
   const [conferences, papers, opensource, leads] = await Promise.all([
     listConferences(),
     listPapers(),
@@ -18,12 +20,21 @@ export default async function DashboardPage() {
     listLeads(),
   ]);
 
+  const { data: newsItems } = await supabase
+    .from("news_items")
+    .select("title, link, source")
+    .eq("category", "news")
+    .order("pub_date", { ascending: false })
+    .limit(5);
+
   const stageCounts = getStageCounts(leads);
   const activeLeads = leads.filter((l) => l.stage !== "archived");
 
   const upcoming = conferences
     .filter((c) => new Date(c.start_date) > new Date())
     .sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+  const latestPapers = papers.slice(0, 5);
 
   return (
     <>
@@ -56,6 +67,47 @@ export default async function DashboardPage() {
                     {c.topics.slice(0, 2).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
                   </div>
                 </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-line bg-surface">
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{lang === "zh" ? "最新论文" : "Latest Papers"}</h2>
+              <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+            </div>
+            <div className="divide-y divide-line">
+              {latestPapers.length === 0 && (
+                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{lang === "zh" ? "暂无论文" : "No papers yet"}</p>
+              )}
+              {latestPapers.map((p) => (
+                <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">
+                  <p className="text-[13px] font-medium text-ink-800 truncate">{p.title}</p>
+                  <p className="text-[12px] text-ink-400 mt-0.5 truncate">
+                    {p.authors.slice(0, 3).join(", ")}{p.authors.length > 3 ? ` +${p.authors.length - 3}` : ""}
+                    {p.venue && <> · <span className="text-navy-500">{p.venue}</span></>}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          <section className="rounded-lg border border-line bg-surface">
+            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{lang === "zh" ? "最新新闻" : "Latest News"}</h2>
+              <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+            </div>
+            <div className="divide-y divide-line">
+              {(!newsItems || newsItems.length === 0) && (
+                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{lang === "zh" ? "暂无新闻" : "No news yet"}</p>
+              )}
+              {(newsItems ?? []).map((item) => (
+                <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">
+                  <p className="text-[13px] font-medium text-ink-800 truncate">{item.title}</p>
+                  <p className="text-[11px] text-ink-400 mt-0.5">{item.source}</p>
+                </a>
               ))}
             </div>
           </section>

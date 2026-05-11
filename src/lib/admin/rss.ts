@@ -7,17 +7,25 @@ export type RSSItem = {
 };
 
 const NEWS_FEEDS = [
-  { url: "https://hnrss.org/newest?q=networking+OR+SDN+OR+datacenter+OR+BGP+OR+eBPF", source: "Hacker News" },
+  { url: "https://hnrss.org/newest?q=networking+OR+SDN+OR+datacenter+OR+BGP+OR+eBPF+OR+network+protocol", source: "Hacker News" },
+  { url: "https://hnrss.org/newest?q=cloudflare+OR+AWS+networking+OR+network+infrastructure+OR+xAI+cluster+OR+colossus", source: "Hacker News" },
   { url: "https://www.sdxcentral.com/feed/", source: "SDxCentral" },
   { url: "https://blog.cloudflare.com/rss/", source: "Cloudflare Blog" },
+  { url: "https://aws.amazon.com/blogs/networking-and-content-delivery/feed/", source: "AWS Networking" },
   { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
-  { url: "https://www.theregister.com/headlines.rss", source: "The Register" },
+  { url: "https://www.theregister.com/networks/headlines.rss", source: "The Register" },
+  { url: "https://engineering.fb.com/category/networking-traffic/feed/", source: "Meta Engineering" },
 ];
 
 const JOBS_FEEDS = [
-  { url: "https://hnrss.org/jobs?q=network+OR+networking+OR+infrastructure+OR+SDN+OR+cloud", source: "HN Jobs" },
-  { url: "https://www.indeed.com/rss?q=network+engineer+SDN&sort=date", source: "Indeed" },
-  { url: "https://stackoverflow.com/jobs/feed?q=network+engineer&sort=p", source: "Stack Overflow" },
+  { url: "https://hnrss.org/jobs?q=network+engineer+OR+networking+OR+infrastructure+OR+SDN", source: "HN Jobs" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+%28Amazon+OR+AWS%29&sort=date", source: "Amazon/AWS" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Cloudflare&sort=date", source: "Cloudflare" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Google&sort=date", source: "Google" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Meta&sort=date", source: "Meta" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Microsoft+Azure&sort=date", source: "Microsoft" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+xAI&sort=date", source: "xAI" },
+  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+%28Juniper+OR+Cisco+OR+Arista%29&sort=date", source: "Juniper/Cisco/Arista" },
 ];
 
 export async function fetchRSSItems(feeds: { url: string; source: string }[], limit = 20): Promise<RSSItem[]> {
