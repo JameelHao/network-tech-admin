@@ -3,7 +3,15 @@
 import { useState, useMemo } from "react";
 import type { Paper } from "@/lib/admin/types";
 
-export function PapersClient({ papers }: { papers: Paper[] }) {
+type PapersLabels = {
+  title: string;
+  searchPlaceholder: string;
+  allSources: string;
+  allCategories: string;
+  noMatch: string;
+};
+
+export function PapersClient({ papers, labels }: { papers: Paper[]; labels: PapersLabels }) {
   const [keyword, setKeyword] = useState("");
   const [venue, setVenue] = useState("");
   const [topic, setTopic] = useState("");
@@ -48,13 +56,13 @@ export function PapersClient({ papers }: { papers: Paper[] }) {
     <div className="rounded-lg border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
         <h1 className="font-display text-[17px] tracking-tight text-ink-800">
-          2026 网络论文
+          {labels.title}
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <input
             type="text"
-            placeholder="搜索标题/作者..."
+            placeholder={labels.searchPlaceholder}
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-40"
@@ -65,7 +73,7 @@ export function PapersClient({ papers }: { papers: Paper[] }) {
               onChange={(e) => setVenue(e.target.value)}
               className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
             >
-              <option value="">全部来源</option>
+              <option value="">{labels.allSources}</option>
               {venues.map((v) => (
                 <option key={v} value={v}>{v}</option>
               ))}
@@ -77,7 +85,7 @@ export function PapersClient({ papers }: { papers: Paper[] }) {
               onChange={(e) => setTopic(e.target.value)}
               className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
             >
-              <option value="">全部分类</option>
+              <option value="">{labels.allCategories}</option>
               {topics.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -88,7 +96,7 @@ export function PapersClient({ papers }: { papers: Paper[] }) {
 
       {filtered.length === 0 ? (
         <div className="px-5 py-10 text-center text-sm text-ink-400">
-          暂无匹配论文
+          {labels.noMatch}
         </div>
       ) : (
         <div className="divide-y divide-line">

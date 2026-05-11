@@ -11,7 +11,13 @@ export default async function PapersPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.papers }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10">
-        <PapersClient papers={papers} />
+        <PapersClient papers={papers} labels={{
+          title: t.papers.title,
+          searchPlaceholder: t.papers.searchPlaceholder,
+          allSources: t.papers.allSources,
+          allCategories: t.papers.allCategories,
+          noMatch: t.papers.noMatch,
+        }} />
       </main>
     </>
   );

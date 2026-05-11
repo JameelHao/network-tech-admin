@@ -11,7 +11,7 @@ export default async function NewTalentPage() {
       <Topbar crumbs={[
         { label: t.nav.dashboard, href: "/admin" },
         { label: t.nav.talents, href: "/admin/talents" },
-        { label: lang === "zh" ? "新建" : "New" },
+        { label: t.common.new },
       ]} t={t} lang={lang} />
       <main className="px-6 xl:px-10 py-10">
         <div className="max-w-3xl">
@@ -20,12 +20,12 @@ export default async function NewTalentPage() {
               ← {t.nav.talents}
             </Link>
             <h1 className="mt-6 font-display text-[32px] leading-tight tracking-tight text-ink-900">
-              {lang === "zh" ? "新建人才线索" : "New Talent Lead"}
+              {t.talent.newTalent}
             </h1>
           </header>
 
           <div className="rounded-lg border border-line bg-surface p-6">
-            <TalentForm lang={lang} />
+            <TalentForm t={t} />
           </div>
         </div>
       </main>

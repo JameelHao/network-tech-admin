@@ -9,7 +9,12 @@ export default async function JobsPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.jobs }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10">
-        <JobsContent />
+        <JobsContent labels={{
+          title: t.jobs.title,
+          searchPlaceholder: t.jobs.searchPlaceholder,
+          allSources: t.jobs.allSources,
+          noMatch: t.jobs.noMatch,
+        }} />
       </main>
     </>
   );

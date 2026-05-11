@@ -19,7 +19,7 @@ export async function login(_prev: unknown, formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: "邮箱或密码错误" };
+    return { error: "Invalid email or password" };
   }
 
   redirect("/admin");

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "网络技术雷达",
-  description: "追踪网络技术前沿动态",
+  title: "Network Technology Radar",
+  description: "Track cutting-edge networking technology trends",
 };
 
 export default function RootLayout({

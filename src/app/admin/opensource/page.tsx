@@ -19,7 +19,7 @@ export default async function OpenSourcePage() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "名称" : "Name"}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.name}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.language}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.stars}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.lastActive}</th>

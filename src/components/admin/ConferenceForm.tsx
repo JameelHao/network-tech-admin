@@ -121,7 +121,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
             </button>
           ))}
           {selectedTopics.length === 0 && (
-            <span className="text-[12px] text-ink-400">{lang === "zh" ? "点击下方选择" : "Click below to select"}</span>
+            <span className="text-[12px] text-ink-400">{t.common.clickToSelect}</span>
           )}
         </div>
         <button
@@ -129,7 +129,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
           onClick={() => setShowPicker(!showPicker)}
           className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors"
         >
-          {showPicker ? "▲ " : "▼ "}{lang === "zh" ? "选择议题" : "Select topics"}
+          {showPicker ? "▲ " : "▼ "}{t.common.selectTopics}
         </button>
         {showPicker && (
           <div className="mt-2 rounded-md border border-line bg-surface p-4 space-y-4 max-h-[280px] overflow-y-auto">
@@ -168,7 +168,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
           {conference ? (
             <span className="text-ink-400">ID · {conference.id.slice(0, 8)}</span>
           ) : (
-            <span className="text-ink-400">{lang === "zh" ? "新建" : "New"}</span>
+            <span className="text-ink-400">{t.common.new}</span>
           )}
         </div>
         <button

@@ -23,7 +23,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
               href="/admin/talents/new"
               className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
             >
-              + {lang === "zh" ? "新建" : "New"}
+              + {t.common.new}
             </Link>
           </div>
 
@@ -35,7 +35,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                 !filterStage ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
               }`}
             >
-              {lang === "zh" ? "全部" : "All"}
+              {t.common.all}
             </Link>
             {LEAD_STAGES.map((s) => (
               <Link
@@ -53,18 +53,18 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "姓名" : "Name"}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "角色" : "Role"}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "公司" : "Company"}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "阶段" : "Stage"}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "主题" : "Topics"}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.name}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.role}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.company}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.stage}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.topics}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {talents.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-12 text-center text-[13px] text-ink-400">
-                    {lang === "zh" ? "暂无人才线索" : "No talent leads yet"}
+                    {t.talent.noTalents}
                   </td>
                 </tr>
               ) : (

@@ -32,9 +32,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
             {t.nav.conferences}
           </p>
           <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
-            {lang === "zh"
-              ? "追踪网络、系统与安全领域的顶级学术会议，掌握前沿技术动向。"
-              : "Track top conferences in networking, systems and security. Stay ahead of the curve."}
+            {t.conf.description}
           </p>
         </header>
 
@@ -42,14 +40,14 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
         <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
           <div className="px-5 py-3 border-b border-line bg-paper/30">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-              {lang === "zh" ? "概览" : "Overview"}
+              {t.conf.overview}
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
-            <Stat label={lang === "zh" ? "总计" : "Total"} value={allConferences.length} sub={lang === "zh" ? "已收录会议" : "conferences tracked"} />
-            <Stat label={lang === "zh" ? "待举办" : "Upcoming"} value={upcoming} sub={lang === "zh" ? "即将召开" : "scheduled ahead"} />
-            <Stat label={lang === "zh" ? "已结束" : "Past"} value={past} sub={lang === "zh" ? "已完成" : "completed"} />
-            <Stat label={lang === "zh" ? "顶会" : "Top-tier"} value={allConferences.filter((c) => (c as unknown as { tier: string }).tier === "top").length} sub={lang === "zh" ? "最高级别" : "highest tier"} />
+            <Stat label={t.conf.total} value={allConferences.length} sub={t.conf.tracked} />
+            <Stat label={t.conf.upcoming} value={upcoming} sub={t.conf.scheduledAhead} />
+            <Stat label={t.conf.past} value={past} sub={t.conf.completed} />
+            <Stat label={t.conf.topTier} value={allConferences.filter((c) => (c as unknown as { tier: string }).tier === "top").length} sub={t.conf.highestTier} />
           </div>
         </section>
 
@@ -76,7 +74,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
               })}
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <RefreshAllButton label={lang === "zh" ? "搜索更新" : "Refresh"} />
+              <RefreshAllButton label={t.conf.refresh} />
               <Link
                 href="/admin/conferences/new"
                 className="rounded-md bg-navy-700 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-navy-50 hover:bg-navy-600 transition-colors"
@@ -90,8 +88,8 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
             <table className="w-full text-[13.5px]">
               <thead>
                 <tr className="border-b border-line bg-paper/30">
-                  <Th>{lang === "zh" ? "会议" : "Conference"}</Th>
-                  <Th>{lang === "zh" ? "状态" : "Status"}</Th>
+                  <Th>{t.conf.conference}</Th>
+                  <Th>{t.conf.status}</Th>
                   <Th>{t.conf.tier}</Th>
                   <Th>{t.detail.topics}</Th>
                   <Th>{t.detail.location}</Th>
@@ -115,7 +113,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                       </Td>
                       <Td>
                         <span className={`font-mono text-[10.5px] uppercase tracking-[0.16em] ${isPast ? "text-ink-500" : "text-moss-700"}`}>
-                          {isPast ? (lang === "zh" ? "已结束" : "Past") : (lang === "zh" ? "待举办" : "Upcoming")}
+                          {isPast ? t.conf.pastLabel : t.conf.upcomingLabel}
                         </span>
                       </Td>
                       <Td>

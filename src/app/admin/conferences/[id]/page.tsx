@@ -41,11 +41,11 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
               </Link>
               <span className="text-ink-300">/</span>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-                {lang === "zh" ? "会议信息" : "Conference Info"}
+                {t.conf.confInfo}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <RefreshButton conferenceId={id} label={lang === "zh" ? "搜索更新" : "Refresh"} />
+              <RefreshButton conferenceId={id} label={t.conf.refresh} />
               <Link
                 href={`/admin/conferences/${id}/edit`}
                 className="rounded-md border border-line bg-surface px-3 py-1.5 text-[12.5px] text-ink-700 hover:border-line-strong transition-colors"
@@ -71,9 +71,9 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
             <dl className="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-3">
               <Field label={t.detail.location} value={<span className="font-mono text-[12px] text-ink-700">{conf.location ?? "—"}</span>} />
               <Field label={t.detail.date} value={<span className="font-mono text-[12px] tabular-nums text-ink-700">{conf.start_date}{conf.end_date ? ` ~ ${conf.end_date}` : ""}</span>} />
-              <Field label={lang === "zh" ? "状态" : "Status"} value={
+              <Field label={t.conf.status} value={
                 <span className={`font-mono text-[10.5px] uppercase tracking-[0.16em] ${isPast ? "text-ink-500" : "text-moss-700"}`}>
-                  {isPast ? (lang === "zh" ? "已结束" : "Past") : (lang === "zh" ? "待举办" : "Upcoming")}
+                  {isPast ? t.conf.pastLabel : t.conf.upcomingLabel}
                 </span>
               } />
               <Field label={t.conf.category} value={
@@ -98,15 +98,15 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
           <div className="px-5 py-3 border-b border-line bg-paper/30">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-              {lang === "zh" ? "数据概览" : "Statistics"}
+              {t.conf.statistics}
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line">
-            <Stat label={lang === "zh" ? "论文/报告" : "Papers"} value={sessions.length} sub={lang === "zh" ? "已收录" : "tracked"} />
-            <Stat label={lang === "zh" ? "参与公司" : "Companies"} value={companies.length} sub={lang === "zh" ? "企业单位" : "industry"} />
-            <Stat label={lang === "zh" ? "参与高校" : "Universities"} value={universities.length} sub={lang === "zh" ? "学术机构" : "academic"} />
-            <Stat label={lang === "zh" ? "议题方向" : "Topics"} value={conf.topics.length} sub={lang === "zh" ? "研究领域" : "research areas"} />
-            <Stat label={lang === "zh" ? "参与机构" : "Affiliations"} value={allAffiliations.length} sub={lang === "zh" ? "总计" : "total"} />
+            <Stat label={t.conf.papersTalks} value={sessions.length} sub={t.conf.tracked} />
+            <Stat label={t.conf.companies} value={companies.length} sub={t.conf.companiesSub} />
+            <Stat label={t.conf.universities} value={universities.length} sub={t.conf.universitiesSub} />
+            <Stat label={t.conf.topicAreas} value={conf.topics.length} sub={t.conf.topicAreasSub} />
+            <Stat label={t.conf.affiliations} value={allAffiliations.length} sub={t.conf.total} />
           </div>
         </section>
 
@@ -115,29 +115,29 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
           <header className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">
             <div className="flex items-center gap-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-                {lang === "zh" ? "收录论文" : "Papers & Talks"}
+                {t.conf.papersAndTalks}
               </p>
               <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
-                {sessions.length} {lang === "zh" ? "篇" : "entries"}
+                {sessions.length} {t.conf.entries}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <RefreshButton conferenceId={id} label={lang === "zh" ? "搜索论文" : "Fetch Papers"} />
+              <RefreshButton conferenceId={id} label={t.conf.fetchPapers} />
             </div>
           </header>
 
           {sessions.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="font-display text-[20px] text-ink-700">{lang === "zh" ? "暂无论文" : "No papers yet"}</div>
-              <p className="mt-1 text-[13px] text-ink-500">{lang === "zh" ? "点击「搜索论文」自动导入。" : "Click Fetch Papers to import automatically."}</p>
+              <div className="font-display text-[20px] text-ink-700">{t.conf.noPapers}</div>
+              <p className="mt-1 text-[13px] text-ink-500">{t.conf.noPapersHint}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-[13.5px]">
                 <thead>
                   <tr className="border-b border-line bg-paper/30">
-                    <Th>{lang === "zh" ? "标题" : "Title"}</Th>
-                    <Th>{lang === "zh" ? "作者" : "Authors"}</Th>
+                    <Th>{t.common.title}</Th>
+                    <Th>{t.detail.authors}</Th>
                     <Th>{t.detail.topics}</Th>
                   </tr>
                 </thead>

@@ -73,12 +73,12 @@ export default async function DashboardPage() {
 
           <section className="rounded-lg border border-line bg-surface">
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{lang === "zh" ? "最新论文" : "Latest Papers"}</h2>
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.latestPapers}</h2>
               <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="divide-y divide-line">
               {latestPapers.length === 0 && (
-                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{lang === "zh" ? "暂无论文" : "No papers yet"}</p>
+                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.papers.noPapers}</p>
               )}
               {latestPapers.map((p) => (
                 <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">
@@ -96,12 +96,12 @@ export default async function DashboardPage() {
         <div className="grid lg:grid-cols-2 gap-6">
           <section className="rounded-lg border border-line bg-surface">
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{lang === "zh" ? "最新新闻" : "Latest News"}</h2>
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.news.latestNews}</h2>
               <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="divide-y divide-line">
               {(!newsItems || newsItems.length === 0) && (
-                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{lang === "zh" ? "暂无新闻" : "No news yet"}</p>
+                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.news.noNews}</p>
               )}
               {(newsItems ?? []).map((item) => (
                 <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">

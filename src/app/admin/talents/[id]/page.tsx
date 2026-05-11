@@ -30,7 +30,7 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
           </header>
 
           <div className="rounded-lg border border-line bg-surface p-6">
-            <TalentForm lang={lang} talent={talent} />
+            <TalentForm t={t} talent={talent} />
           </div>
         </div>
       </main>

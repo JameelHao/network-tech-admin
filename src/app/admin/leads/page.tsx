@@ -19,7 +19,7 @@ export default async function LeadsPage() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{lang === "zh" ? "标题" : "Title"}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.title}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.source}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.stage}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.leads.updatedAt}</th>
