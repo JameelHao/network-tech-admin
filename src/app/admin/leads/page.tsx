@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
@@ -72,6 +73,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
+              {leads.length === 0 && (
+                <tr><td colSpan={5}>
+                  <EmptyState title={t.empty.leads} description={t.empty.leadsDesc} />
+                </td></tr>
+              )}
               {leads.map((l) => (
                 <tr key={l.id} className="hover:bg-paper/40 transition-colors">
                   <td className="px-5 py-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { FilterSummary } from "@/components/admin/FilterSummary";
@@ -19,6 +20,7 @@ type PapersLabels = {
   allSources: string;
   allCategories: string;
   noMatch: string;
+  emptyDesc: string;
   exportCSV: string;
   exportJSON: string;
   viewList: string;
@@ -194,9 +196,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
       )}
 
       {sorted.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-ink-400">
-          {labels.noMatch}
-        </div>
+        <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
       ) : viewMode === "list" ? (
         <div className="divide-y divide-line">
           {sorted.map((p) => (

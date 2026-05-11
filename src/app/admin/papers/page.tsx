@@ -21,6 +21,7 @@ export default async function PapersPage() {
             allSources: t.papers.allSources,
             allCategories: t.papers.allCategories,
             noMatch: t.papers.noMatch,
+            emptyDesc: t.empty.papersDesc,
             exportCSV: t.common.exportCSV,
             exportJSON: t.common.exportJSON,
             viewList: t.papers.viewList,

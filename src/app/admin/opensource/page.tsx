@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
@@ -83,6 +84,11 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
+              {projects.length === 0 && (
+                <tr><td colSpan={6}>
+                  <EmptyState title={t.empty.opensource} description={t.empty.opensourceDesc} />
+                </td></tr>
+              )}
               {projects.map((o) => (
                 <tr key={o.id} className="hover:bg-paper/40 transition-colors">
                   <td className="px-5 py-3">
