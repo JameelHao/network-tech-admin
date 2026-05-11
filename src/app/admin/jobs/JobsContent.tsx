@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { PaginationClient } from "@/components/admin/PaginationClient";
 
 type JobItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
 
@@ -28,6 +29,8 @@ type JobsLabels = {
   searchPlaceholder: string;
   allSources: string;
   noMatch: string;
+  rows: string;
+  page: string;
 };
 
 export function JobsContent({ labels }: { labels: JobsLabels }) {
@@ -36,17 +39,31 @@ export function JobsContent({ labels }: { labels: JobsLabels }) {
   const [error, setError] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
   const [source, setSource] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 25;
 
-  useEffect(() => {
-    fetch("/api/jobs")
+  const fetchPage = useCallback((p: number) => {
+    setLoading(true);
+    fetch(`/api/jobs?page=${p}&size=${pageSize}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) setError(data.error);
         setItems(data.items ?? []);
+        setTotal(data.total ?? 0);
+        setTotalPages(data.totalPages ?? 1);
       })
       .catch(() => setError("Failed to fetch jobs"))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { fetchPage(1); }, [fetchPage]);
+
+  const handlePageChange = useCallback((p: number) => {
+    setPage(p);
+    fetchPage(p);
+  }, [fetchPage]);
 
   const sources = useMemo(() => {
     const set = new Set<string>();
@@ -75,7 +92,7 @@ export function JobsContent({ labels }: { labels: JobsLabels }) {
       <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
         <h1 className="font-display text-[17px] tracking-tight text-ink-800">
           {labels.title}
-          <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
+          <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{total}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <input
@@ -128,6 +145,14 @@ export function JobsContent({ labels }: { labels: JobsLabels }) {
           ))}
         </div>
       )}
+      <PaginationClient
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        labels={{ rows: labels.rows, page: labels.page }}
+      />
     </div>
   );
 }

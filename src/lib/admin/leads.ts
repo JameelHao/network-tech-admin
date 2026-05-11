@@ -1,15 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
+import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Lead, LeadStage } from "./types";
 
-export async function listLeads(): Promise<Lead[]> {
+export async function listLeads(params?: PaginationParams): Promise<PaginatedResult<Lead>> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const page = params?.page ?? 1;
+  const pageSize = params?.pageSize ?? 50;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
     .from("leads")
-    .select("*")
-    .order("updated_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("updated_at", { ascending: false })
+    .range(from, to);
 
   if (error) throw error;
-  return data as Lead[];
+  return buildResult((data as Lead[]) ?? [], count ?? 0, { page, pageSize });
 }
 
 export async function getLead(id: string): Promise<Lead | null> {

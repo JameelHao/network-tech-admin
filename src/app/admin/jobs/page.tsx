@@ -14,6 +14,8 @@ export default async function JobsPage() {
           searchPlaceholder: t.jobs.searchPlaceholder,
           allSources: t.jobs.allSources,
           noMatch: t.jobs.noMatch,
+          rows: t.common.rows,
+          page: t.common.page,
         }} />
       </main>
     </>

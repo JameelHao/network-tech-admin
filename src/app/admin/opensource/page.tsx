@@ -1,12 +1,17 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { listOpenSource } from "@/lib/admin/opensource";
+import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
 import Link from "next/link";
 
-export default async function OpenSourcePage() {
+export default async function OpenSourcePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
   const { lang, t } = await getDict();
-  const projects = await listOpenSource();
+  const params = parsePaginationParams(sp);
+  const result = await listOpenSource(params);
+  const projects = result.data;
 
   return (
     <>
@@ -49,6 +54,14 @@ export default async function OpenSourcePage() {
               ))}
             </tbody>
           </table>
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            total={result.total}
+            pageSize={result.pageSize}
+            basePath="/admin/opensource"
+            labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
+          />
         </div>
       </main>
     </>

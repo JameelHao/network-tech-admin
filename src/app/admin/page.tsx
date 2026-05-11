@@ -13,12 +13,17 @@ import Link from "next/link";
 export default async function DashboardPage() {
   const { lang, t } = await getDict();
   const supabase = await createClient();
-  const [conferences, papers, opensource, leads] = await Promise.all([
+  const [confResult, paperResult, osResult, leadResult] = await Promise.all([
     listConferences(),
     listPapers(),
     listOpenSource(),
     listLeads(),
   ]);
+
+  const conferences = confResult.data;
+  const papers = paperResult.data;
+  const opensource = osResult.data;
+  const leads = leadResult.data;
 
   const { data: newsItems } = await supabase
     .from("news_items")
@@ -41,9 +46,9 @@ export default async function DashboardPage() {
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10 space-y-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
-          <StatCard label={t.dashboard.conferences} value={conferences.length} sub={t.dashboard.recorded} />
-          <StatCard label={t.dashboard.papers} value={papers.length} sub={t.dashboard.recorded} />
-          <StatCard label={t.dashboard.opensource} value={opensource.length} sub={t.dashboard.tracking} />
+          <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
+          <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
+          <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
           <StatCard label={t.dashboard.activeLeads} value={activeLeads.length} accent="text-navy-500" />
         </div>
 

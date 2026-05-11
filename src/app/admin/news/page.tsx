@@ -14,6 +14,8 @@ export default async function NewsPage() {
           searchPlaceholder: t.news.searchPlaceholder,
           allSources: t.news.allSources,
           noMatch: t.news.noMatch,
+          rows: t.common.rows,
+          page: t.common.page,
         }} />
       </main>
     </>

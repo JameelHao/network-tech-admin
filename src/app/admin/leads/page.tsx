@@ -1,12 +1,17 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { listLeads } from "@/lib/admin/leads";
+import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
 import Link from "next/link";
 
-export default async function LeadsPage() {
+export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
   const { lang, t } = await getDict();
-  const leads = await listLeads();
+  const params = parsePaginationParams(sp);
+  const result = await listLeads(params);
+  const leads = result.data;
 
   return (
     <>
@@ -48,6 +53,14 @@ export default async function LeadsPage() {
               ))}
             </tbody>
           </table>
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            total={result.total}
+            pageSize={result.pageSize}
+            basePath="/admin/leads"
+            labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
+          />
         </div>
       </main>
     </>

@@ -1,15 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
+import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Conference, ConferenceSession } from "./types";
 
-export async function listConferences(): Promise<Conference[]> {
+export async function listConferences(
+  params?: PaginationParams,
+  filter?: { category?: string },
+): Promise<PaginatedResult<Conference>> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const page = params?.page ?? 1;
+  const pageSize = params?.pageSize ?? 50;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
     .from("conferences")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("start_date", { ascending: false });
 
+  if (filter?.category && filter.category !== "all") {
+    query = query.eq("category", filter.category);
+  }
+
+  const { data, error, count } = await query.range(from, to);
+
   if (error) throw error;
-  return data as Conference[];
+  return buildResult((data as Conference[]) ?? [], count ?? 0, { page, pageSize });
 }
 
 export async function getConference(id: string): Promise<Conference | null> {

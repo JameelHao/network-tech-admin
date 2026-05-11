@@ -1,16 +1,23 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { listTalentLeads } from "@/lib/admin/talents";
+import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
 
-export default async function TalentsPage({ searchParams }: { searchParams: Promise<{ stage?: string }> }) {
-  const { stage: filterStage } = await searchParams;
+export default async function TalentsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const filterStage = typeof sp.stage === "string" ? sp.stage : undefined;
   const { lang, t } = await getDict();
-  const allTalents = await listTalentLeads();
-  const talents = filterStage ? allTalents.filter((tl) => tl.stage === filterStage) : allTalents;
+  const params = parsePaginationParams(sp);
+  const result = await listTalentLeads(params, { stage: filterStage });
+  const talents = result.data;
+
+  const filterParams: Record<string, string> = {};
+  if (filterStage) filterParams.stage = filterStage;
 
   return (
     <>
@@ -27,7 +34,6 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             </Link>
           </div>
 
-          {/* Stage filter tabs */}
           <div className="flex items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
             <Link
               href="/admin/talents"
@@ -93,6 +99,15 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
               )}
             </tbody>
           </table>
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            total={result.total}
+            pageSize={result.pageSize}
+            basePath="/admin/talents"
+            searchParams={filterParams}
+            labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
+          />
         </div>
       </main>
     </>
