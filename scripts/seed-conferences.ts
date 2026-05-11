@@ -15,7 +15,7 @@ const conferences = [
     end_date: "2026-08-28",
     category: "network-systems",
     tier: "top",
-    topics: ["networking", "internet architecture", "protocols"],
+    topics: ["dc-networking", "transport-protocols", "sdn-nfv"],
   },
   {
     name: "USENIX NSDI 2026",
@@ -26,7 +26,7 @@ const conferences = [
     end_date: "2026-04-17",
     category: "network-systems",
     tier: "top",
-    topics: ["networked systems", "distributed systems", "infrastructure"],
+    topics: ["dc-networking", "distributed-sys", "cloud-infra"],
   },
   {
     name: "IEEE INFOCOM 2026",
@@ -37,7 +37,7 @@ const conferences = [
     end_date: "2026-05-22",
     category: "network-systems",
     tier: "top",
-    topics: ["networking", "communications", "mobile computing"],
+    topics: ["dc-networking", "transport-protocols", "mobile-wireless", "congestion-ctrl"],
   },
   {
     name: "ACM IMC 2026",
@@ -48,7 +48,7 @@ const conferences = [
     end_date: "2026-10-28",
     category: "measurement",
     tier: "top",
-    topics: ["internet measurement", "network analysis", "traffic"],
+    topics: ["internet-measure", "traffic-analysis", "dns-bgp"],
   },
   {
     name: "ACM MobiCom 2026",
@@ -59,7 +59,7 @@ const conferences = [
     end_date: "2026-11-06",
     category: "network-systems",
     tier: "top",
-    topics: ["mobile computing", "wireless networks", "5G/6G"],
+    topics: ["mobile-wireless", "5g-6g", "edge-computing"],
   },
   {
     name: "ACM CoNEXT 2026",
@@ -70,7 +70,7 @@ const conferences = [
     end_date: "2026-12-11",
     category: "network-systems",
     tier: "top",
-    topics: ["networking", "future internet", "protocols"],
+    topics: ["transport-protocols", "edge-computing", "network-ai", "sdn-nfv"],
   },
   {
     name: "ACM HotNets 2026",
@@ -81,7 +81,7 @@ const conferences = [
     end_date: "2026-11-19",
     category: "emerging",
     tier: "workshop",
-    topics: ["networking research", "emerging topics"],
+    topics: ["dc-networking", "programmable-net", "network-ai", "congestion-ctrl"],
   },
   {
     name: "USENIX ATC 2026",
@@ -92,7 +92,7 @@ const conferences = [
     end_date: "2026-07-15",
     category: "infrastructure",
     tier: "top",
-    topics: ["systems", "operating systems", "storage", "networking"],
+    topics: ["distributed-sys", "cloud-infra", "os-network-stack", "ebpf-xdp"],
   },
   {
     name: "USENIX OSDI 2026",
@@ -103,7 +103,7 @@ const conferences = [
     end_date: "2026-07-17",
     category: "infrastructure",
     tier: "top",
-    topics: ["operating systems", "distributed systems", "networking"],
+    topics: ["distributed-sys", "os-network-stack", "storage-net", "cloud-infra"],
   },
   {
     name: "IEEE Symposium on Security and Privacy 2026",
@@ -114,7 +114,7 @@ const conferences = [
     end_date: "2026-05-22",
     category: "security",
     tier: "top",
-    topics: ["security", "privacy", "network security"],
+    topics: ["protocol-security", "privacy-anonymity", "side-channels", "ddos-defense"],
   },
   {
     name: "ACM CCS 2026",
@@ -125,7 +125,7 @@ const conferences = [
     end_date: "2026-11-13",
     category: "security",
     tier: "top",
-    topics: ["computer security", "network security", "cryptography"],
+    topics: ["protocol-security", "privacy-anonymity", "side-channels"],
   },
   {
     name: "NDSS 2026",
@@ -136,7 +136,7 @@ const conferences = [
     end_date: "2026-02-28",
     category: "security",
     tier: "top",
-    topics: ["network security", "system security"],
+    topics: ["ddos-defense", "protocol-security", "privacy-anonymity", "dns-bgp"],
   },
   {
     name: "SC 2026 (Supercomputing)",
@@ -147,7 +147,7 @@ const conferences = [
     end_date: "2026-11-20",
     category: "infrastructure",
     tier: "top",
-    topics: ["HPC", "high-speed networking", "parallel computing"],
+    topics: ["hpc", "high-speed-networking", "parallel-computing"],
   },
   {
     name: "NeurIPS 2026",
@@ -158,7 +158,7 @@ const conferences = [
     end_date: "2026-12-13",
     category: "emerging",
     tier: "top",
-    topics: ["machine learning", "AI", "AI for networking"],
+    topics: ["network-ai", "machine-learning", "optimization"],
   },
   {
     name: "ICML 2026",
@@ -169,7 +169,7 @@ const conferences = [
     end_date: "2026-07-25",
     category: "emerging",
     tier: "top",
-    topics: ["machine learning", "AI", "optimization"],
+    topics: ["machine-learning", "network-ai", "optimization"],
   },
   {
     name: "EuroSys 2026",
@@ -180,7 +180,7 @@ const conferences = [
     end_date: "2026-04-03",
     category: "infrastructure",
     tier: "top",
-    topics: ["systems", "distributed systems", "cloud"],
+    topics: ["distributed-sys", "os-network-stack", "cloud-infra", "ebpf-xdp"],
   },
   {
     name: "ACM SOSR 2026",
@@ -191,7 +191,7 @@ const conferences = [
     end_date: "2026-03-04",
     category: "network-systems",
     tier: "good",
-    topics: ["SDN", "programmable networks", "network management"],
+    topics: ["sdn-nfv", "programmable-net", "network-monitoring"],
   },
   {
     name: "USENIX Security 2026",
@@ -202,7 +202,7 @@ const conferences = [
     end_date: "2026-08-13",
     category: "security",
     tier: "top",
-    topics: ["security", "network security", "privacy"],
+    topics: ["protocol-security", "side-channels", "privacy-anonymity", "ddos-defense"],
   },
 ];
 

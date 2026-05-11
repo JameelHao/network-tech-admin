@@ -38,7 +38,11 @@ export const TOPICS: TopicDef[] = [
   // Emerging Networks
   { slug: "edge-computing",     category: "emerging",         en: "Edge Computing",           zh: "边缘计算" },
   { slug: "network-ai",         category: "emerging",         en: "Network Intelligence",     zh: "网络AI/ML" },
+  { slug: "machine-learning",   category: "emerging",         en: "Machine Learning",         zh: "机器学习" },
+  { slug: "optimization",       category: "emerging",         en: "Optimization",             zh: "优化" },
   { slug: "5g-wireless",        category: "emerging",         en: "5G & Wireless",            zh: "5G与无线" },
+  { slug: "5g-6g",              category: "emerging",         en: "5G/6G",                    zh: "5G/6G" },
+  { slug: "mobile-wireless",    category: "emerging",         en: "Mobile & Wireless",        zh: "移动与无线" },
   { slug: "ebpf-xdp",           category: "emerging",         en: "eBPF/XDP",                 zh: "eBPF/XDP" },
 
   // Systems Infrastructure
@@ -46,6 +50,9 @@ export const TOPICS: TopicDef[] = [
   { slug: "storage-net",        category: "infrastructure",   en: "Storage Networks",         zh: "存储网络" },
   { slug: "os-network-stack",   category: "infrastructure",   en: "OS Network Stack",         zh: "OS网络栈" },
   { slug: "cloud-infra",        category: "infrastructure",   en: "Cloud Infrastructure",     zh: "云基础设施" },
+  { slug: "hpc",                category: "infrastructure",   en: "HPC",                      zh: "高性能计算" },
+  { slug: "high-speed-networking", category: "infrastructure", en: "High-Speed Networking",   zh: "高速网络" },
+  { slug: "parallel-computing", category: "infrastructure",   en: "Parallel Computing",       zh: "并行计算" },
 ];
 
 export const TOPIC_MAP = Object.fromEntries(TOPICS.map((t) => [t.slug, t])) as Record<string, TopicDef>;
