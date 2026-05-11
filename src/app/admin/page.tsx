@@ -2,6 +2,7 @@ import { Topbar } from "@/components/admin/Topbar";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
+import { DataSourceStatus } from "@/components/admin/DataSourceStatus";
 import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
 import { listOpenSource } from "@/lib/admin/opensource";
@@ -137,6 +138,14 @@ export default async function DashboardPage() {
             </div>
           </section>
         </div>
+
+        <DataSourceStatus lang={lang} labels={{
+          title: t.sync.dataSourceTitle,
+          dataSource: t.sync.dataSource,
+          lastSync: t.sync.lastSync,
+          status: t.sync.status,
+          count: t.sync.count,
+        }} />
 
         <section className="rounded-lg border border-line bg-surface p-5">
           <h2 className="font-display text-[15px] tracking-tight text-ink-800 mb-4">{t.dashboard.stageDistribution}</h2>

@@ -302,6 +302,16 @@ const en = {
     siteDescription: "Track cutting-edge networking technology trends",
   },
   latestPapers: "Latest Papers",
+  sync: {
+    lastSync: "Last sync",
+    refresh: "Refresh",
+    refreshing: "Syncing…",
+    noData: "No data yet",
+    dataSourceTitle: "Data Source Status",
+    dataSource: "Source",
+    status: "Status",
+    count: "Count",
+  },
 };
 
 const zh: typeof en = {
@@ -606,6 +616,16 @@ const zh: typeof en = {
     siteDescription: "追踪网络技术前沿动态",
   },
   latestPapers: "最新论文",
+  sync: {
+    lastSync: "最后同步",
+    refresh: "刷新",
+    refreshing: "同步中…",
+    noData: "暂无数据",
+    dataSourceTitle: "数据源状态",
+    dataSource: "数据源",
+    status: "状态",
+    count: "条目数",
+  },
 };
 
 export const dict = { en, zh } as const;

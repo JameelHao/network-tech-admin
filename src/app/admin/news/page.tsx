@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Topbar } from "@/components/admin/Topbar";
+import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { getDict } from "@/lib/i18n/server";
 import { NewsContent } from "./NewsContent";
 
@@ -10,6 +11,7 @@ export default async function NewsPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.news }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
+        <SyncStatusBar entity="news" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
         <Suspense>
           <NewsContent lang={lang} labels={{
             title: t.news.title,
