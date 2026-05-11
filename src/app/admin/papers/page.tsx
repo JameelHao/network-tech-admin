@@ -17,6 +17,8 @@ export default async function PapersPage() {
           allSources: t.papers.allSources,
           allCategories: t.papers.allCategories,
           noMatch: t.papers.noMatch,
+          exportCSV: t.common.exportCSV,
+          exportJSON: t.common.exportJSON,
         }} />
       </main>
     </>

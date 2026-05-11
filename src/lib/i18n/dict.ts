@@ -189,6 +189,8 @@ const en = {
     rows: "rows",
     page: "page",
     of: "of",
+    exportCSV: "CSV",
+    exportJSON: "JSON",
   },
   talent: {
     noTalents: "No talent leads yet",
@@ -398,6 +400,8 @@ const zh: typeof en = {
     rows: "条",
     page: "页",
     of: "/",
+    exportCSV: "CSV",
+    exportJSON: "JSON",
   },
   talent: {
     noTalents: "暂无人才线索",

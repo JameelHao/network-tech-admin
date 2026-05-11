@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ExportButton } from "@/components/admin/ExportButton";
 import type { Paper } from "@/lib/admin/types";
 
 type PapersLabels = {
@@ -9,6 +10,8 @@ type PapersLabels = {
   allSources: string;
   allCategories: string;
   noMatch: string;
+  exportCSV: string;
+  exportJSON: string;
 };
 
 export function PapersClient({ papers, labels }: { papers: Paper[]; labels: PapersLabels }) {
@@ -60,6 +63,8 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
+          <ExportButton entity="papers" format="json" label={labels.exportJSON} />
           <input
             type="text"
             placeholder={labels.searchPlaceholder}

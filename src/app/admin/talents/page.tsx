@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
@@ -26,12 +27,16 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
         <div className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.talents}</h1>
-            <Link
-              href="/admin/talents/new"
-              className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
-            >
-              + {t.common.new}
-            </Link>
+            <div className="flex items-center gap-2">
+              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              <Link
+                href="/admin/talents/new"
+                className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
+              >
+                + {t.common.new}
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">

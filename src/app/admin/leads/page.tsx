@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { listLeads } from "@/lib/admin/leads";
@@ -20,6 +21,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         <div className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.leads.title}</h1>
+            <div className="flex items-center gap-2">
+              <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+            </div>
           </div>
           <table className="w-full text-[13px]">
             <thead>
