@@ -13,7 +13,10 @@ export function Sidebar({ t }: { t: Dict }) {
   const sections: Section[] = [
     {
       label: t.nav.overview,
-      items: [{ href: "/admin", label: t.nav.dashboard }],
+      items: [
+        { href: "/admin", label: t.nav.dashboard },
+        { href: "/admin/insights", label: t.nav.insights },
+      ],
     },
     {
       label: t.nav.insights,
