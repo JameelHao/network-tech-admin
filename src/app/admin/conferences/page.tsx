@@ -1,5 +1,6 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { Pagination } from "@/components/admin/Pagination";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { ExportButton } from "@/components/admin/ExportButton";
@@ -241,9 +242,8 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                     );
                   })}
                   {conferences.length === 0 && (
-                    <tr><td colSpan={8} className="px-6 py-20 text-center">
-                      <div className="font-display text-[20px] text-ink-700">{t.conf.empty}</div>
-                      <p className="mt-1 text-[13px] text-ink-500">{t.conf.emptyHint}</p>
+                    <tr><td colSpan={8}>
+                      <EmptyState title={t.empty.conferences} description={t.empty.conferencesDesc} action={{ label: t.conf.addConf, href: "/admin/conferences/new" }} />
                     </td></tr>
                   )}
                 </tbody>

@@ -315,6 +315,26 @@ const en = {
     status: "Status",
     count: "Count",
   },
+  empty: {
+    conferences: "No conferences yet",
+    conferencesDesc: "Add your first conference to get started.",
+    papers: "No papers found",
+    papersDesc: "Try adjusting your filters or sync new papers.",
+    news: "No news yet",
+    newsDesc: "RSS feeds will be fetched automatically.",
+    jobs: "No jobs found",
+    jobsDesc: "Try adjusting your filters or check back later.",
+    leads: "No leads tracked",
+    leadsDesc: "Create one from a conference or paper.",
+    talents: "No talent leads yet",
+    talentsDesc: "Add talent leads to start tracking.",
+    opensource: "No projects tracked",
+    opensourceDesc: "Add open source projects to monitor.",
+  },
+  error: {
+    fetchFailed: "Failed to load data",
+    retry: "Retry",
+  },
 };
 
 const zh: typeof en = {
@@ -631,6 +651,26 @@ const zh: typeof en = {
     dataSource: "数据源",
     status: "状态",
     count: "条目数",
+  },
+  empty: {
+    conferences: "暂无会议",
+    conferencesDesc: "添加第一个会议以开始。",
+    papers: "暂无论文",
+    papersDesc: "尝试调整筛选条件或同步新论文。",
+    news: "暂无新闻",
+    newsDesc: "RSS 订阅源将自动获取。",
+    jobs: "暂无岗位",
+    jobsDesc: "尝试调整筛选条件或稍后再来。",
+    leads: "暂无线索",
+    leadsDesc: "从会议或论文创建线索。",
+    talents: "暂无人才线索",
+    talentsDesc: "添加人才线索以开始追踪。",
+    opensource: "暂无项目",
+    opensourceDesc: "添加开源项目以开始监控。",
+  },
+  error: {
+    fetchFailed: "数据加载失败",
+    retry: "重试",
   },
 };
 

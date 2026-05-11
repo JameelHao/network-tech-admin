@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
             </div>
             <div className="divide-y divide-line">
               {upcoming.length === 0 && (
-                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.dashboard.noUpcoming}</p>
+                <EmptyState title={t.dashboard.noUpcoming} description={t.empty.conferencesDesc} compact />
               )}
               {upcoming.slice(0, 5).map((c) => (
                 <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
             </div>
             <div className="divide-y divide-line">
               {latestPapers.length === 0 && (
-                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.papers.noPapers}</p>
+                <EmptyState title={t.papers.noPapers} description={t.empty.papersDesc} compact />
               )}
               {latestPapers.map((p) => (
                 <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
@@ -107,7 +108,7 @@ export default async function DashboardPage() {
             </div>
             <div className="divide-y divide-line">
               {(!newsItems || newsItems.length === 0) && (
-                <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.news.noNews}</p>
+                <EmptyState title={t.news.noNews} description={t.empty.newsDesc} compact />
               )}
               {(newsItems ?? []).map((item) => (
                 <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">

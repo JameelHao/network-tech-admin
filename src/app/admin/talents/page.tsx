@@ -1,4 +1,5 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
@@ -97,11 +98,9 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             </thead>
             <tbody className="divide-y divide-line">
               {talents.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-[13px] text-ink-400">
-                    {t.talent.noTalents}
-                  </td>
-                </tr>
+                <tr><td colSpan={7}>
+                  <EmptyState title={t.empty.talents} description={t.empty.talentsDesc} />
+                </td></tr>
               ) : (
                 talents.map((tl) => (
                   <tr key={tl.id} className="hover:bg-paper/40 transition-colors">

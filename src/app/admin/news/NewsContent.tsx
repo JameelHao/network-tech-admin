@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { EmptyState } from "@/components/admin/EmptyState";
+import { ErrorState } from "@/components/admin/ErrorState";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { FilterSummary } from "@/components/admin/FilterSummary";
@@ -38,6 +40,9 @@ type NewsLabels = {
   searchPlaceholder: string;
   allSources: string;
   noMatch: string;
+  emptyDesc: string;
+  errorMessage: string;
+  retryLabel: string;
   rows: string;
   page: string;
   exportCSV: string;
@@ -191,9 +196,9 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
       {loading ? (
         <Skeleton />
       ) : error ? (
-        <div className="px-5 py-10 text-center text-sm text-ink-400">{error}</div>
+        <ErrorState message={labels.errorMessage} onRetry={() => fetchPage(page)} retryLabel={labels.retryLabel} />
       ) : sorted.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-ink-400">{labels.noMatch}</div>
+        <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
       ) : (
         <div className="divide-y divide-line">
           {sorted.map((item) => (
