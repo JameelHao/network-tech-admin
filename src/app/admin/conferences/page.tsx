@@ -243,7 +243,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   })}
                   {conferences.length === 0 && (
                     <tr><td colSpan={8}>
-                      <EmptyState title={t.empty.conferences} description={t.empty.conferencesDesc} action={{ label: t.conf.addConf, href: "/admin/conferences/new" }} />
+                      <EmptyState title={t.empty.conferences} description={t.empty.conferencesDesc} action={{ label: t.conf.addNew, href: "/admin/conferences/new" }} />
                     </td></tr>
                   )}
                 </tbody>
