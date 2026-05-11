@@ -52,6 +52,9 @@ const en = {
     createdAt: "Created",
     updatedAt: "Updated",
     summary: "Summary",
+    backTo: "Back to",
+    prev: "Prev",
+    next: "Next",
   },
   leads: {
     title: "Tech Leads",
@@ -366,6 +369,9 @@ const zh: typeof en = {
     createdAt: "创建时间",
     updatedAt: "更新时间",
     summary: "摘要",
+    backTo: "返回",
+    prev: "上一条",
+    next: "下一条",
   },
   leads: {
     title: "技术线索",

@@ -1,13 +1,18 @@
 import { Topbar } from "@/components/admin/Topbar";
+import { DetailNav } from "@/components/admin/DetailNav";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { getLead } from "@/lib/admin/leads";
+import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { lang, t } = await getDict();
-  const lead = await getLead(id);
+  const [lead, adjacent] = await Promise.all([
+    getLead(id),
+    getAdjacentItems("leads", id, "title", "updated_at", false),
+  ]);
   if (!lead) notFound();
 
   return (
@@ -17,6 +22,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         { label: t.nav.leads, href: "/admin/leads" },
         { label: lead.title.slice(0, 30) },
       ]} t={t} lang={lang} />
+      <DetailNav
+        backHref="/admin/leads"
+        backLabel={t.nav.leads}
+        prev={adjacent.prev}
+        next={adjacent.next}
+        basePath="/admin/leads"
+        labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
+      />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
           <div className="flex items-start justify-between gap-3">

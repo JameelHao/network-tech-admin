@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Topbar } from "@/components/admin/Topbar";
+import { DetailNav } from "@/components/admin/DetailNav";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { RefreshButton } from "@/components/admin/RefreshButton";
 import { getConference, listConferenceSessions } from "@/lib/admin/conferences";
+import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES } from "@/lib/admin/topics";
 import { notFound } from "next/navigation";
@@ -14,7 +16,10 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
   const conf = await getConference(id);
   if (!conf) notFound();
 
-  const sessions = await listConferenceSessions(id);
+  const [sessions, adjacent] = await Promise.all([
+    listConferenceSessions(id),
+    getAdjacentItems("conferences", id, "abbreviation", "start_date", false),
+  ]);
   const today = new Date().toISOString().slice(0, 10);
   const isPast = (conf.end_date ?? conf.start_date) < today;
 
@@ -31,15 +36,19 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
         { label: conf.abbreviation ?? conf.name },
       ]} t={t} lang={lang} />
 
+      <DetailNav
+        backHref="/admin/conferences"
+        backLabel={t.nav.conferences}
+        prev={adjacent.prev}
+        next={adjacent.next}
+        basePath="/admin/conferences"
+        labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
+      />
       <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-4">
         {/* Section 1: Conference Info */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">
             <div className="flex items-center gap-3">
-              <Link href="/admin/conferences" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400 hover:text-ink-700">
-                ← {t.nav.conferences}
-              </Link>
-              <span className="text-ink-300">/</span>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
                 {t.conf.confInfo}
               </p>
