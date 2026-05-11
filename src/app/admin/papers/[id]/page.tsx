@@ -1,14 +1,18 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { TopicTag } from "@/components/admin/TopicTag";
-import { getPaper } from "@/lib/admin/papers";
+import { getPaper, listAllPapersLight } from "@/lib/admin/papers";
+import { findSimilarPapers } from "@/lib/admin/paper-utils";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { lang, t } = await getDict();
-  const paper = await getPaper(id);
+  const [paper, allPapers] = await Promise.all([getPaper(id), listAllPapersLight()]);
   if (!paper) notFound();
+
+  const relatedPapers = findSimilarPapers(paper, allPapers);
 
   return (
     <>
@@ -17,7 +21,7 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
         { label: t.nav.papers, href: "/admin/papers" },
         { label: paper.title.slice(0, 40) },
       ]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10 max-w-3xl">
+      <main className="flex-1 px-6 xl:px-10 py-10 max-w-3xl space-y-6">
         <div className="rounded-lg border border-line bg-surface p-7 space-y-5">
           <h1 className="font-display text-[22px] tracking-tight text-ink-900">{paper.title}</h1>
           <dl className="grid grid-cols-2 gap-4 text-[13px]">
@@ -45,6 +49,46 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
             </div>
           )}
         </div>
+
+        {relatedPapers.length > 0 && (
+          <div className="rounded-lg border border-line bg-surface overflow-hidden">
+            <div className="px-5 py-3 border-b border-line bg-paper/30">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
+                {t.papers.relatedPapers}
+              </p>
+            </div>
+            <div className="divide-y divide-line">
+              {relatedPapers.map((rp) => {
+                const commonTopics = paper.topics.filter((tp) => rp.topics.includes(tp));
+                return (
+                  <Link
+                    key={rp.id}
+                    href={`/admin/papers/${rp.id}`}
+                    className="block px-5 py-3.5 hover:bg-paper/40 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-[13px] font-medium text-ink-800">{rp.title}</p>
+                      <span className="shrink-0 rounded-full bg-moss-100 text-moss-700 px-2 py-0.5 font-mono text-[10px]">
+                        {Math.round(rp.similarity * 100)}%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-ink-500 mt-1">
+                      {rp.authors.slice(0, 3).join(", ")}{rp.authors.length > 3 ? ` +${rp.authors.length - 3}` : ""}
+                    </p>
+                    {commonTopics.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        <span className="text-[10px] text-ink-400">{t.papers.commonTopics}:</span>
+                        {commonTopics.map((tp) => (
+                          <TopicTag key={tp} label={tp} lang={lang} />
+                        ))}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
     </>
   );
