@@ -19,6 +19,10 @@ export default async function NewsPage() {
           exportCSV: t.common.exportCSV,
           exportJSON: t.common.exportJSON,
           filter: t.mobile.filter,
+          sortLabel: t.sort.sortBy,
+          titleLabel: t.common.title,
+          sourceLabel: t.list.source,
+          pubDateLabel: t.list.publishedAt,
         }} />
       </main>
     </>

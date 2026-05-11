@@ -18,6 +18,10 @@ export default async function JobsPage() {
           page: t.common.page,
           filter: t.mobile.filter,
           expired: t.list.expired,
+          sortLabel: t.sort.sortBy,
+          titleLabel: t.common.title,
+          sourceLabel: t.list.source,
+          pubDateLabel: t.list.publishedAt,
         }} />
       </main>
     </>

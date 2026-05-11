@@ -4,8 +4,11 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { PaginationClient } from "@/components/admin/PaginationClient";
+import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { relativeTime } from "@/lib/admin/format";
+import { useSortable } from "@/hooks/useSortable";
 import type { Lang } from "@/lib/i18n/dict";
+import type { SortDir } from "@/lib/admin/pagination";
 
 type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
 
@@ -38,6 +41,10 @@ type NewsLabels = {
   exportCSV: string;
   exportJSON: string;
   filter: string;
+  sortLabel: string;
+  titleLabel: string;
+  sourceLabel: string;
+  pubDateLabel: string;
 };
 
 export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }) {
@@ -94,6 +101,8 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
     return list;
   }, [items, keyword, source]);
 
+  const { sorted, sortKey, sortDir, onSort } = useSortable<NewsItem>(filtered, { key: "pubDate", dir: "desc" });
+
   return (
     <div className="rounded-lg border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
@@ -127,15 +136,23 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
           </MobileFilterBar>
         </div>
       </div>
+      {!loading && !error && sorted.length > 0 && (
+        <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-400">{labels.sortLabel}</span>
+          <SortableHeaderClient column="title" label={labels.titleLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+          <SortableHeaderClient column="source" label={labels.sourceLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+          <SortableHeaderClient column="pubDate" label={labels.pubDateLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+        </div>
+      )}
       {loading ? (
         <Skeleton />
       ) : error ? (
         <div className="px-5 py-10 text-center text-sm text-ink-400">{error}</div>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="px-5 py-10 text-center text-sm text-ink-400">{labels.noMatch}</div>
       ) : (
         <div className="divide-y divide-line">
-          {filtered.map((item) => (
+          {sorted.map((item) => (
             <a
               key={item.link}
               href={item.link}

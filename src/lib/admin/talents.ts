@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
+import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { TalentLead } from "./types";
+
+export const TALENT_SORTABLE = ["name", "company", "stage"] as const;
 
 export async function listTalentLeads(
   params?: PaginationParams,
@@ -11,11 +13,12 @@ export async function listTalentLeads(
   const pageSize = params?.pageSize ?? 50;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const { column, ascending } = validateSort(params?.sort, params?.dir, TALENT_SORTABLE, "created_at", "desc");
 
   let query = supabase
     .from("talent_leads")
     .select("*", { count: "exact" })
-    .order("updated_at", { ascending: false });
+    .order(column, { ascending });
 
   if (filter?.stage) {
     query = query.eq("stage", filter.stage);

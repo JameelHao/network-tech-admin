@@ -5,8 +5,11 @@ import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
 import { relativeTime, isCurrentYear } from "@/lib/admin/format";
+import { SortableHeaderClient } from "@/components/admin/SortableHeader";
+import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
 import type { Lang } from "@/lib/i18n/dict";
+import type { SortDir } from "@/lib/admin/pagination";
 
 type PapersLabels = {
   title: string;
@@ -22,6 +25,8 @@ type PapersLabels = {
   dateRange: string;
   filter: string;
   publishedAt: string;
+  sortLabel: string;
+  titleLabel: string;
 };
 
 export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
@@ -66,7 +71,9 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
     return list;
   }, [papers, keyword, venue, topic]);
 
-  const clusters = useMemo(() => clusterByTopics(filtered), [filtered]);
+  const { sorted, sortKey, sortDir, onSort } = useSortable<Paper>(filtered, { key: "published_date", dir: "desc" });
+
+  const clusters = useMemo(() => clusterByTopics(sorted), [sorted]);
 
   return (
     <div className="rounded-lg border border-line bg-surface">
@@ -132,13 +139,21 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {viewMode === "list" && sorted.length > 0 && (
+        <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-400">{labels.sortLabel}</span>
+          <SortableHeaderClient column="title" label={labels.titleLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+          <SortableHeaderClient column="published_date" label={labels.publishedAt} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+        </div>
+      )}
+
+      {sorted.length === 0 ? (
         <div className="px-5 py-10 text-center text-sm text-ink-400">
           {labels.noMatch}
         </div>
       ) : viewMode === "list" ? (
         <div className="divide-y divide-line">
-          {filtered.map((p) => (
+          {sorted.map((p) => (
             <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} />
           ))}
         </div>

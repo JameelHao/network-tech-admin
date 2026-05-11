@@ -12,8 +12,11 @@ import { parseMonthKey } from "@/lib/admin/calendar-utils";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
 import { conferenceStatus, formatDateRange } from "@/lib/admin/format";
+import { SortableHeader } from "@/components/admin/SortableHeader";
+import { CONF_SORTABLE } from "@/lib/admin/conferences";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import type { SortDir } from "@/lib/admin/pagination";
 
 const CATEGORY_KEYS: (TopicCategory | "all")[] = ["all", "network-systems", "measurement", "security", "emerging", "infrastructure"];
 
@@ -40,8 +43,12 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
 
   const { count: topCount } = await supabase.from("conferences").select("*", { count: "exact", head: true }).eq("tier", "top");
 
+  const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
+  const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
+
   const filterParams: Record<string, string> = {};
   if (activeCategory !== "all") filterParams.cat = activeCategory;
+  if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
 
   const now = new Date();
   let calYear = now.getFullYear();
@@ -130,13 +137,13 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
               <table className="w-full text-[13.5px]">
                 <thead>
                   <tr className="border-b border-line bg-paper/30">
-                    <Th>{t.conf.conference}</Th>
+                    <SortableHeader column="name" label={t.conf.conference} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
                     <Th>{t.conf.status}</Th>
-                    <Th>{t.conf.category}</Th>
-                    <Th>{t.conf.tier}</Th>
+                    <SortableHeader column="category" label={t.conf.category} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
+                    <SortableHeader column="tier" label={t.conf.tier} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
                     <Th>{t.detail.topics}</Th>
                     <Th>{t.detail.location}</Th>
-                    <Th>{t.detail.date}</Th>
+                    <SortableHeader column="start_date" label={t.detail.date} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
                     <Th>{t.list.link}</Th>
                   </tr>
                 </thead>

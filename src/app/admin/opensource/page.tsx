@@ -4,15 +4,22 @@ import { Pagination } from "@/components/admin/Pagination";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { listOpenSource } from "@/lib/admin/opensource";
 import { parsePaginationParams } from "@/lib/admin/pagination";
+import { SortableHeader } from "@/components/admin/SortableHeader";
 import { getDict } from "@/lib/i18n/server";
 import Link from "next/link";
+import type { SortDir } from "@/lib/admin/pagination";
 
 export default async function OpenSourcePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   const { lang, t } = await getDict();
   const params = parsePaginationParams(sp);
+  const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
+  const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
   const result = await listOpenSource(params);
   const projects = result.data;
+
+  const filterParams: Record<string, string> = {};
+  if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
 
   return (
     <>
@@ -29,10 +36,10 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.name}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.language}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.stars}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.lastActive}</th>
+                <SortableHeader column="name" label={t.common.name} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
+                <SortableHeader column="language" label={t.detail.language} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
+                <SortableHeader column="stars" label={t.detail.stars} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
+                <SortableHeader column="last_active" label={t.detail.lastActive} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.topics}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.repo}</th>
               </tr>
@@ -73,6 +80,7 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
             total={result.total}
             pageSize={result.pageSize}
             basePath="/admin/opensource"
+            searchParams={filterParams}
             labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
           />
         </div>

@@ -5,9 +5,11 @@ import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { listTalentLeads } from "@/lib/admin/talents";
 import { parsePaginationParams } from "@/lib/admin/pagination";
+import { SortableHeader } from "@/components/admin/SortableHeader";
 import { getDict } from "@/lib/i18n/server";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
+import type { SortDir } from "@/lib/admin/pagination";
 
 export default async function TalentsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -17,8 +19,12 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
   const result = await listTalentLeads(params, { stage: filterStage });
   const talents = result.data;
 
+  const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
+  const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
+
   const filterParams: Record<string, string> = {};
   if (filterStage) filterParams.stage = filterStage;
+  if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
 
   return (
     <>
@@ -64,11 +70,11 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.name}</th>
+                <SortableHeader column="name" label={t.common.name} currentSort={sortCol} currentDir={sortDir} basePath="/admin/talents" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.role}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.company}</th>
+                <SortableHeader column="company" label={t.common.company} currentSort={sortCol} currentDir={sortDir} basePath="/admin/talents" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.source}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.stage}</th>
+                <SortableHeader column="stage" label={t.common.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/talents" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.topics}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.linkedin}</th>
               </tr>
