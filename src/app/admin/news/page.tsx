@@ -8,7 +8,7 @@ export default async function NewsPage() {
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.news }]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10">
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <NewsContent labels={{
           title: t.news.title,
           searchPlaceholder: t.news.searchPlaceholder,
@@ -18,6 +18,7 @@ export default async function NewsPage() {
           page: t.common.page,
           exportCSV: t.common.exportCSV,
           exportJSON: t.common.exportJSON,
+          filter: t.mobile.filter,
         }} />
       </main>
     </>

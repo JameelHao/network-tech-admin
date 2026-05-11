@@ -266,6 +266,9 @@ const en = {
     news: "News",
     opensource: "Open Source",
   },
+  mobile: {
+    filter: "Filter",
+  },
   meta: {
     siteTitle: "Network Technology Radar",
     siteDescription: "Track cutting-edge networking technology trends",
@@ -538,6 +541,9 @@ const zh: typeof en = {
     talents: "人才",
     news: "新闻",
     opensource: "开源项目",
+  },
+  mobile: {
+    filter: "筛选",
   },
   meta: {
     siteTitle: "网络技术雷达",
