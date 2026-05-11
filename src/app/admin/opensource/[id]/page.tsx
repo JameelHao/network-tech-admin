@@ -17,11 +17,11 @@ export default async function OpenSourceDetailPage({ params }: { params: Promise
         { label: t.nav.opensource, href: "/admin/opensource" },
         { label: project.name },
       ]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10 max-w-3xl">
-        <div className="rounded-lg border border-line bg-surface p-7 space-y-5">
-          <h1 className="font-display text-[22px] tracking-tight text-ink-900">{project.name}</h1>
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full">
+        <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
+          <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{project.name}</h1>
           {project.description && <p className="text-[13px] text-ink-600">{project.description}</p>}
-          <dl className="grid grid-cols-2 gap-4 text-[13px]">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.language}</dt><dd className="mt-1 text-ink-800">{project.language ?? "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.stars}</dt><dd className="mt-1 text-ink-800 tabular-nums">{project.stars?.toLocaleString() ?? "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.lastActive}</dt><dd className="mt-1 text-ink-800 tabular-nums">{project.last_active ?? "—"}</dd></div>

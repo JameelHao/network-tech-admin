@@ -31,7 +31,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
         { label: conf.abbreviation ?? conf.name },
       ]} t={t} lang={lang} />
 
-      <main className="px-6 xl:px-10 py-10 space-y-4">
+      <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-4">
         {/* Section 1: Conference Info */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">

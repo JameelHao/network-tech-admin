@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { PaginationClient } from "@/components/admin/PaginationClient";
 
 type JobItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
@@ -31,6 +32,7 @@ type JobsLabels = {
   noMatch: string;
   rows: string;
   page: string;
+  filter: string;
 };
 
 export function JobsContent({ labels }: { labels: JobsLabels }) {
@@ -95,25 +97,27 @@ export function JobsContent({ labels }: { labels: JobsLabels }) {
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{total}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            placeholder={labels.searchPlaceholder}
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-36"
-          />
-          {sources.length > 1 && (
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
-            >
-              <option value="">{labels.allSources}</option>
-              {sources.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          )}
+          <MobileFilterBar label={labels.filter}>
+            <input
+              type="text"
+              placeholder={labels.searchPlaceholder}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-40"
+            />
+            {sources.length > 1 && (
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
+              >
+                <option value="">{labels.allSources}</option>
+                {sources.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
+          </MobileFilterBar>
         </div>
       </div>
       {loading ? (

@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10 space-y-8">
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-6 sm:space-y-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
           <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
           <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
                 <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.dashboard.noUpcoming}</p>
               )}
               {upcoming.slice(0, 5).map((c) => (
-                <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-paper/40 transition-colors">
+                <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-ink-800 truncate">{c.name}</p>
                     <p className="text-[12px] text-ink-400 mt-0.5">{c.location} · {c.start_date}</p>
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
                 <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.papers.noPapers}</p>
               )}
               {latestPapers.map((p) => (
-                <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">
+                <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
                   <p className="text-[13px] font-medium text-ink-800 truncate">{p.title}</p>
                   <p className="text-[12px] text-ink-400 mt-0.5 truncate">
                     {p.authors.slice(0, 3).join(", ")}{p.authors.length > 3 ? ` +${p.authors.length - 3}` : ""}
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
                 <p className="px-5 py-8 text-center text-[13px] text-ink-400">{t.news.noNews}</p>
               )}
               {(newsItems ?? []).map((item) => (
-                <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-5 py-3 hover:bg-paper/40 transition-colors">
+                <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
                   <p className="text-[13px] font-medium text-ink-800 truncate">{item.title}</p>
                   <p className="text-[11px] text-ink-400 mt-0.5">{item.source}</p>
                 </a>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
             </div>
             <div className="divide-y divide-line">
               {leads.slice(0, 5).map((l) => (
-                <Link key={l.id} href={`/admin/leads/${l.id}`} className="flex items-center gap-4 px-5 py-3 hover:bg-paper/40 transition-colors">
+                <Link key={l.id} href={`/admin/leads/${l.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium text-ink-800 truncate">{l.title}</p>
                     <p className="text-[12px] text-ink-400 mt-0.5">
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
 
         <section className="rounded-lg border border-line bg-surface p-5">
           <h2 className="font-display text-[15px] tracking-tight text-ink-800 mb-4">{t.dashboard.stageDistribution}</h2>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-3 sm:gap-4">
             {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
               <div key={stage} className="flex items-center gap-2">
                 <StatusPill label={stage} />

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { ExportButton } from "@/components/admin/ExportButton";
+import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
 import type { Paper } from "@/lib/admin/types";
 
@@ -17,6 +18,7 @@ type PapersLabels = {
   viewCluster: string;
   papersCount: string;
   dateRange: string;
+  filter: string;
 };
 
 export function PapersClient({ papers, labels }: { papers: Paper[]; labels: PapersLabels }) {
@@ -74,7 +76,7 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
           <div className="flex items-center rounded-full border border-line overflow-hidden">
             <button
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 min-h-[36px] font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
                 viewMode === "list" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
               }`}
             >
@@ -82,7 +84,7 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
             </button>
             <button
               onClick={() => setViewMode("cluster")}
-              className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 min-h-[36px] font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
                 viewMode === "cluster" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
               }`}
             >
@@ -91,37 +93,39 @@ export function PapersClient({ papers, labels }: { papers: Paper[]; labels: Pape
           </div>
           <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
           <ExportButton entity="papers" format="json" label={labels.exportJSON} />
-          <input
-            type="text"
-            placeholder={labels.searchPlaceholder}
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-40"
-          />
-          {venues.length > 1 && (
-            <select
-              value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
-            >
-              <option value="">{labels.allSources}</option>
-              {venues.map((v) => (
-                <option key={v} value={v}>{v}</option>
-              ))}
-            </select>
-          )}
-          {topics.length > 1 && (
-            <select
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700"
-            >
-              <option value="">{labels.allCategories}</option>
-              {topics.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          )}
+          <MobileFilterBar label={labels.filter}>
+            <input
+              type="text"
+              placeholder={labels.searchPlaceholder}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-40"
+            />
+            {venues.length > 1 && (
+              <select
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
+              >
+                <option value="">{labels.allSources}</option>
+                {venues.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            )}
+            {topics.length > 1 && (
+              <select
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
+              >
+                <option value="">{labels.allCategories}</option>
+                {topics.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            )}
+          </MobileFilterBar>
         </div>
       </div>
 

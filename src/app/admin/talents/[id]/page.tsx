@@ -18,7 +18,7 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
         { label: t.nav.talents, href: "/admin/talents" },
         { label: talent.name },
       ]} t={t} lang={lang} />
-      <main className="px-6 xl:px-10 py-10">
+      <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div className="max-w-3xl">
           <header className="mb-8">
             <Link href="/admin/talents" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400 hover:text-ink-700">

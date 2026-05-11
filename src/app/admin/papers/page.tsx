@@ -10,7 +10,7 @@ export default async function PapersPage() {
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.papers }]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10">
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <PapersClient papers={papers} labels={{
           title: t.papers.title,
           searchPlaceholder: t.papers.searchPlaceholder,
@@ -23,6 +23,7 @@ export default async function PapersPage() {
           viewCluster: t.papers.viewCluster,
           papersCount: t.papers.papersCount,
           dateRange: t.papers.dateRange,
+          filter: t.mobile.filter,
         }} />
       </main>
     </>
