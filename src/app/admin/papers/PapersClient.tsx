@@ -6,6 +6,8 @@ import { NewBadge } from "@/components/admin/NewBadge";
 import { TimeGroupHeader } from "@/components/admin/TimeGroupHeader";
 import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
 import { ExportButton } from "@/components/admin/ExportButton";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
+import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
@@ -13,6 +15,7 @@ import { relativeTime, isCurrentYear, getTimeGroup, isNew, isExpired } from "@/l
 import type { TimeGroup } from "@/lib/admin/format";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { useFilterParams } from "@/hooks/useFilterParams";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
 import type { Lang } from "@/lib/i18n/dict";
@@ -42,6 +45,8 @@ type PapersLabels = {
   timeRange: { today: string; week: string; month: string; all: string };
   timeGroup: Record<TimeGroup, string>;
   newLabel: string;
+  favorites: string;
+  favoritesAll: string;
 };
 
 export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
@@ -53,6 +58,8 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
   const dateTo = fp.get("dateTo");
   const timeRange = fp.get("timeRange");
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
+  const [showOnlyFavs, setShowOnlyFavs] = useState(false);
+  const { favIds } = useFavorites("papers");
 
   const venues = useMemo(() => {
     const set = new Set<string>();
@@ -102,8 +109,11 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
         list = list.filter((p) => p.published_date && now - new Date(p.published_date).getTime() < threshold);
       }
     }
+    if (showOnlyFavs) {
+      list = list.filter((p) => favIds.has(p.id));
+    }
     return list;
-  }, [papers, keyword, venue, topic, dateFrom, dateTo, timeRange]);
+  }, [papers, keyword, venue, topic, dateFrom, dateTo, timeRange, showOnlyFavs, favIds]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<Paper>(filtered, { key: "published_date", dir: "desc" });
 
@@ -127,6 +137,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
           <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
           <div className="flex items-center rounded-full border border-line overflow-hidden">
             <button
@@ -289,6 +300,7 @@ function PaperRow({ paper: p, lang, publishedLabel, newLabel }: { paper: Paper; 
     >
       <div className="flex items-start gap-2">
         <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{p.title}</p>
+        <FavoriteButton entity="papers" id={p.id} label={p.title} />
         {isNew(p.published_date) && <NewBadge label={newLabel} />}
         {yearBadge && (
           <span className="shrink-0 rounded-full bg-ink-100 px-1.5 py-0.5 font-mono text-[9px] text-ink-500">{yearBadge}</span>

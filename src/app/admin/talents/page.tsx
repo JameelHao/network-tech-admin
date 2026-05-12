@@ -1,6 +1,8 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
+import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
@@ -48,10 +50,11 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.talents }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10">
-        <div className="rounded-lg border border-line bg-surface">
+        <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.talents}</h1>
             <div className="flex items-center gap-2">
+              <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
               <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
               <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
               <Link
@@ -94,11 +97,12 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                 <SortableHeader column="stage" label={t.common.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/talents" searchParams={filterParams} />
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.topics}</th>
                 <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.linkedin}</th>
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {talents.length === 0 ? (
-                <tr><td colSpan={7}>
+                <tr><td colSpan={8}>
                   <EmptyState title={t.empty.talents} description={t.empty.talentsDesc} />
                 </td></tr>
               ) : (
@@ -130,6 +134,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                         </a>
                       ) : <span className="text-ink-300">—</span>}
                     </td>
+                    <td className="px-5 py-3"><FavoriteButton entity="talents" id={tl.id} label={tl.name} /></td>
                   </tr>
                 ))
               )}

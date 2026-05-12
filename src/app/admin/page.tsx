@@ -4,6 +4,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { DataSourceStatus } from "@/components/admin/DataSourceStatus";
+import { Watchlist } from "@/components/admin/Watchlist";
 import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
 import { listOpenSource } from "@/lib/admin/opensource";
@@ -144,6 +145,19 @@ export default async function DashboardPage() {
             </div>
           </section>
         </div>
+
+        <Watchlist labels={{
+          watchlist: t.favorite.watchlist,
+          noFavorites: t.favorite.noFavorites,
+          noFavoritesDesc: t.favorite.noFavoritesDesc,
+          entityLabels: {
+            conferences: t.nav.conferences,
+            papers: t.nav.papers,
+            leads: t.nav.leads,
+            talents: t.nav.talents,
+            opensource: t.nav.opensource,
+          },
+        }} />
 
         <DataSourceStatus lang={lang} labels={{
           title: t.sync.dataSourceTitle,

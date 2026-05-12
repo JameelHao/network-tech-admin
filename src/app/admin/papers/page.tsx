@@ -39,6 +39,8 @@ export default async function PapersPage() {
             timeRange: { today: t.time.today, week: t.time.thisWeek, month: t.time.thisMonth, all: t.time.all },
             timeGroup: { today: t.time.today, week: t.time.thisWeek, month: t.time.thisMonth, older: t.time.older },
             newLabel: t.time.new,
+            favorites: t.favorite.favorites,
+            favoritesAll: t.favorite.all,
           }} />
         </Suspense>
       </main>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TierBadge } from "@/components/admin/TierBadge";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { RefreshButton } from "@/components/admin/RefreshButton";
 import { SessionStats } from "@/components/admin/SessionStats";
 import { SessionsPanel } from "@/components/admin/SessionsPanel";
@@ -77,6 +78,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
                   <p className="mt-1 text-[13px] text-ink-500">{conf.name}</p>
                 )}
               </div>
+              <FavoriteButton entity="conferences" id={id} label={conf.abbreviation ?? conf.name} />
             </div>
             <dl className="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-3">
               <Field label={t.detail.location} value={<span className="font-mono text-[12px] text-ink-700">{conf.location ?? "—"}</span>} />

@@ -1,6 +1,8 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
+import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { listLeads } from "@/lib/admin/leads";
@@ -48,10 +50,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.leads }]} t={t} lang={lang} />
       <main className="flex-1 px-6 xl:px-10 py-10">
-        <div className="rounded-lg border border-line bg-surface">
+        <div data-fav-filter="leads" className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.leads.title}</h1>
             <div className="flex items-center gap-2">
+              <FavoriteFilter entity="leads" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
               <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
               <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
             </div>
@@ -70,11 +73,12 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 <SortableHeader column="stage" label={t.leads.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
                 <SortableHeader column="created_at" label={t.list.createdAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
                 <SortableHeader column="updated_at" label={t.leads.updatedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
+                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {leads.length === 0 && (
-                <tr><td colSpan={5}>
+                <tr><td colSpan={6}>
                   <EmptyState title={t.empty.leads} description={t.empty.leadsDesc} />
                 </td></tr>
               )}
@@ -97,6 +101,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   </td>
                   <td className="px-5 py-3 text-ink-500 text-[12px]">{relativeTime(l.created_at, lang)}</td>
                   <td className="px-5 py-3 text-ink-500 tabular-nums text-[12px]">{l.updated_at.slice(0, 10)}</td>
+                  <td className="px-5 py-3"><FavoriteButton entity="leads" id={l.id} label={l.title} /></td>
                 </tr>
               ))}
             </tbody>

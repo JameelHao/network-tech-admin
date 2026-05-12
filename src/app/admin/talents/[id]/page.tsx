@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TalentForm } from "@/components/admin/TalentForm";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { getTalentLead } from "@/lib/admin/talents";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
@@ -32,9 +33,12 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
       />
       <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div className="max-w-3xl">
-          <h1 className="mb-8 font-display text-[32px] leading-tight tracking-tight text-ink-900">
-            {talent.name}
-          </h1>
+          <div className="flex items-center gap-3 mb-8">
+            <h1 className="font-display text-[32px] leading-tight tracking-tight text-ink-900">
+              {talent.name}
+            </h1>
+            <FavoriteButton entity="talents" id={id} label={talent.name} />
+          </div>
 
           <div className="rounded-lg border border-line bg-surface p-6">
             <TalentForm t={t} talent={talent} />

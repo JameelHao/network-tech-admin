@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { StatusPill } from "@/components/admin/StatusPill";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { getLead } from "@/lib/admin/leads";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
@@ -34,7 +35,10 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{lead.title}</h1>
-            <StatusPill label={lead.stage} />
+            <div className="flex items-center gap-2">
+              <FavoriteButton entity="leads" id={id} label={lead.title} />
+              <StatusPill label={lead.stage} />
+            </div>
           </div>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.sourceType}</dt><dd className="mt-1 text-ink-800">{t.sourceType[lead.source_type]}</dd></div>

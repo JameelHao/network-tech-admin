@@ -357,6 +357,13 @@ const en = {
     new: "NEW",
     recentDays: "Last 7 days",
   },
+  favorite: {
+    favorites: "Favorites",
+    all: "All",
+    watchlist: "Watchlist",
+    noFavorites: "No favorites yet",
+    noFavoritesDesc: "Star items from any list to see them here.",
+  },
 };
 
 const zh: typeof en = {
@@ -715,6 +722,13 @@ const zh: typeof en = {
     all: "全部",
     new: "NEW",
     recentDays: "近 7 天",
+  },
+  favorite: {
+    favorites: "收藏",
+    all: "全部",
+    watchlist: "收藏夹",
+    noFavorites: "暂无收藏",
+    noFavoritesDesc: "从列表中收藏项目，即可在此查看。",
   },
 };
 
