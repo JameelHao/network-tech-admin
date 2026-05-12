@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "CoNEXT";
+const YEAR = "2026";
 
 // 9 Round 1 papers (PACMNET V4 CoNEXT1, Mar 2026); Round 2 (~10-15) pending Aug 2026
 const sessions = [
@@ -70,6 +71,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

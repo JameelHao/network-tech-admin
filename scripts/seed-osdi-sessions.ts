@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "OSDI";
+const YEAR = "2026";
 
 // 8 confirmed accepted papers; full program (~40-50 papers) pending USENIX publication
 const sessions = [
@@ -64,6 +65,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

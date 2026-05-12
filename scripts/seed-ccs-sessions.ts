@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "CCS";
+const YEAR = "2026";
 
 // Accepted paper titles not yet publicly indexed as of May 2026.
 // Cycle 2 notification: Jul 17, 2026. Populate sessions after program is published.
@@ -21,6 +22,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "ATC";
+const YEAR = "2026";
 
 // Program not yet announced as of May 2026.
 // CFP submission deadline: Jun 10, 2026. Author notification: Sep 18, 2026.
@@ -22,6 +23,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

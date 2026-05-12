@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "ICML";
+const YEAR = "2026";
 
 // 6,352 accepted papers total. Networking-relevant subset (~20-40) requires
 // keyword filtering from OpenReview (distributed training, federated learning,
@@ -22,6 +23,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

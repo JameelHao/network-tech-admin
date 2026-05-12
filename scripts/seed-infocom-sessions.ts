@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "INFOCOM";
+const YEAR = "2026";
 
 // 26 networking-relevant papers from INFOCOM 2026 accepted papers
 const sessions = [
@@ -172,6 +173,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

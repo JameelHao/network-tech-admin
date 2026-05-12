@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "MobiCom";
+const YEAR = "2026";
 
 // Accepted paper details not yet publicly indexed as of May 2026.
 // Summer deadline papers announced Feb 20, 2026; winter deadline results TBD.
@@ -22,6 +23,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {
