@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
-import { TopicTag } from "@/components/admin/TopicTag";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { RefreshButton } from "@/components/admin/RefreshButton";
+import { SessionStats } from "@/components/admin/SessionStats";
+import { SessionsPanel } from "@/components/admin/SessionsPanel";
 import { getConference, listConferenceSessions } from "@/lib/admin/conferences";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
@@ -119,7 +120,15 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
           </div>
         </section>
 
-        {/* Section 3: Papers List */}
+        {/* Section 3: Session Stats */}
+        <SessionStats sessions={sessions} lang={lang} labels={{
+          topAuthors: t.session.topAuthors,
+          topAffiliations: t.session.topAffiliations,
+          topicDistribution: t.session.topicDistribution,
+          papers: t.session.papers,
+        }} />
+
+        {/* Section 4: Papers List (grouped) */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">
             <div className="flex items-center gap-3">
@@ -141,39 +150,17 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
               <p className="mt-1 text-[13px] text-ink-500">{t.conf.noPapersHint}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-[13.5px]">
-                <thead>
-                  <tr className="border-b border-line bg-paper/30">
-                    <Th>{t.common.title}</Th>
-                    <Th>{t.detail.authors}</Th>
-                    <Th>{t.detail.topics}</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sessions.map((s) => (
-                    <tr key={s.id} className="border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors">
-                      <td className="px-4 py-3 align-middle">
-                        <div className="font-display text-[14px] tracking-tight text-ink-900">
-                          {s.url ? <a href={s.url} target="_blank" rel="noreferrer" className="hover:text-navy-700">{s.title}</a> : s.title}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 align-middle">
-                        <span className="font-mono text-[11px] text-ink-600 truncate block max-w-[200px]">{s.authors.join(", ") || "—"}</span>
-                      </td>
-                      <td className="px-4 py-3 align-middle">
-                        <div className="flex flex-wrap gap-1">
-                          {s.topics.length > 0
-                            ? s.topics.map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)
-                            : <span className="font-mono text-[11px] text-ink-400">N/A</span>
-                          }
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SessionsPanel sessions={sessions} lang={lang} labels={{
+              searchSessions: t.session.searchSessions,
+              expandAll: t.session.expandAll,
+              collapseAll: t.session.collapseAll,
+              showAbstract: t.session.showAbstract,
+              hideAbstract: t.session.hideAbstract,
+              papers: t.session.papers,
+              noMatch: t.session.noMatch,
+              noMatchDesc: t.session.noMatchDesc,
+              entries: t.conf.entries,
+            }} />
           )}
         </section>
       </main>
@@ -198,8 +185,4 @@ function Stat({ label, value, sub }: { label: string; value: number; sub: string
       <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
     </div>
   );
-}
-
-function Th({ children }: { children?: React.ReactNode }) {
-  return <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">{children}</th>;
 }
