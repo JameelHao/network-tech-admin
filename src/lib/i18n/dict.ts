@@ -165,6 +165,9 @@ const en = {
     papers: "papers",
     noMatch: "No matching sessions",
     noMatchDesc: "Try a different search term.",
+    groupedView: "Grouped",
+    tableView: "Table",
+    affiliations: "Affiliations",
   },
   papers: {
     title: "2026 Network Papers",
@@ -583,6 +586,9 @@ const zh: typeof en = {
     papers: "篇",
     noMatch: "无匹配论文",
     noMatchDesc: "请尝试其他搜索词。",
+    groupedView: "分组",
+    tableView: "表格",
+    affiliations: "机构",
   },
   papers: {
     title: "2026 网络论文",
