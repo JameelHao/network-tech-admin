@@ -15,6 +15,7 @@ import { getDict } from "@/lib/i18n/server";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
+import { tabClass } from "@/lib/admin/ui";
 
 export default async function TalentsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -74,7 +75,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
               if (s) p.set("stage", s);
               const href = p.toString() ? `/admin/talents?${p.toString()}` : "/admin/talents";
               return (
-                <Link key={s ?? "all"} href={href} className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${isActive ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"}`}>
+                <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>
                   {s ?? t.common.all}
                 </Link>
               );

@@ -1,5 +1,7 @@
 "use client";
 
+import { pageClass } from "@/lib/admin/ui";
+
 type Props = {
   page: number;
   totalPages: number;
@@ -35,9 +37,7 @@ export function PaginationClient({ page, totalPages, total, pageSize, onPageChan
             <button
               key={p}
               onClick={() => onPageChange(p)}
-              className={`px-2 py-1 rounded transition-colors ${
-                p === page ? "bg-navy-700 text-navy-50" : "hover:bg-ink-100"
-              }`}
+              className={`px-2 py-1 transition-colors ${pageClass(p === page)}`}
             >
               {p}
             </button>

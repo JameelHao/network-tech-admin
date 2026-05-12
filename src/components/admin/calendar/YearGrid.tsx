@@ -2,6 +2,7 @@
 
 import type { Conference } from "@/lib/admin/types";
 import { getCategoryCalendarColor } from "@/lib/admin/calendar-utils";
+import { badgeClass, calendarTodayClass } from "@/lib/admin/ui";
 
 const MONTH_NAMES_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_NAMES_ZH = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
@@ -57,7 +58,7 @@ export function YearGrid({ conferences, year, lang, onMonthClick }: Props) {
                 {monthNames[month - 1]}
               </span>
               {confs.length > 0 && (
-                <span className="rounded-full bg-navy-700 text-navy-50 px-1.5 py-0.5 font-mono text-[9px]">
+                <span className={badgeClass()}>
                   {confs.length}
                 </span>
               )}
@@ -73,9 +74,9 @@ export function YearGrid({ conferences, year, lang, onMonthClick }: Props) {
                 return (
                   <div
                     key={d}
-                    className={`w-4 h-4 flex items-center justify-center rounded-full text-[8px] tabular-nums ${
+                    className={`w-4 h-4 flex items-center justify-center text-[8px] tabular-nums ${
                       isToday
-                        ? "bg-navy-700 text-navy-50 font-bold"
+                        ? calendarTodayClass()
                         : hasEvent
                           ? "bg-navy-500/20 text-navy-700 font-medium"
                           : "text-ink-300"

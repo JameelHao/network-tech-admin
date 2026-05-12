@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { tabClass } from "@/lib/admin/ui";
 
 type Props = {
   active: "list" | "calendar";
@@ -14,19 +15,12 @@ export function ViewToggle({ active, basePath, searchParams = {}, labels }: Prop
     return `${basePath}?${params.toString()}`;
   }
 
-  const btnClass = (isActive: boolean) =>
-    `px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-      isActive
-        ? "bg-navy-700 text-navy-50"
-        : "text-ink-500 hover:text-ink-800"
-    }`;
-
   return (
-    <div className="flex items-center rounded-full border border-line overflow-hidden">
-      <Link href={href("list")} className={btnClass(active === "list")}>
+    <div className="flex items-center gap-1">
+      <Link href={href("list")} className={tabClass(active === "list", "sm")}>
         {labels.list}
       </Link>
-      <Link href={href("calendar")} className={btnClass(active === "calendar")}>
+      <Link href={href("calendar")} className={tabClass(active === "calendar", "sm")}>
         {labels.calendar}
       </Link>
     </div>

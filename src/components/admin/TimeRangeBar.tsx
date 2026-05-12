@@ -1,5 +1,7 @@
 "use client";
 
+import { tabClass } from "@/lib/admin/ui";
+
 type Props = {
   value: string;
   onChange: (range: string) => void;
@@ -17,17 +19,13 @@ export function TimeRangeBar({ value, onChange, labels }: Props) {
   };
 
   return (
-    <div className="inline-flex items-center rounded-md border border-line bg-surface p-0.5" role="group" aria-label="Time range">
+    <div className="inline-flex items-center gap-1" role="group" aria-label="Time range">
       {RANGES.map((r) => (
         <button
           key={r}
           type="button"
           onClick={() => onChange(r)}
-          className={`px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-[0.12em] transition-colors ${
-            value === r
-              ? "bg-navy-700 text-navy-50"
-              : "text-ink-500 hover:text-ink-800"
-          }`}
+          className={tabClass(value === r, "sm")}
         >
           {labelMap[r]}
         </button>

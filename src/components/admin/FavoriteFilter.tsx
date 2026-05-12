@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFavorites, type EntityType } from "@/hooks/useFavorites";
+import { tabClass } from "@/lib/admin/ui";
 
 export function FavoriteFilter({
   entity,
@@ -22,13 +23,11 @@ export function FavoriteFilter({
 
   return (
     <>
-      <div className="flex items-center rounded-full border border-line overflow-hidden">
+      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => toggle(true)}
-          className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-            active ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-          }`}
+          className={tabClass(active, "sm")}
         >
           ★ {labels.favorites}
           {count > 0 ? ` (${count})` : ""}
@@ -36,9 +35,7 @@ export function FavoriteFilter({
         <button
           type="button"
           onClick={() => toggle(false)}
-          className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-            !active ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-          }`}
+          className={tabClass(!active, "sm")}
         >
           {labels.all}
         </button>
