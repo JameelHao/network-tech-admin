@@ -70,6 +70,18 @@ export async function listConferencesByYear(year: number): Promise<Conference[]>
   return (data as Conference[]) ?? [];
 }
 
+export async function listAllConferencesLight(): Promise<Pick<Conference, "id" | "name" | "abbreviation" | "topics">[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("conferences")
+    .select("id, name, abbreviation, topics")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getConference(id: string): Promise<Conference | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

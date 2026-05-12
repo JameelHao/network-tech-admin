@@ -14,6 +14,7 @@ const en = {
     talents: "Talent Leads",
     news: "News",
     jobs: "Jobs",
+    topics: "Topics",
   },
   topbar: {
     signOut: "Sign out",
@@ -364,6 +365,19 @@ const en = {
     noFavorites: "No favorites yet",
     noFavoritesDesc: "Star items from any list to see them here.",
   },
+  topics: {
+    title: "Topic Management",
+    table: "Table",
+    heatmap: "Heatmap",
+    search: "Search topics…",
+    allCategories: "All Categories",
+    total: "Total",
+    duplicateWarning: "Possible duplicate",
+    similarTo: "Similar to",
+    noTopics: "No topics found",
+    noTopicsDesc: "Adjust filters or add topics to your items.",
+    items: "items",
+  },
 };
 
 const zh: typeof en = {
@@ -380,6 +394,7 @@ const zh: typeof en = {
     talents: "人才线索",
     news: "新闻",
     jobs: "岗位",
+    topics: "主题",
   },
   topbar: {
     signOut: "退出",
@@ -729,6 +744,19 @@ const zh: typeof en = {
     watchlist: "收藏夹",
     noFavorites: "暂无收藏",
     noFavoritesDesc: "从列表中收藏项目，即可在此查看。",
+  },
+  topics: {
+    title: "主题管理",
+    table: "表格",
+    heatmap: "热力图",
+    search: "搜索主题…",
+    allCategories: "全部分类",
+    total: "合计",
+    duplicateWarning: "可能重复",
+    similarTo: "相似于",
+    noTopics: "未找到主题",
+    noTopicsDesc: "调整筛选条件或为项目添加主题。",
+    items: "项",
   },
 };
 
