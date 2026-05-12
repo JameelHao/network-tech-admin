@@ -248,13 +248,13 @@ export function SessionsPanel({ sessions, labels, lang }: { sessions: Conference
                   <th className="px-4 py-2.5">
                     <SortableHeaderClient column="authors" label="Authors" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
-                  <th className="px-4 py-2.5">
+                  <th className="hidden lg:table-cell px-4 py-2.5">
                     <SortableHeaderClient column="affiliations" label={labels.affiliations} currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
                   <th className="px-4 py-2.5">
                     <SortableHeaderClient column="topics" label="Topics" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
-                  <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
+                  <th className="hidden lg:table-cell px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
                     Abstract
                   </th>
                 </tr>
@@ -285,7 +285,7 @@ export function SessionsPanel({ sessions, labels, lang }: { sessions: Conference
                           : "—"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top">
+                    <td className="hidden lg:table-cell px-4 py-3 align-top">
                       <span className="text-[12px] text-ink-600 line-clamp-1 max-w-[160px] block">
                         {s.affiliations.length > 0
                           ? s.affiliations[0] + (s.affiliations.length > 1 ? ` +${s.affiliations.length - 1}` : "")
@@ -299,7 +299,7 @@ export function SessionsPanel({ sessions, labels, lang }: { sessions: Conference
                           : <span className="text-ink-400">—</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-top">
+                    <td className="hidden lg:table-cell px-4 py-3 align-top">
                       {s.abstract ? (
                         expandedAbstracts.has(s.id) ? (
                           <div>

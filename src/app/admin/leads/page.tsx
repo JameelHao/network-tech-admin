@@ -74,13 +74,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
               <thead>
                 <tr className="border-b border-line bg-paper/30 text-left">
                   <SortableHeader column="title" label={t.common.title} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
-                  <Th>{t.leads.summary}</Th>
+                  <Th className="hidden lg:table-cell">{t.leads.summary}</Th>
                   <SortableHeader column="source_type" label={t.leads.sourceType} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
-                  <SortableHeader column="source_label" label={t.leads.sourceLabel} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
+                  <SortableHeader column="source_label" label={t.leads.sourceLabel} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} className="hidden lg:table-cell" />
                   <SortableHeader column="stage" label={t.leads.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
-                  <Th>{t.leads.notes}</Th>
+                  <Th className="hidden lg:table-cell">{t.leads.notes}</Th>
                   <SortableHeader column="created_at" label={t.list.createdAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
-                  <SortableHeader column="updated_at" label={t.leads.updatedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} />
+                  <SortableHeader column="updated_at" label={t.leads.updatedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/leads" searchParams={filterParams} className="hidden lg:table-cell" />
                   <Th>★</Th>
                 </tr>
               </thead>
@@ -97,7 +97,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                         {l.title}
                       </Link>
                     </Td>
-                    <Td>
+                    <Td className="hidden lg:table-cell">
                       {l.summary ? (
                         <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={l.summary}>
                           {l.summary}
@@ -109,7 +109,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                         {t.sourceType[l.source_type]}
                       </span>
                     </Td>
-                    <Td>
+                    <Td className="hidden lg:table-cell">
                       {l.source_label ? (
                         <span className="text-[12px] text-ink-600">{l.source_label}</span>
                       ) : <span className="text-ink-400">—</span>}
@@ -117,7 +117,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     <Td>
                       <StatusPill label={l.stage} lang={lang} />
                     </Td>
-                    <Td>
+                    <Td className="hidden lg:table-cell">
                       {l.notes ? (
                         <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={l.notes}>
                           {l.notes}
@@ -129,7 +129,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                         {relativeTime(l.created_at, lang)}
                       </span>
                     </Td>
-                    <Td>
+                    <Td className="hidden lg:table-cell">
                       <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.updated_at}>
                         {relativeTime(l.updated_at, lang)}
                       </span>
@@ -156,10 +156,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">{children}</th>;
+function Th({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <th className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-4 py-3 align-middle">{children}</td>;
+function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <td className={`px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }

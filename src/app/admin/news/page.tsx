@@ -112,11 +112,11 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 <tr className="border-b border-line bg-paper/30">
                   <SortableHeader column="title" label={t.common.title} currentSort={sortCol} currentDir={sortDir} basePath="/admin/news" searchParams={filterParams} />
                   <SortableHeader column="source" label={t.list.source} currentSort={sortCol} currentDir={sortDir} basePath="/admin/news" searchParams={filterParams} />
-                  <Th>{t.news.domain}</Th>
-                  <Th>{t.detail.topics}</Th>
+                  <Th className="hidden lg:table-cell">{t.news.domain}</Th>
+                  <Th className="hidden lg:table-cell">{t.detail.topics}</Th>
                   <SortableHeader column="pub_date" label={t.list.publishedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/news" searchParams={filterParams} />
-                  <Th>{t.news.snippet}</Th>
-                  <Th>{t.news.freshness}</Th>
+                  <Th className="hidden lg:table-cell">{t.news.snippet}</Th>
+                  <Th className="hidden lg:table-cell">{t.news.freshness}</Th>
                   <Th>★</Th>
                 </tr>
               </thead>
@@ -143,10 +143,10 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                           </span>
                         ) : <span className="text-ink-400">—</span>}
                       </Td>
-                      <Td>
+                      <Td className="hidden lg:table-cell">
                         <span className="font-mono text-[11px] text-ink-500">{extractDomain(item.link)}</span>
                       </Td>
-                      <Td>
+                      <Td className="hidden lg:table-cell">
                         <span className="text-[12px] text-ink-400">—</span>
                       </Td>
                       <Td>
@@ -156,14 +156,14 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                           </span>
                         ) : <span className="text-ink-400">—</span>}
                       </Td>
-                      <Td>
+                      <Td className="hidden lg:table-cell">
                         {item.snippet ? (
                           <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={item.snippet}>
                             {item.snippet}
                           </span>
                         ) : <span className="text-ink-400">—</span>}
                       </Td>
-                      <Td>
+                      <Td className="hidden lg:table-cell">
                         {isNewItem ? (
                           <NewBadge label={t.time.new} />
                         ) : stale ? (
@@ -202,10 +202,10 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">{children}</th>;
+function Th({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <th className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-4 py-3 align-middle">{children}</td>;
+function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <td className={`px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }

@@ -113,7 +113,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
               {t.conf.statistics}
             </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-line">
             <Stat label={t.conf.papersTalks} value={sessions.length} sub={t.conf.tracked} />
             <Stat label={t.conf.companies} value={companies.length} sub={t.conf.companiesSub} />
             <Stat label={t.conf.universities} value={universities.length} sub={t.conf.universitiesSub} />

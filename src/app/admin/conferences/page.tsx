@@ -185,12 +185,12 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                     <SortableHeader column="name" label={t.conf.conference} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
                     <Th>{t.conf.status}</Th>
                     <SortableHeader column="category" label={t.conf.category} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
-                    <SortableHeader column="tier" label={t.conf.tier} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
-                    <Th>{t.detail.topics}</Th>
+                    <SortableHeader column="tier" label={t.conf.tier} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} className="hidden lg:table-cell" />
+                    <Th className="hidden lg:table-cell">{t.detail.topics}</Th>
                     <Th>{t.detail.location}</Th>
                     <SortableHeader column="start_date" label={t.detail.date} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
-                    <Th>{t.list.link}</Th>
-                    <Th>★</Th>
+                    <Th className="hidden lg:table-cell">{t.list.link}</Th>
+                    <Th className="hidden lg:table-cell">★</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -221,10 +221,10 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                             </span>
                           ) : <span className="text-ink-400">—</span>}
                         </Td>
-                        <Td>
+                        <Td className="hidden lg:table-cell">
                           <TierBadge tier={(c as unknown as { tier: "top" | "good" | "workshop" }).tier ?? "good"} lang={lang} />
                         </Td>
-                        <Td>
+                        <Td className="hidden lg:table-cell">
                           <div className="flex flex-wrap gap-1.5">
                             {c.topics.slice(0, 3).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
                             {c.topics.length > 3 && <span className="text-[10px] text-ink-400">+{c.topics.length - 3}</span>}
@@ -232,14 +232,14 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                         </Td>
                         <Td><span className="text-ink-700">{c.location ?? "—"}</span></Td>
                         <Td><span className="font-mono text-[11.5px] tabular-nums text-ink-700">{formatDateRange(c.start_date, c.end_date)}</span></Td>
-                        <Td>
+                        <Td className="hidden lg:table-cell">
                           {c.url ? (
                             <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-navy-500 hover:text-navy-700">
                               <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 3.5h-2a1.5 1.5 0 0 0-1.5 1.5v7a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5v-2m-4-7h5m0 0v5m0-5-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             </a>
                           ) : <span className="text-ink-300">—</span>}
                         </Td>
-                        <Td><FavoriteButton entity="conferences" id={c.id} label={c.abbreviation ?? c.name} /></Td>
+                        <Td className="hidden lg:table-cell"><FavoriteButton entity="conferences" id={c.id} label={c.abbreviation ?? c.name} /></Td>
                       </tr>
                     );
                   })}
@@ -301,10 +301,10 @@ function Stat({ label, value, sub }: { label: string; value: number; sub: string
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">{children}</th>;
+function Th({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <th className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="px-4 py-3 align-middle">{children}</td>;
+function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <td className={`px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }

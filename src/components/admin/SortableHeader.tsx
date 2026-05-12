@@ -8,6 +8,7 @@ type Props = {
   currentDir?: SortDir;
   basePath: string;
   searchParams?: Record<string, string>;
+  className?: string;
 };
 
 function nextDir(column: string, currentSort?: string, currentDir?: SortDir): SortDir | null {
@@ -28,7 +29,7 @@ function ariaSortValue(column: string, currentSort?: string, currentDir?: SortDi
   return currentDir === "asc" ? "ascending" : "descending";
 }
 
-export function SortableHeader({ column, label, currentSort, currentDir, basePath, searchParams = {} }: Props) {
+export function SortableHeader({ column, label, currentSort, currentDir, basePath, searchParams = {}, className }: Props) {
   const isActive = currentSort === column;
   const nd = nextDir(column, currentSort, currentDir);
 
@@ -45,7 +46,7 @@ export function SortableHeader({ column, label, currentSort, currentDir, basePat
   const href = qs ? `${basePath}?${qs}` : basePath;
 
   return (
-    <th aria-sort={ariaSortValue(column, currentSort, currentDir)} className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">
+    <th aria-sort={ariaSortValue(column, currentSort, currentDir)} className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>
       <Link href={href} className="inline-flex items-center gap-0.5 hover:text-ink-800 transition-colors">
         {label}
         {isActive && <Arrow dir={currentDir} />}
