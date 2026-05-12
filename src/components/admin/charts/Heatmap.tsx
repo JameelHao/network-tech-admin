@@ -8,19 +8,32 @@ type Props = {
   yLabels: string[];
 };
 
-function getColor(count: number): string {
+function getHeatColor(count: number, max: number): string {
   if (count === 0) return "bg-surface";
-  if (count <= 2) return "bg-navy-500/15";
-  if (count <= 5) return "bg-navy-500/35";
-  return "bg-navy-500/60";
+  const ratio = count / max;
+  if (ratio <= 0.2) return "bg-indigo-100 dark:bg-indigo-900/30";
+  if (ratio <= 0.4) return "bg-indigo-200 dark:bg-indigo-800/40";
+  if (ratio <= 0.6) return "bg-indigo-300 dark:bg-indigo-700/50";
+  if (ratio <= 0.8) return "bg-indigo-400 dark:bg-indigo-600/60 text-white";
+  return "bg-indigo-500 dark:bg-indigo-500/70 text-white";
 }
+
+const LEGEND_STEPS = [
+  "bg-indigo-100 dark:bg-indigo-900/30",
+  "bg-indigo-200 dark:bg-indigo-800/40",
+  "bg-indigo-300 dark:bg-indigo-700/50",
+  "bg-indigo-400 dark:bg-indigo-600/60",
+  "bg-indigo-500 dark:bg-indigo-500/70",
+];
 
 export function Heatmap({ data, xLabels, yLabels }: Props) {
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
   const lookup = new Map<string, number>();
+  let maxCount = 1;
   for (const d of data) {
     lookup.set(`${d.topic}|${d.month}`, d.count);
+    if (d.count > maxCount) maxCount = d.count;
   }
 
   return (
@@ -41,9 +54,8 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
           ))}
 
           {yLabels.map((y) => (
-            <>
+            <div key={y} className="contents">
               <div
-                key={`label-${y}`}
                 className="text-right pr-2 font-mono text-[10px] text-ink-500 truncate leading-7"
                 title={y}
               >
@@ -54,18 +66,27 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
                 return (
                   <div
                     key={`${y}|${x}`}
-                    className={`h-7 rounded-sm ${getColor(count)} transition-colors relative group`}
+                    className={`h-7 rounded-sm ${getHeatColor(count, maxCount)} transition-all duration-150 hover:scale-110 hover:shadow-md hover:z-10 relative group cursor-default`}
                   >
                     {count > 0 && (
-                      <span className="absolute inset-0 flex items-center justify-center text-[9px] tabular-nums text-ink-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute inset-0 flex items-center justify-center text-[9px] tabular-nums opacity-0 group-hover:opacity-100 transition-opacity">
                         {count}
                       </span>
                     )}
                   </div>
                 );
               })}
-            </>
+            </div>
           ))}
+        </div>
+
+        {/* Color scale legend */}
+        <div className="flex items-center justify-end gap-1.5 mt-3 px-2">
+          <span className="font-mono text-[9px] text-ink-400">Less</span>
+          {LEGEND_STEPS.map((cls, i) => (
+            <div key={i} className={`w-4 h-4 rounded-sm ${cls}`} />
+          ))}
+          <span className="font-mono text-[9px] text-ink-400">More</span>
         </div>
       </div>
     </div>

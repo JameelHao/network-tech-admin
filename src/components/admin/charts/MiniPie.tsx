@@ -9,28 +9,20 @@ import {
   Legend,
 } from "recharts";
 import type { ChartPoint } from "@/lib/admin/insights";
-
-const COLORS = [
-  "var(--color-navy-500)",
-  "var(--color-gold-400)",
-  "#6366f1",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
-];
+import { PIE_COLORS } from "@/lib/admin/chart-theme";
+import { ChartTooltip } from "./ChartTooltip";
 
 type Props = {
   data: ChartPoint[];
   height?: number;
   innerRadius?: number;
+  total?: number;
 };
 
-export function MiniPie({ data, height = 260, innerRadius = 50 }: Props) {
+export function MiniPie({ data, height = 260, innerRadius = 60, total }: Props) {
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
+
+  const centerValue = total ?? data.reduce((s, d) => s + d.value, 0);
 
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -40,23 +32,51 @@ export function MiniPie({ data, height = 260, innerRadius = 50 }: Props) {
           dataKey="value"
           nameKey="name"
           cx="50%"
-          cy="50%"
+          cy="45%"
           innerRadius={innerRadius}
           outerRadius={90}
-          paddingAngle={2}
+          paddingAngle={3}
+          cornerRadius={4}
           strokeWidth={0}
+          animationBegin={0}
+          animationDuration={1000}
+          animationEasing="ease-out"
         >
           {data.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip
-          contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid var(--color-line)" }}
-        />
+        <text
+          x="50%"
+          y="42%"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="fill-ink-800 dark:fill-ink-200"
+          style={{ fontSize: 22, fontWeight: 600 }}
+        >
+          {centerValue.toLocaleString()}
+        </text>
+        <text
+          x="50%"
+          y="52%"
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="fill-ink-400"
+          style={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace" }}
+        >
+          Total
+        </text>
+        <Tooltip content={(props) => <ChartTooltip {...props} />} />
         <Legend
-          wrapperStyle={{ fontSize: 11 }}
+          layout="horizontal"
+          verticalAlign="bottom"
           iconType="circle"
-          iconSize={8}
+          iconSize={6}
+          wrapperStyle={{
+            fontSize: 10,
+            fontFamily: "IBM Plex Mono, monospace",
+            paddingTop: 12,
+          }}
         />
       </PieChart>
     </ResponsiveContainer>
