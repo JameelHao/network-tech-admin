@@ -122,14 +122,14 @@ export function Sidebar({ t }: { t: Dict }) {
         id="admin-mobile-nav-backdrop"
         data-mobile-nav-backdrop
         aria-hidden
-        className="lg:hidden hidden [&.is-open]:block fixed inset-0 top-14 z-30 bg-ink-900/50"
+        className="lg:hidden hidden [&.is-open]:block fixed inset-0 top-14 z-40 bg-ink-900/50"
       />
       <div
         id="admin-mobile-nav"
         role="dialog"
         aria-modal="true"
         aria-hidden="true"
-        className="lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50 border-b border-navy-500/30 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
+        className="lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-50 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50 border-b border-navy-500/30 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
       >
         <div className="px-5 pt-5 pb-3">
           <span className="font-display text-[15px] font-semibold tracking-tight">Tech Radar</span>

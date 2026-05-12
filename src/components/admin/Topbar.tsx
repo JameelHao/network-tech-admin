@@ -53,7 +53,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
   const themeLabel = { light: t.topbar.themeLight, dark: t.topbar.themeDark, system: t.topbar.themeSystem }[mode];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
+    <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
       <div className="flex h-14 items-center gap-3 lg:gap-6 px-4 sm:px-6 xl:px-10">
         {/* Hamburger - uses inline script from layout */}
         <button
