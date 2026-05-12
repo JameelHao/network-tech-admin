@@ -162,6 +162,11 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
               noMatch: t.session.noMatch,
               noMatchDesc: t.session.noMatchDesc,
               entries: t.conf.entries,
+              groupedView: t.session.groupedView,
+              tableView: t.session.tableView,
+              affiliations: t.session.affiliations,
+              rows: t.common.rows,
+              page: t.common.page,
             }} />
           )}
         </section>
