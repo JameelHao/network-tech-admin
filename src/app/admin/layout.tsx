@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/admin/Sidebar";
+import { SkipToMain } from "@/components/admin/SkipToMain";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { getDict } from "@/lib/i18n/server";
 import { buildSearchIndex } from "@/lib/admin/command-search-server";
@@ -8,9 +9,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh flex bg-paper text-ink-800">
+      <SkipToMain label={t.a11y.skipToMain} />
       <Sidebar t={t} />
       <CommandPalette items={searchIndex} labels={t.command} />
-      <div className="flex-1 min-w-0 flex flex-col">{children}</div>
+      <div id="main-content" className="flex-1 min-w-0 flex flex-col">{children}</div>
       <script
         dangerouslySetInnerHTML={{
           __html: `(function(){

@@ -36,6 +36,7 @@ export function FilterSelect({
   return (
     <select
       value={value}
+      aria-label={label}
       onChange={(e) =>
         navigate(searchParams, paramKey, e.target.value, router, pathname)
       }
@@ -121,10 +122,11 @@ export function FilterNumberRange({
           navigate(searchParams, minKey, e.target.value, router, pathname)
         }
         placeholder={minLabel}
+        aria-label={minLabel}
         min="0"
         className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[80px]"
       />
-      <span className="text-ink-400 text-[10px]">–</span>
+      <span aria-hidden="true" className="text-ink-400 text-[10px]">–</span>
       <input
         type="number"
         value={maxValue}
@@ -132,6 +134,7 @@ export function FilterNumberRange({
           navigate(searchParams, maxKey, e.target.value, router, pathname)
         }
         placeholder={maxLabel}
+        aria-label={maxLabel}
         min="0"
         className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[80px]"
       />
@@ -157,6 +160,7 @@ export function FilterInput({
       key={value}
       defaultValue={value}
       placeholder={placeholder}
+      aria-label={placeholder}
       onBlur={(e) => {
         const v = e.target.value.trim();
         if (v !== value) navigate(searchParams, paramKey, v, router, pathname);

@@ -18,7 +18,7 @@ export function FilterSummary({
   if (filters.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-amber-50/40">
+    <div role="region" aria-live="polite" className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-amber-50/40">
       <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-500 shrink-0">
         {labels.activeFilters}
       </span>

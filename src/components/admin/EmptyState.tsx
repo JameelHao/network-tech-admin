@@ -23,7 +23,7 @@ const defaultIcon = (
 export function EmptyState({ icon, title, description, action, compact }: EmptyStateProps) {
   if (compact) {
     return (
-      <div className="px-5 py-8 text-center">
+      <div role="status" className="px-5 py-8 text-center">
         <p className="text-[13px] text-ink-400">{title}</p>
         {description && <p className="mt-1 text-[12px] text-ink-300">{description}</p>}
       </div>
@@ -31,8 +31,8 @@ export function EmptyState({ icon, title, description, action, compact }: EmptyS
   }
 
   return (
-    <div className="px-6 py-16 text-center">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-paper">
+    <div role="status" className="px-6 py-16 text-center">
+      <div aria-hidden="true" className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-paper">
         {icon ?? defaultIcon}
       </div>
       <h3 className="font-display text-[18px] tracking-tight text-ink-700">{title}</h3>

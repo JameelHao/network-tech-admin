@@ -51,7 +51,8 @@ export function Sidebar({ t }: { t: Dict }) {
           <Link
             key={item.href}
             href={item.href}
-            className={`group relative flex items-center gap-3 rounded-md px-3 py-2 transition-colors ${
+            aria-current={active ? "page" : undefined}
+            className={`group relative flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none ${
               active ? "bg-navy-500/40 text-navy-50" : "text-navy-200 hover:text-navy-50 hover:bg-navy-500/20"
             }`}
           >
@@ -110,7 +111,7 @@ export function Sidebar({ t }: { t: Dict }) {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
+      <aside aria-label="Navigation" className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
         <div className="px-6 pt-7 pb-9">
           <span className="font-display text-[17px] font-semibold tracking-tight">Tech Radar</span>
         </div>
