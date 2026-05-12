@@ -184,6 +184,9 @@ const en = {
     noMatch: "No matching news",
     noNews: "No news yet",
     latestNews: "Latest News",
+    domain: "Domain",
+    freshness: "Freshness",
+    snippet: "Snippet",
   },
   jobs: {
     title: "Network Jobs",
@@ -587,6 +590,9 @@ const zh: typeof en = {
     noMatch: "暂无匹配新闻",
     noNews: "暂无新闻",
     latestNews: "最新新闻",
+    domain: "域名",
+    freshness: "时效",
+    snippet: "摘要",
   },
   jobs: {
     title: "网络岗位招聘",
