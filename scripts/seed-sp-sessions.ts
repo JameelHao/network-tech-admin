@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "S&P";
+const YEAR = "2026";
 
 // 16 networking-relevant papers from 135 total accepted (13% acceptance rate)
 const sessions = [
@@ -112,6 +113,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

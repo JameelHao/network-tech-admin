@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "HotNets";
+const YEAR = "2026";
 
 // Submission deadline: Jul 16, 2026. Author notification: Sep 24, 2026.
 // Populate sessions after accepted papers are announced.
@@ -21,6 +22,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

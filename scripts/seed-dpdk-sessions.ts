@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "DPDK Summit";
+const YEAR = "2026";
 
 const sessions = [
   // Day 1 (May 12)
@@ -83,6 +84,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

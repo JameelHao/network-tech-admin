@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "SC";
+const YEAR = "2026";
 
 // 8 networking-relevant workshops; paper sessions (~60-80) pending Sep 2026
 const sessions = [
@@ -69,6 +70,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

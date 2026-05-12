@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "SIGCOMM";
+const YEAR = "2026";
 
 // 11 workshops + 2 tutorials confirmed; main track papers (~30-35) pending publication
 const sessions = [
@@ -94,6 +95,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

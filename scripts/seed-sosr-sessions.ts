@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "SOSR";
+const YEAR = "2026";
 
 // ACM SOSR 2026 status unconfirmed — last known edition was SOSR 2022.
 // No 2026 program or accepted papers found. Populate if/when confirmed.
@@ -21,6 +22,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

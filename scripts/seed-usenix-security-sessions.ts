@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "USENIX Security";
+const YEAR = "2026";
 
 // Cycle 1 accepted papers
 const sessions = [
@@ -106,6 +107,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

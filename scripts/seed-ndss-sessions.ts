@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "NDSS";
+const YEAR = "2026";
 
 // Representative subset of 13 network-relevant papers from 265 total accepted
 const sessions = [
@@ -94,6 +95,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

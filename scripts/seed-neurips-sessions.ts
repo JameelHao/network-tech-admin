@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "NeurIPS";
+const YEAR = "2026";
 
 // Paper notification: Sep 24, 2026. Workshop notification: Jul 11, 2026.
 // ~3,000 papers expected; filter networking-relevant subset (~20-40) after notification.
@@ -21,6 +22,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {

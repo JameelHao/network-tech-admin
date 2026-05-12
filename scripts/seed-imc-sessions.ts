@@ -6,6 +6,7 @@ const supabase = createClient(
 );
 
 const ABBREVIATION = "IMC";
+const YEAR = "2026";
 
 // Accepted papers not yet published as of May 2026.
 // Cycle 2 notification: Aug 4, 2026. Populate sessions after program announcement.
@@ -21,6 +22,8 @@ async function seedSessions() {
     .from("conferences")
     .select("id")
     .eq("abbreviation", ABBREVIATION)
+    .ilike("name", `%${YEAR}%`)
+    .limit(1)
     .single();
 
   if (!conf) {
