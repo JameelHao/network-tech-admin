@@ -405,6 +405,8 @@ const en = {
     totalTopics: "Topics",
     hottest: "Hottest",
     covered: "Covered",
+    showing: "Showing",
+    ofTopics: "of",
   },
   a11y: {
     skipToMain: "Skip to main content",
@@ -821,6 +823,8 @@ const zh: typeof en = {
     totalTopics: "主题",
     hottest: "最热",
     covered: "覆盖",
+    showing: "显示",
+    ofTopics: "共",
   },
   a11y: {
     skipToMain: "跳转到主要内容",
