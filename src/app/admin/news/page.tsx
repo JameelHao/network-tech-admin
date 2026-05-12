@@ -180,7 +180,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                       <Td className="hidden lg:table-cell">
                         <span className="text-[12px] text-ink-400">—</span>
                       </Td>
-                      <Td>
+                      <Td className="whitespace-nowrap">
                         {item.pub_date ? (
                           <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={item.pub_date}>
                             {relativeTime(item.pub_date, lang)}
@@ -234,9 +234,9 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 }
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <th className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
+  return <th className={`px-3 sm:px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
 function Td({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={`px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
+  return <td className={`px-3 sm:px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }

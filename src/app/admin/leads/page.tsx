@@ -139,12 +139,12 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                         </span>
                       ) : <span className="text-ink-400">—</span>}
                     </Td>
-                    <Td>
+                    <Td className="whitespace-nowrap">
                       <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.created_at}>
                         {relativeTime(l.created_at, lang)}
                       </span>
                     </Td>
-                    <Td className="hidden lg:table-cell">
+                    <Td className="hidden lg:table-cell whitespace-nowrap">
                       <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.updated_at}>
                         {relativeTime(l.updated_at, lang)}
                       </span>
@@ -172,9 +172,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 }
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <th className={`px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
+  return <th className={`px-3 sm:px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
 function Td({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={`px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
+  return <td className={`px-3 sm:px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }
