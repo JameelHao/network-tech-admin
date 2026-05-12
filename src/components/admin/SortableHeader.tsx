@@ -23,6 +23,11 @@ function Arrow({ dir }: { dir?: SortDir }) {
   );
 }
 
+function ariaSortValue(column: string, currentSort?: string, currentDir?: SortDir): "ascending" | "descending" | "none" {
+  if (currentSort !== column) return "none";
+  return currentDir === "asc" ? "ascending" : "descending";
+}
+
 export function SortableHeader({ column, label, currentSort, currentDir, basePath, searchParams = {} }: Props) {
   const isActive = currentSort === column;
   const nd = nextDir(column, currentSort, currentDir);
@@ -40,7 +45,7 @@ export function SortableHeader({ column, label, currentSort, currentDir, basePat
   const href = qs ? `${basePath}?${qs}` : basePath;
 
   return (
-    <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">
+    <th aria-sort={ariaSortValue(column, currentSort, currentDir)} className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left">
       <Link href={href} className="inline-flex items-center gap-0.5 hover:text-ink-800 transition-colors">
         {label}
         {isActive && <Arrow dir={currentDir} />}
@@ -69,6 +74,7 @@ export function SortableHeaderClient({
     <button
       type="button"
       onClick={() => onSort(column, nd)}
+      aria-pressed={isActive}
       className="inline-flex items-center gap-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 hover:text-ink-800 transition-colors"
     >
       {label}

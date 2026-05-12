@@ -390,6 +390,14 @@ const en = {
     noTopicsDesc: "Adjust filters or add topics to your items.",
     items: "items",
   },
+  a11y: {
+    skipToMain: "Skip to main content",
+    navigation: "Navigation",
+    status: "Status",
+    sortAsc: "Sorted ascending",
+    sortDesc: "Sorted descending",
+    sortNone: "Not sorted",
+  },
 };
 
 const zh: typeof en = {
@@ -781,6 +789,14 @@ const zh: typeof en = {
     noTopics: "未找到主题",
     noTopicsDesc: "调整筛选条件或为项目添加主题。",
     items: "项",
+  },
+  a11y: {
+    skipToMain: "跳转到主要内容",
+    navigation: "导航",
+    status: "状态",
+    sortAsc: "升序排列",
+    sortDesc: "降序排列",
+    sortNone: "未排序",
   },
 };
 
