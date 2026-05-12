@@ -142,7 +142,7 @@ const conferences = [
     name: "SC 2026 (Supercomputing)",
     abbreviation: "SC",
     url: "https://sc26.supercomputing.org/",
-    location: "St. Louis, MO, USA",
+    location: "Chicago, IL, USA",
     start_date: "2026-11-15",
     end_date: "2026-11-20",
     category: "infrastructure",
