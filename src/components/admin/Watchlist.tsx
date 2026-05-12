@@ -10,6 +10,7 @@ const ENTITY_PATHS: Record<EntityType, string> = {
   leads: "/admin/leads",
   talents: "/admin/talents",
   opensource: "/admin/opensource",
+  news: "/admin/news",
 };
 
 const ENTITY_COLORS: Record<EntityType, string> = {
@@ -18,6 +19,7 @@ const ENTITY_COLORS: Record<EntityType, string> = {
   leads: "bg-amber-100 text-amber-700",
   talents: "bg-moss-100 text-moss-700",
   opensource: "bg-ink-100 text-ink-600",
+  news: "bg-rust-100 text-rust-600",
 };
 
 export function Watchlist({
