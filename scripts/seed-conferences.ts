@@ -32,7 +32,7 @@ const conferences = [
     name: "IEEE INFOCOM 2026",
     abbreviation: "INFOCOM",
     url: "https://infocom2026.ieee-infocom.org/",
-    location: "London, UK",
+    location: "Tokyo, Japan",
     start_date: "2026-05-19",
     end_date: "2026-05-22",
     category: "network-systems",
