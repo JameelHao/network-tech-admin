@@ -71,7 +71,7 @@ export function FilterDateRange({
   const router = useRouter();
   const pathname = usePathname();
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1">
       <input
         type="date"
         value={fromValue}
@@ -79,9 +79,9 @@ export function FilterDateRange({
           navigate(searchParams, fromKey, e.target.value, router, pathname)
         }
         aria-label={fromLabel}
-        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
       />
-      <span className="text-ink-400 text-[10px]">–</span>
+      <span className="hidden sm:inline text-ink-400 text-[10px]">–</span>
       <input
         type="date"
         value={toValue}
@@ -89,7 +89,7 @@ export function FilterDateRange({
           navigate(searchParams, toKey, e.target.value, router, pathname)
         }
         aria-label={toLabel}
-        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
       />
     </div>
   );
@@ -114,7 +114,7 @@ export function FilterNumberRange({
   const router = useRouter();
   const pathname = usePathname();
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1">
       <input
         type="number"
         value={minValue}
@@ -124,9 +124,9 @@ export function FilterNumberRange({
         placeholder={minLabel}
         aria-label={minLabel}
         min="0"
-        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[80px]"
+        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[80px]"
       />
-      <span aria-hidden="true" className="text-ink-400 text-[10px]">–</span>
+      <span aria-hidden="true" className="hidden sm:inline text-ink-400 text-[10px]">–</span>
       <input
         type="number"
         value={maxValue}
@@ -136,7 +136,7 @@ export function FilterNumberRange({
         placeholder={maxLabel}
         aria-label={maxLabel}
         min="0"
-        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[80px]"
+        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[80px]"
       />
     </div>
   );
@@ -172,7 +172,7 @@ export function FilterInput({
             navigate(searchParams, paramKey, v, router, pathname);
         }
       }}
-      className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-32"
+      className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-32"
     />
   );
 }

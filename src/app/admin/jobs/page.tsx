@@ -82,7 +82,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
         <section data-fav-filter="jobs" className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-            <div className="flex items-center gap-2 overflow-x-auto">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-[17px] tracking-tight text-ink-800 shrink-0">
                 {t.jobs.title}
                 <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
