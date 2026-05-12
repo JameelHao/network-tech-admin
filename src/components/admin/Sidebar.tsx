@@ -111,7 +111,7 @@ export function Sidebar({ t }: { t: Dict }) {
 
   return (
     <>
-      <aside aria-label="Navigation" className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
+      <aside aria-label={t.a11y.navigation} className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
         <div className="px-6 pt-7 pb-9">
           <span className="font-display text-[17px] font-semibold tracking-tight">Tech Radar</span>
         </div>

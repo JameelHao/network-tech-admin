@@ -3,27 +3,19 @@ import { render } from "@testing-library/react";
 import { SortableHeaderClient } from "../SortableHeader";
 
 describe("SortableHeaderClient a11y", () => {
-  it("sets aria-sort=ascending when sorted asc", () => {
+  it("sets aria-pressed=true when active column", () => {
     const { container } = render(
       <SortableHeaderClient column="title" label="Title" currentSort="title" currentDir="asc" onSort={vi.fn()} />,
     );
     const btn = container.querySelector("button");
-    expect(btn?.getAttribute("aria-sort")).toBe("ascending");
+    expect(btn?.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("sets aria-sort=descending when sorted desc", () => {
-    const { container } = render(
-      <SortableHeaderClient column="title" label="Title" currentSort="title" currentDir="desc" onSort={vi.fn()} />,
-    );
-    const btn = container.querySelector("button");
-    expect(btn?.getAttribute("aria-sort")).toBe("descending");
-  });
-
-  it("sets aria-sort=none when not active column", () => {
+  it("sets aria-pressed=false when not active column", () => {
     const { container } = render(
       <SortableHeaderClient column="title" label="Title" currentSort="date" currentDir="asc" onSort={vi.fn()} />,
     );
     const btn = container.querySelector("button");
-    expect(btn?.getAttribute("aria-sort")).toBe("none");
+    expect(btn?.getAttribute("aria-pressed")).toBe("false");
   });
 });

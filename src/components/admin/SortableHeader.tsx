@@ -70,13 +70,11 @@ export function SortableHeaderClient({
   const isActive = currentSort === column;
   const nd = nextDir(column, currentSort, currentDir);
 
-  const sortState = ariaSortValue(column, currentSort, currentDir);
-
   return (
     <button
       type="button"
       onClick={() => onSort(column, nd)}
-      aria-sort={sortState}
+      aria-pressed={isActive}
       className="inline-flex items-center gap-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 hover:text-ink-800 transition-colors"
     >
       {label}
