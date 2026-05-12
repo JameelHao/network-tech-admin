@@ -37,7 +37,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{lead.title}</h1>
             <div className="flex items-center gap-2">
               <FavoriteButton entity="leads" id={id} label={lead.title} />
-              <StatusPill label={lead.stage} />
+              <StatusPill label={lead.stage} lang={lang} />
             </div>
           </div>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">

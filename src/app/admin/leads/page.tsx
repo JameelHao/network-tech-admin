@@ -97,7 +97,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     {l.source_label && <span className="text-[11px] text-ink-400 ml-1">· {l.source_label}</span>}
                   </td>
                   <td className="px-5 py-3">
-                    <StatusPill label={l.stage} />
+                    <StatusPill label={l.stage} lang={lang} />
                   </td>
                   <td className="px-5 py-3 text-ink-500 text-[12px]">{relativeTime(l.created_at, lang)}</td>
                   <td className="px-5 py-3 text-ink-500 tabular-nums text-[12px]">{l.updated_at.slice(0, 10)}</td>
