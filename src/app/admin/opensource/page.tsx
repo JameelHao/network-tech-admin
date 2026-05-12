@@ -79,12 +79,12 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
             <thead>
               <tr className="border-b border-line bg-paper/30 text-left">
                 <SortableHeader column="name" label={t.common.name} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
-                <SortableHeader column="language" label={t.detail.language} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
+                <SortableHeader column="language" label={t.detail.language} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} className="hidden lg:table-cell" />
                 <SortableHeader column="stars" label={t.detail.stars} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
                 <SortableHeader column="last_active" label={t.detail.lastActive} currentSort={sortCol} currentDir={sortDir} basePath="/admin/opensource" searchParams={filterParams} />
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.topics}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.repo}</th>
-                <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
+                <th className="hidden lg:table-cell px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.topics}</th>
+                <th className="hidden lg:table-cell px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.list.repo}</th>
+                <th className="hidden lg:table-cell px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -103,22 +103,22 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
                       <p className="text-[11px] text-ink-400 mt-0.5 truncate max-w-xs">{o.description}</p>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-ink-600">{o.language ?? "—"}</td>
+                  <td className="hidden lg:table-cell px-5 py-3 text-ink-600">{o.language ?? "—"}</td>
                   <td className="px-5 py-3 text-ink-600 tabular-nums">{o.stars?.toLocaleString() ?? "—"}</td>
                   <td className="px-5 py-3 text-ink-600 tabular-nums">{o.last_active ?? "—"}</td>
-                  <td className="px-5 py-3">
+                  <td className="hidden lg:table-cell px-5 py-3">
                     <div className="flex flex-wrap gap-1.5">
                       {o.topics.map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
                     </div>
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="hidden lg:table-cell px-5 py-3">
                     {o.repo_url ? (
                       <a href={o.repo_url} target="_blank" rel="noopener noreferrer" className="text-navy-500 hover:text-navy-700">
                         <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor"><path d="M8 .2A8 8 0 0 0 5.47 15.79c.4.07.55-.17.55-.38l-.01-1.49c-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82a7.42 7.42 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.2c0 .21.15.46.55.38A8.01 8.01 0 0 0 8 .2Z"/></svg>
                       </a>
                     ) : <span className="text-ink-300">—</span>}
                   </td>
-                  <td className="px-5 py-3"><FavoriteButton entity="opensource" id={o.id} label={o.name} /></td>
+                  <td className="hidden lg:table-cell px-5 py-3"><FavoriteButton entity="opensource" id={o.id} label={o.name} /></td>
                 </tr>
               ))}
             </tbody>
