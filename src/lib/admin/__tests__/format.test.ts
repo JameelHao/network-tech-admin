@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { relativeTime, conferenceStatus, formatDateRange, isExpired, isCurrentYear } from "../format";
+import { relativeTime, conferenceStatus, formatDateRange, isExpired, isCurrentYear, getTimeGroup, isNew } from "../format";
 
 describe("relativeTime", () => {
   afterEach(() => { vi.useRealTimers(); });
@@ -112,6 +112,57 @@ describe("isExpired", () => {
   it("returns false for recent dates", () => {
     vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
     expect(isExpired("2026-05-01T00:00:00Z", 30)).toBe(false);
+  });
+});
+
+describe("getTimeGroup", () => {
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("returns 'older' for null/undefined", () => {
+    expect(getTimeGroup(null)).toBe("older");
+    expect(getTimeGroup(undefined)).toBe("older");
+  });
+
+  it("returns 'today' for items within 24h", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(getTimeGroup("2026-05-11T00:00:01Z")).toBe("today");
+    expect(getTimeGroup("2026-05-11T11:59:00Z")).toBe("today");
+  });
+
+  it("returns 'week' for items 1-7 days old", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(getTimeGroup("2026-05-09T12:00:00Z")).toBe("week");
+    expect(getTimeGroup("2026-05-05T12:00:00Z")).toBe("week");
+  });
+
+  it("returns 'month' for items 7-30 days old", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(getTimeGroup("2026-05-01T00:00:00Z")).toBe("month");
+    expect(getTimeGroup("2026-04-15T00:00:00Z")).toBe("month");
+  });
+
+  it("returns 'older' for items >30 days old", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(getTimeGroup("2026-03-01T00:00:00Z")).toBe("older");
+  });
+});
+
+describe("isNew", () => {
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("returns false for null/undefined", () => {
+    expect(isNew(null)).toBe(false);
+    expect(isNew(undefined)).toBe(false);
+  });
+
+  it("returns true for items within 24h", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(isNew("2026-05-11T00:00:01Z")).toBe(true);
+  });
+
+  it("returns false for items older than 24h", () => {
+    vi.useFakeTimers({ now: new Date("2026-05-11T12:00:00Z") });
+    expect(isNew("2026-05-09T00:00:00Z")).toBe(false);
   });
 });
 

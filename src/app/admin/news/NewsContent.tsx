@@ -3,12 +3,16 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ErrorState } from "@/components/admin/ErrorState";
+import { NewBadge } from "@/components/admin/NewBadge";
+import { TimeGroupHeader } from "@/components/admin/TimeGroupHeader";
+import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { PaginationClient } from "@/components/admin/PaginationClient";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
-import { relativeTime } from "@/lib/admin/format";
+import { relativeTime, getTimeGroup, isNew, isExpired } from "@/lib/admin/format";
+import type { TimeGroup } from "@/lib/admin/format";
 import { useFilterParams } from "@/hooks/useFilterParams";
 import { useSortable } from "@/hooks/useSortable";
 import type { Lang } from "@/lib/i18n/dict";
@@ -56,6 +60,9 @@ type NewsLabels = {
   clearAll: string;
   dateFrom: string;
   dateTo: string;
+  timeRange: { today: string; week: string; month: string; all: string };
+  timeGroup: Record<TimeGroup, string>;
+  newLabel: string;
 };
 
 export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }) {
@@ -64,6 +71,7 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
   const source = fp.get("source");
   const dateFrom = fp.get("dateFrom");
   const dateTo = fp.get("dateTo");
+  const timeRange = fp.get("timeRange");
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,10 +126,29 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
     if (dateTo) {
       list = list.filter((item) => item.pubDate && item.pubDate <= dateTo);
     }
+    if (timeRange) {
+      const DAY = 86_400_000;
+      const ms: Record<string, number> = { today: DAY, week: 7 * DAY, month: 30 * DAY };
+      const threshold = ms[timeRange];
+      if (threshold) {
+        const now = Date.now();
+        list = list.filter((item) => item.pubDate && now - new Date(item.pubDate).getTime() < threshold);
+      }
+    }
     return list;
-  }, [items, keyword, source, dateFrom, dateTo]);
+  }, [items, keyword, source, dateFrom, dateTo, timeRange]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<NewsItem>(filtered, { key: "pubDate", dir: "desc" });
+
+  const groups = useMemo(() => {
+    const map = new Map<TimeGroup, NewsItem[]>();
+    for (const item of sorted) {
+      const g = getTimeGroup(item.pubDate);
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(item);
+    }
+    return Array.from(map.entries());
+  }, [sorted]);
 
   return (
     <div className="rounded-lg border border-line bg-surface">
@@ -131,6 +158,7 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{total}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
           <ExportButton entity="news" format="csv" label={labels.exportCSV} />
           <ExportButton entity="news" format="json" label={labels.exportJSON} />
           <MobileFilterBar label={labels.filter}>
@@ -200,26 +228,39 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
       ) : sorted.length === 0 ? (
         <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
       ) : (
-        <div className="divide-y divide-line">
-          {sorted.map((item) => (
-            <a
-              key={item.link}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block px-5 py-4 hover:bg-paper/40 transition-colors"
-            >
-              <p className="text-[13px] font-medium text-ink-800">{item.title}</p>
-              {item.snippet && (
-                <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
-              )}
-              <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
-                {item.source && <span className="text-navy-500">{item.source}</span>}
-                {item.source && " · "}
-                {extractDomain(item.link)}
-                {item.pubDate && <> · <span className="text-ink-400">{relativeTime(item.pubDate, lang)}</span></>}
-              </p>
-            </a>
+        <div>
+          {groups.map(([group, groupItems]) => (
+            <div key={group}>
+              <TimeGroupHeader group={group} count={groupItems.length} labels={labels.timeGroup} />
+              <div className="divide-y divide-line">
+                {groupItems.map((item) => {
+                  const stale = isExpired(item.pubDate, 30);
+                  return (
+                    <a
+                      key={item.link}
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`block px-5 py-4 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{item.title}</p>
+                        {isNew(item.pubDate) && <NewBadge label={labels.newLabel} />}
+                      </div>
+                      {item.snippet && (
+                        <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
+                      )}
+                      <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
+                        {item.source && <span className="text-navy-500">{item.source}</span>}
+                        {item.source && " · "}
+                        {extractDomain(item.link)}
+                        {item.pubDate && <> · <span className="text-ink-400">{relativeTime(item.pubDate, lang)}</span></>}
+                      </p>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
       )}

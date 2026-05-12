@@ -34,6 +34,9 @@ export default async function NewsPage() {
             clearAll: t.filter.clearAll,
             dateFrom: t.filter.dateFrom,
             dateTo: t.filter.dateTo,
+            timeRange: { today: t.time.today, week: t.time.thisWeek, month: t.time.thisMonth, all: t.time.all },
+            timeGroup: { today: t.time.today, week: t.time.thisWeek, month: t.time.thisMonth, older: t.time.older },
+            newLabel: t.time.new,
           }} />
         </Suspense>
       </main>
