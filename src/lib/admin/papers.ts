@@ -1,20 +1,48 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllNetworkPapers } from "./paper-import";
-import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
+import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Paper } from "./types";
 
-export async function listPapers(params?: PaginationParams): Promise<PaginatedResult<Paper>> {
+export const PAPER_SORTABLE = ["title", "published_date", "venue"] as const;
+
+export type PaperFilter = {
+  keyword?: string;
+  venue?: string;
+  topic?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export async function listPapers(params?: PaginationParams, filter?: PaperFilter): Promise<PaginatedResult<Paper>> {
   const supabase = await createClient();
   const page = params?.page ?? 1;
-  const pageSize = params?.pageSize ?? 50;
+  const pageSize = params?.pageSize ?? 25;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const { column, ascending } = validateSort(params?.sort, params?.dir, PAPER_SORTABLE, "published_date", "desc");
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("papers")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order(column, { ascending, nullsFirst: false });
+
+  if (filter?.keyword) {
+    query = query.or(`title.ilike.%${filter.keyword}%,authors.cs.{${filter.keyword}}`);
+  }
+  if (filter?.venue) {
+    query = query.eq("venue", filter.venue);
+  }
+  if (filter?.topic) {
+    query = query.contains("topics", [filter.topic]);
+  }
+  if (filter?.dateFrom) {
+    query = query.gte("published_date", filter.dateFrom);
+  }
+  if (filter?.dateTo) {
+    query = query.lte("published_date", filter.dateTo);
+  }
+
+  const { data, error, count } = await query.range(from, to);
 
   if (error) throw error;
   return buildResult((data as Paper[]) ?? [], count ?? 0, { page, pageSize });
