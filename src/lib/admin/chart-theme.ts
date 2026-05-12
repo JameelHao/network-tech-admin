@@ -26,15 +26,3 @@ export const STAGE_GRADIENTS: Record<string, { start: string; end: string }> = {
   evaluating: { start: "#10b981", end: "#34d399" },
   archived: { start: "#94a3b8", end: "#cbd5e1" },
 };
-
-export const TOOLTIP_STYLE: React.CSSProperties = {
-  background: "rgba(15, 23, 42, 0.92)",
-  border: "none",
-  borderRadius: 10,
-  padding: "8px 14px",
-  color: "#f1f5f9",
-  fontSize: 12,
-  fontFamily: "IBM Plex Mono, monospace",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
-  backdropFilter: "blur(8px)",
-};

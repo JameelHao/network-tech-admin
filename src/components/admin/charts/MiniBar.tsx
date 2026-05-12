@@ -78,7 +78,7 @@ export function MiniBar({
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-line)" />
         <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
         <YAxis tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
-        <Tooltip content={<ChartTooltip />} />
+        <Tooltip content={(props) => <ChartTooltip {...props} />} />
         <Bar
           dataKey="value"
           fill={`url(#${gradId})`}

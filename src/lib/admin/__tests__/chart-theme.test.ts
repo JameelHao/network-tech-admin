@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CHART_COLORS, PIE_COLORS, STAGE_GRADIENTS, TOOLTIP_STYLE } from "../chart-theme";
+import { CHART_COLORS, PIE_COLORS, STAGE_GRADIENTS } from "../chart-theme";
 
 describe("chart-theme", () => {
   it("exports 8 gradient color pairs", () => {
@@ -31,10 +31,4 @@ describe("chart-theme", () => {
     }
   });
 
-  it("TOOLTIP_STYLE has dark background with blur", () => {
-    expect(TOOLTIP_STYLE.background).toContain("rgba");
-    expect(TOOLTIP_STYLE.backdropFilter).toContain("blur");
-    expect(TOOLTIP_STYLE.border).toBe("none");
-    expect(TOOLTIP_STYLE.borderRadius).toBe(10);
-  });
 });
