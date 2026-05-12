@@ -67,7 +67,7 @@ export function SessionStats({ sessions, labels, lang }: { sessions: ConferenceS
           <div className="space-y-2">
             {topAuthors.map((a) => (
               <div key={a.name} className="flex items-center gap-3">
-                <span className="font-mono text-[11px] text-ink-700 truncate w-28 shrink-0">{a.name}</span>
+                <span className="font-mono text-[11px] text-ink-700 truncate w-20 sm:w-28 shrink-0">{a.name}</span>
                 <div className="flex-1 h-4 bg-ink-100 rounded-sm overflow-hidden">
                   <div
                     className="h-full bg-navy-500 rounded-sm"
@@ -86,7 +86,7 @@ export function SessionStats({ sessions, labels, lang }: { sessions: ConferenceS
           <div className="space-y-2">
             {topAffils.map((a) => (
               <div key={a.name} className="flex items-center gap-3">
-                <span className="font-mono text-[11px] text-ink-700 truncate w-28 shrink-0">{a.name}</span>
+                <span className="font-mono text-[11px] text-ink-700 truncate w-20 sm:w-28 shrink-0">{a.name}</span>
                 <div className="flex-1 h-4 bg-ink-100 rounded-sm overflow-hidden">
                   <div
                     className="h-full bg-cobalt-500 rounded-sm"

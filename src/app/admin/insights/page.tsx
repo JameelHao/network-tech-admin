@@ -115,7 +115,7 @@ export default async function InsightsPage() {
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-8">
         <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{t.insights.title}</h1>
 
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <StatCard label={t.insights.papers} value={paperTotal} />
         <StatCard label={t.insights.conferences} value={confTotal} />
         <StatCard label={t.insights.leads} value={leadTotal} />

@@ -17,15 +17,16 @@ type Props = {
   height?: number;
   innerRadius?: number;
   total?: number;
+  className?: string;
 };
 
-export function MiniPie({ data, height = 260, innerRadius = 60, total }: Props) {
+export function MiniPie({ data, height = 260, innerRadius = 60, total, className }: Props) {
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
   const centerValue = total ?? data.reduce((s, d) => s + d.value, 0);
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={height} className={className}>
       <PieChart>
         <Pie
           data={data}

@@ -18,12 +18,14 @@ type Props = {
   data: ChartPoint[];
   color?: string;
   height?: number;
+  className?: string;
 };
 
 export function MiniLine({
   data,
   color = CHART_COLORS.primary.start,
   height = 260,
+  className,
 }: Props) {
   const id = useId();
   const gradId = `lineGrad-${id}`;
@@ -31,7 +33,7 @@ export function MiniLine({
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={height} className={className}>
       <AreaChart data={data} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">

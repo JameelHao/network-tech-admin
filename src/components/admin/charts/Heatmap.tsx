@@ -38,10 +38,10 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[500px]">
+      <div className="min-w-[320px]">
         <div
           className="grid gap-px"
-          style={{ gridTemplateColumns: `100px repeat(${xLabels.length}, 1fr)` }}
+          style={{ gridTemplateColumns: `80px repeat(${xLabels.length}, 1fr)` }}
         >
           <div />
           {xLabels.map((x) => (
