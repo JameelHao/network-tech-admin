@@ -4,10 +4,12 @@ import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { getDict } from "@/lib/i18n/server";
 import { PapersClient } from "./PapersClient";
 import { fetchAndSyncPapers } from "@/lib/admin/papers";
+import { findDuplicateGroups } from "@/lib/admin/paper-dedup";
 
 export default async function PapersPage() {
   const { lang, t } = await getDict();
   const papers = await fetchAndSyncPapers();
+  const duplicateGroups = findDuplicateGroups(papers);
 
   return (
     <>
@@ -15,7 +17,7 @@ export default async function PapersPage() {
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <SyncStatusBar entity="papers" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
         <Suspense>
-          <PapersClient papers={papers} lang={lang} labels={{
+          <PapersClient papers={papers} duplicateGroups={duplicateGroups} lang={lang} labels={{
             title: t.papers.title,
             searchPlaceholder: t.papers.searchPlaceholder,
             allSources: t.papers.allSources,
@@ -41,6 +43,18 @@ export default async function PapersPage() {
             newLabel: t.time.new,
             favorites: t.favorite.favorites,
             favoritesAll: t.favorite.all,
+            dedup: {
+              warning: t.dedup.warning,
+              groupsFound: t.dedup.groupsFound,
+              viewDetails: t.dedup.viewDetails,
+              hide: t.dedup.hide,
+              similarity: t.dedup.similarity,
+              exactTitle: t.dedup.exactTitle,
+              similarTitle: t.dedup.similarTitle,
+              sameAuthorsSimilarTitle: t.dedup.sameAuthorsSimilarTitle,
+              ignore: t.dedup.ignore,
+              reset: t.dedup.reset,
+            },
           }} />
         </Suspense>
       </main>
