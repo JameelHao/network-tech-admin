@@ -19,6 +19,7 @@ type Props = {
   color?: string;
   height?: number;
   layout?: "horizontal" | "vertical";
+  className?: string;
 };
 
 export function MiniBar({
@@ -26,6 +27,7 @@ export function MiniBar({
   color = CHART_COLORS.primary.start,
   height = 260,
   layout = "vertical",
+  className,
 }: Props) {
   const id = useId();
   const gradId = `barGrad-${id}`;
@@ -36,7 +38,7 @@ export function MiniBar({
 
   if (layout === "vertical") {
     return (
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer width="100%" height={height} className={className}>
         <BarChart data={data} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
@@ -67,7 +69,7 @@ export function MiniBar({
   }
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={height} className={className}>
       <BarChart data={data} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
