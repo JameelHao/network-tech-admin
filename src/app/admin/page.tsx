@@ -157,6 +157,7 @@ export default async function DashboardPage() {
             talents: t.nav.talents,
             opensource: t.nav.opensource,
             news: t.nav.news,
+            jobs: t.nav.jobs,
           },
         }} />
 

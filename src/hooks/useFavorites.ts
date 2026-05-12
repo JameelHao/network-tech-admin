@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 
-export type EntityType = "conferences" | "papers" | "leads" | "talents" | "opensource" | "news";
+export type EntityType = "conferences" | "papers" | "leads" | "talents" | "opensource" | "news" | "jobs";
 
 type FavoriteEntry = { id: string; ts: number; label: string };
 type FavoritesData = Record<EntityType, FavoriteEntry[]>;
@@ -10,7 +10,7 @@ type FavoritesData = Record<EntityType, FavoriteEntry[]>;
 const STORAGE_KEY = "nta-favorites";
 
 function empty(): FavoritesData {
-  return { conferences: [], papers: [], leads: [], talents: [], opensource: [], news: [] };
+  return { conferences: [], papers: [], leads: [], talents: [], opensource: [], news: [], jobs: [] };
 }
 
 function readAll(): FavoritesData {
