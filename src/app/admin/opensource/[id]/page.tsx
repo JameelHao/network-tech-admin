@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TopicTag } from "@/components/admin/TopicTag";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { getOpenSource } from "@/lib/admin/opensource";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
@@ -32,7 +33,10 @@ export default async function OpenSourceDetailPage({ params }: { params: Promise
       />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
-          <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{project.name}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{project.name}</h1>
+            <FavoriteButton entity="opensource" id={id} label={project.name} />
+          </div>
           {project.description && <p className="text-[13px] text-ink-600">{project.description}</p>}
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.language}</dt><dd className="mt-1 text-ink-800">{project.language ?? "—"}</dd></div>

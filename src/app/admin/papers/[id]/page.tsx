@@ -1,6 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TopicTag } from "@/components/admin/TopicTag";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { getPaper, listAllPapersLight } from "@/lib/admin/papers";
 import { findSimilarPapers } from "@/lib/admin/paper-utils";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
@@ -37,7 +38,10 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
       />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full space-y-6">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
-          <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{paper.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{paper.title}</h1>
+            <FavoriteButton entity="papers" id={id} label={paper.title} />
+          </div>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.authors}</dt><dd className="mt-1 text-ink-800">{paper.authors.join(", ")}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.venue}</dt><dd className="mt-1 text-ink-800">{paper.venue ?? "—"}</dd></div>

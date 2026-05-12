@@ -13,6 +13,8 @@ import { parseMonthKey } from "@/lib/admin/calendar-utils";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
 import { conferenceStatus, formatDateRange } from "@/lib/admin/format";
+import { FavoriteButton } from "@/components/admin/FavoriteButton";
+import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterDateRange } from "@/components/admin/FilterControls";
@@ -113,7 +115,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
         </section>
 
         {view === "list" ? (
-          <section className="rounded-lg border border-line bg-surface overflow-hidden">
+          <section data-fav-filter="conferences" className="rounded-lg border border-line bg-surface overflow-hidden">
             <header className="flex items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
               <div className="flex items-center gap-2 overflow-x-auto">
                 {CATEGORY_KEYS.map((key) => {
@@ -159,6 +161,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                 />
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <FavoriteFilter entity="conferences" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
                 <ViewToggle
                   active="list"
                   basePath="/admin/conferences"
@@ -190,6 +193,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                     <Th>{t.detail.location}</Th>
                     <SortableHeader column="start_date" label={t.detail.date} currentSort={sortCol} currentDir={sortDir} basePath="/admin/conferences" searchParams={filterParams} />
                     <Th>{t.list.link}</Th>
+                    <Th>★</Th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,11 +242,12 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                             </a>
                           ) : <span className="text-ink-300">—</span>}
                         </Td>
+                        <Td><FavoriteButton entity="conferences" id={c.id} label={c.abbreviation ?? c.name} /></Td>
                       </tr>
                     );
                   })}
                   {conferences.length === 0 && (
-                    <tr><td colSpan={8}>
+                    <tr><td colSpan={9}>
                       <EmptyState title={t.empty.conferences} description={t.empty.conferencesDesc} action={{ label: t.conf.addNew, href: "/admin/conferences/new" }} />
                     </td></tr>
                   )}
