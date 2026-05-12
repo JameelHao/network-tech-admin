@@ -69,6 +69,22 @@ export function isExpired(dateStr: string | undefined | null, thresholdDays = 30
   return Date.now() - new Date(dateStr).getTime() > thresholdDays * DAY;
 }
 
+export type TimeGroup = "today" | "week" | "month" | "older";
+
+export function getTimeGroup(dateStr: string | null | undefined): TimeGroup {
+  if (!dateStr) return "older";
+  const age = Date.now() - new Date(dateStr).getTime();
+  if (age < DAY) return "today";
+  if (age < 7 * DAY) return "week";
+  if (age < 30 * DAY) return "month";
+  return "older";
+}
+
+export function isNew(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  return Date.now() - new Date(dateStr).getTime() < DAY;
+}
+
 export function isCurrentYear(dateStr: string | null | undefined): boolean {
   if (!dateStr) return false;
   return new Date(dateStr).getFullYear() === new Date().getFullYear();

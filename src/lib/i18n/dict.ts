@@ -335,6 +335,15 @@ const en = {
     fetchFailed: "Failed to load data",
     retry: "Retry",
   },
+  time: {
+    today: "Today",
+    thisWeek: "This Week",
+    thisMonth: "This Month",
+    older: "Older",
+    all: "All",
+    new: "NEW",
+    recentDays: "Last 7 days",
+  },
 };
 
 const zh: typeof en = {
@@ -671,6 +680,15 @@ const zh: typeof en = {
   error: {
     fetchFailed: "数据加载失败",
     retry: "重试",
+  },
+  time: {
+    today: "今天",
+    thisWeek: "本周",
+    thisMonth: "本月",
+    older: "更早",
+    all: "全部",
+    new: "NEW",
+    recentDays: "近 7 天",
   },
 };
 

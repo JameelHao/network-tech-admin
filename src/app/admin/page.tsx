@@ -27,10 +27,13 @@ export default async function DashboardPage() {
   const opensource = osResult.data;
   const leads = leadResult.data;
 
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+
   const { data: newsItems } = await supabase
     .from("news_items")
     .select("title, link, source")
     .eq("category", "news")
+    .gte("pub_date", sevenDaysAgo)
     .order("pub_date", { ascending: false })
     .limit(5);
 
@@ -41,7 +44,9 @@ export default async function DashboardPage() {
     .filter((c) => new Date(c.start_date) > new Date())
     .sort((a, b) => a.start_date.localeCompare(b.start_date));
 
-  const latestPapers = papers.slice(0, 5);
+  const latestPapers = papers
+    .filter((p) => p.published_date && Date.now() - new Date(p.published_date).getTime() < 7 * 86_400_000)
+    .slice(0, 5);
 
   return (
     <>
@@ -80,7 +85,7 @@ export default async function DashboardPage() {
 
           <section className="rounded-lg border border-line bg-surface">
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.latestPapers}</h2>
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.latestPapers} <span className="text-[11px] text-ink-400 font-mono">({t.time.recentDays})</span></h2>
               <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="divide-y divide-line">
@@ -103,7 +108,7 @@ export default async function DashboardPage() {
         <div className="grid lg:grid-cols-2 gap-6">
           <section className="rounded-lg border border-line bg-surface">
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.news.latestNews}</h2>
+              <h2 className="font-display text-[15px] tracking-tight text-ink-800">{t.news.latestNews} <span className="text-[11px] text-ink-400 font-mono">({t.time.recentDays})</span></h2>
               <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="divide-y divide-line">

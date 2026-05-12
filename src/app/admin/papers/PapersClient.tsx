@@ -2,11 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { EmptyState } from "@/components/admin/EmptyState";
+import { NewBadge } from "@/components/admin/NewBadge";
+import { TimeGroupHeader } from "@/components/admin/TimeGroupHeader";
+import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
-import { relativeTime, isCurrentYear } from "@/lib/admin/format";
+import { relativeTime, isCurrentYear, getTimeGroup, isNew, isExpired } from "@/lib/admin/format";
+import type { TimeGroup } from "@/lib/admin/format";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { useFilterParams } from "@/hooks/useFilterParams";
 import { useSortable } from "@/hooks/useSortable";
@@ -35,6 +39,9 @@ type PapersLabels = {
   clearAll: string;
   dateFrom: string;
   dateTo: string;
+  timeRange: { today: string; week: string; month: string; all: string };
+  timeGroup: Record<TimeGroup, string>;
+  newLabel: string;
 };
 
 export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
@@ -44,6 +51,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
   const topic = fp.get("topic");
   const dateFrom = fp.get("dateFrom");
   const dateTo = fp.get("dateTo");
+  const timeRange = fp.get("timeRange");
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
 
   const venues = useMemo(() => {
@@ -85,12 +93,31 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
     if (dateTo) {
       list = list.filter((p) => p.published_date && p.published_date <= dateTo);
     }
+    if (timeRange) {
+      const DAY = 86_400_000;
+      const ms: Record<string, number> = { today: DAY, week: 7 * DAY, month: 30 * DAY };
+      const threshold = ms[timeRange];
+      if (threshold) {
+        const now = Date.now();
+        list = list.filter((p) => p.published_date && now - new Date(p.published_date).getTime() < threshold);
+      }
+    }
     return list;
-  }, [papers, keyword, venue, topic, dateFrom, dateTo]);
+  }, [papers, keyword, venue, topic, dateFrom, dateTo, timeRange]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<Paper>(filtered, { key: "published_date", dir: "desc" });
 
   const clusters = useMemo(() => clusterByTopics(sorted), [sorted]);
+
+  const groups = useMemo(() => {
+    const map = new Map<TimeGroup, Paper[]>();
+    for (const p of sorted) {
+      const g = getTimeGroup(p.published_date);
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(p);
+    }
+    return Array.from(map.entries());
+  }, [sorted]);
 
   return (
     <div className="rounded-lg border border-line bg-surface">
@@ -100,6 +127,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
         </h1>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
           <div className="flex items-center rounded-full border border-line overflow-hidden">
             <button
               onClick={() => setViewMode("list")}
@@ -198,9 +226,16 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
       {sorted.length === 0 ? (
         <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
       ) : viewMode === "list" ? (
-        <div className="divide-y divide-line">
-          {sorted.map((p) => (
-            <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} />
+        <div>
+          {groups.map(([group, groupItems]) => (
+            <div key={group}>
+              <TimeGroupHeader group={group} count={groupItems.length} labels={labels.timeGroup} />
+              <div className="divide-y divide-line">
+                {groupItems.map((p) => (
+                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} newLabel={labels.newLabel} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
@@ -228,7 +263,7 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
               </summary>
               <div className="divide-y divide-line border-t border-line">
                 {cluster.papers.map((p) => (
-                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} />
+                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} newLabel={labels.newLabel} />
                 ))}
               </div>
             </details>
@@ -239,20 +274,22 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
   );
 }
 
-function PaperRow({ paper: p, lang, publishedLabel }: { paper: Paper; lang: Lang; publishedLabel: string }) {
+function PaperRow({ paper: p, lang, publishedLabel, newLabel }: { paper: Paper; lang: Lang; publishedLabel: string; newLabel: string }) {
   const yearBadge = p.published_date && !isCurrentYear(p.published_date)
     ? new Date(p.published_date).getFullYear().toString()
     : null;
+  const stale = isExpired(p.published_date, 30);
 
   return (
     <a
       href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="block px-5 py-4 hover:bg-paper/40 transition-colors"
+      className={`block px-5 py-4 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}
     >
       <div className="flex items-start gap-2">
-        <p className="text-[13px] font-medium text-ink-800 flex-1">{p.title}</p>
+        <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{p.title}</p>
+        {isNew(p.published_date) && <NewBadge label={newLabel} />}
         {yearBadge && (
           <span className="shrink-0 rounded-full bg-ink-100 px-1.5 py-0.5 font-mono text-[9px] text-ink-500">{yearBadge}</span>
         )}
