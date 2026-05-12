@@ -31,6 +31,18 @@ export async function listOpenSource(
   return buildResult((data as OpenSource[]) ?? [], count ?? 0, { page, pageSize });
 }
 
+export async function listAllOpenSourceLight(): Promise<Pick<OpenSource, "id" | "name" | "topics">[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("opensource")
+    .select("id, name, topics")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getOpenSource(id: string): Promise<OpenSource | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

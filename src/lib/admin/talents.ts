@@ -30,6 +30,18 @@ export async function listTalentLeads(
   return buildResult((data as TalentLead[]) ?? [], count ?? 0, { page, pageSize });
 }
 
+export async function listAllTalentsLight(): Promise<Pick<TalentLead, "id" | "name" | "topics">[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("talent_leads")
+    .select("id, name, topics")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getTalentLead(id: string): Promise<TalentLead | null> {
   const supabase = await createClient();
   const { data, error } = await supabase

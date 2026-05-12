@@ -16,6 +16,7 @@ export function Sidebar({ t }: { t: Dict }) {
       items: [
         { href: "/admin", label: t.nav.dashboard },
         { href: "/admin/insights", label: t.nav.insights },
+        { href: "/admin/topics", label: t.nav.topics },
       ],
     },
     {
