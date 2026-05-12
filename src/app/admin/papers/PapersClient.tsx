@@ -9,6 +9,7 @@ import { ExportButton } from "@/components/admin/ExportButton";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
+import { DuplicateWarning } from "@/components/admin/DuplicateWarning";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
 import { relativeTime, isCurrentYear, getTimeGroup, isNew, isExpired } from "@/lib/admin/format";
@@ -18,6 +19,7 @@ import { useFilterParams } from "@/hooks/useFilterParams";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
+import type { DuplicateGroup } from "@/lib/admin/paper-dedup";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
 
@@ -47,9 +49,21 @@ type PapersLabels = {
   newLabel: string;
   favorites: string;
   favoritesAll: string;
+  dedup: {
+    warning: string;
+    groupsFound: string;
+    viewDetails: string;
+    hide: string;
+    similarity: string;
+    exactTitle: string;
+    similarTitle: string;
+    sameAuthorsSimilarTitle: string;
+    ignore: string;
+    reset: string;
+  };
 };
 
-export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels: PapersLabels; lang: Lang }) {
+export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers: Paper[]; duplicateGroups?: DuplicateGroup[]; labels: PapersLabels; lang: Lang }) {
   const fp = useFilterParams();
   const keyword = fp.get("keyword");
   const venue = fp.get("venue");
@@ -225,6 +239,10 @@ export function PapersClient({ papers, labels, lang }: { papers: Paper[]; labels
         labels={{ activeFilters: labels.activeFilters, clearAll: labels.clearAll }}
         onClear={fp.clearAll}
       />
+
+      {duplicateGroups && duplicateGroups.length > 0 && (
+        <DuplicateWarning groups={duplicateGroups} labels={labels.dedup} />
+      )}
 
       {viewMode === "list" && sorted.length > 0 && (
         <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">
