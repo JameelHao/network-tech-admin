@@ -62,6 +62,10 @@ const en = {
     stage: "Stage",
     updatedAt: "Updated",
     source: "Source",
+    summary: "Summary",
+    sourceType: "Source Type",
+    sourceLabel: "Source Label",
+    notes: "Notes",
   },
   login: {
     heroTitle: "Network\nTechnology Radar",
@@ -474,6 +478,10 @@ const zh: typeof en = {
     stage: "阶段",
     updatedAt: "更新时间",
     source: "来源",
+    summary: "摘要",
+    sourceType: "来源类型",
+    sourceLabel: "来源名称",
+    notes: "备注",
   },
   login: {
     heroTitle: "网络技术雷达",

@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Lead, LeadStage } from "./types";
 
-export const LEAD_SORTABLE = ["title", "stage", "updated_at", "created_at"] as const;
+export const LEAD_SORTABLE = ["title", "stage", "source_type", "source_label", "updated_at", "created_at"] as const;
 
 export async function listLeads(
   params?: PaginationParams,
