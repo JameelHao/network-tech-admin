@@ -10,6 +10,7 @@ import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { TOPIC_CATEGORIES, getTopicLabel, type TopicCategory } from "@/lib/admin/topics";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
+import { tabClass } from "@/lib/admin/ui";
 
 type TopicsLabels = {
   title: string;
@@ -156,22 +157,18 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             onChange={(e) => setSearch(e.target.value)}
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] text-ink-800 placeholder:text-ink-400 w-48 focus:outline-none focus:ring-1 focus:ring-navy-300"
           />
-          <div className="flex items-center rounded-full border border-line overflow-hidden">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setView("table")}
-              className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-                view === "table" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(view === "table", "sm")}
             >
               {labels.table}
             </button>
             <button
               type="button"
               onClick={() => setView("heatmap")}
-              className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-                view === "heatmap" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(view === "heatmap", "sm")}
             >
               {labels.heatmap}
             </button>

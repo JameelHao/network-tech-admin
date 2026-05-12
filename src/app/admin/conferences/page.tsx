@@ -21,6 +21,7 @@ import { FilterDateRange } from "@/components/admin/FilterControls";
 import { CONF_SORTABLE } from "@/lib/admin/conferences";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { tabClass } from "@/lib/admin/ui";
 import type { SortDir } from "@/lib/admin/pagination";
 
 const CATEGORY_KEYS: (TopicCategory | "all")[] = ["all", "network-systems", "measurement", "security", "emerging", "infrastructure"];
@@ -129,11 +130,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                     <Link
                       key={key}
                       href={href}
-                      className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-                        isActive
-                          ? "bg-navy-700 text-navy-50"
-                          : "text-ink-500 hover:text-ink-800"
-                      }`}
+                      className={tabClass(isActive, "sm")}
                     >
                       {label}
                     </Link>
@@ -148,7 +145,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   if (s) p.set("status", s);
                   const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
                   return (
-                    <Link key={s} href={href} className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${isActive ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"}`}>
+                    <Link key={s} href={href} className={tabClass(isActive, "sm")}>
                       {label}
                     </Link>
                   );

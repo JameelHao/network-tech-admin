@@ -6,6 +6,7 @@ import type { Conference } from "@/lib/admin/types";
 import { TOPICS, TOPIC_CATEGORIES, CONFERENCE_TIERS, type TopicCategory, type ConferenceTier } from "@/lib/admin/topics";
 import { createConference, updateConference, type ConferenceFormState } from "@/app/admin/conferences/actions";
 import { TopicTag } from "./TopicTag";
+import { tabClass } from "@/lib/admin/ui";
 
 const CATEGORY_KEYS: TopicCategory[] = ["network-systems", "measurement", "security", "emerging", "infrastructure"];
 const TIER_KEYS: ConferenceTier[] = ["top", "good", "workshop"];
@@ -85,9 +86,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
                 key={key}
                 type="button"
                 onClick={() => setCategory(key)}
-                className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${
-                  category === key ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-                }`}
+                className={tabClass(category === key, "sm")}
               >
                 {TOPIC_CATEGORIES[key][lang]}
               </button>
@@ -102,9 +101,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
                 key={key}
                 type="button"
                 onClick={() => setTier(key)}
-                className={`px-3 py-1 rounded font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors ${
-                  tier === key ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-                }`}
+                className={tabClass(tier === key, "sm")}
               >
                 {CONFERENCE_TIERS[key][lang]}
               </button>

@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { setLang } from "@/lib/i18n/actions";
 import type { Lang } from "@/lib/i18n/dict";
+import { tabClass } from "@/lib/admin/ui";
 
 export function LangToggle({ lang }: { lang: Lang }) {
   const [pending, start] = useTransition();
@@ -22,9 +23,7 @@ export function LangToggle({ lang }: { lang: Lang }) {
         type="button"
         onClick={() => pick("zh")}
         aria-pressed={lang === "zh"}
-        className={`px-2 py-0.5 rounded font-mono text-[10.5px] tracking-[0.14em] uppercase transition-colors ${
-          lang === "zh" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-        }`}
+        className={tabClass(lang === "zh", "sm")}
       >
         中
       </button>
@@ -32,9 +31,7 @@ export function LangToggle({ lang }: { lang: Lang }) {
         type="button"
         onClick={() => pick("en")}
         aria-pressed={lang === "en"}
-        className={`px-2 py-0.5 rounded font-mono text-[10.5px] tracking-[0.14em] uppercase transition-colors ${
-          lang === "en" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-        }`}
+        className={tabClass(lang === "en", "sm")}
       >
         EN
       </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { calendarTodayClass } from "@/lib/admin/ui";
 import type { Conference } from "@/lib/admin/types";
 import {
   getMonthDays,
@@ -57,12 +58,12 @@ export function MonthGrid({ conferences, year, month, lang }: Props) {
                 }`}
               >
                 <span
-                  className={`inline-flex items-center justify-center w-6 h-6 text-xs tabular-nums rounded-full ${
+                  className={`inline-flex items-center justify-center w-6 h-6 text-xs tabular-nums ${
                     day.date === today
-                      ? "bg-navy-700 text-navy-50 font-semibold"
+                      ? calendarTodayClass()
                       : day.inMonth
-                        ? "text-ink-700"
-                        : "text-ink-300"
+                        ? "text-ink-700 rounded-full"
+                        : "text-ink-300 rounded-full"
                   }`}
                 >
                   {day.day}

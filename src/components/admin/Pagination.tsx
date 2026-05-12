@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { pageClass } from "@/lib/admin/ui";
 
 type Props = {
   page: number;
@@ -53,9 +54,7 @@ export function Pagination({ page, totalPages, total, pageSize, basePath, search
             <Link
               key={p}
               href={buildHref(basePath, searchParams, p, pageSize)}
-              className={`px-2 py-1 rounded transition-colors ${
-                p === page ? "bg-navy-700 text-navy-50" : "hover:bg-ink-100"
-              }`}
+              className={`px-2 py-1 transition-colors ${pageClass(p === page)}`}
             >
               {p}
             </Link>
@@ -75,9 +74,7 @@ export function Pagination({ page, totalPages, total, pageSize, basePath, search
           <Link
             key={s}
             href={buildHref(basePath, searchParams, 1, s)}
-            className={`px-1.5 py-0.5 rounded transition-colors ${
-              s === pageSize ? "bg-navy-700 text-navy-50" : "hover:bg-ink-100"
-            }`}
+            className={`px-1.5 py-0.5 transition-colors ${pageClass(s === pageSize)}`}
           >
             {s}
           </Link>

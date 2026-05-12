@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useState, useTransition } from "react
 import { setLang } from "@/lib/i18n/actions";
 import { logout } from "@/app/login/actions";
 import type { Dict, Lang } from "@/lib/i18n/dict";
+import { tabClass } from "@/lib/admin/ui";
 
 type Mode = "light" | "dark" | "system";
 const STORAGE_KEY = "nt-theme";
@@ -129,9 +130,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
               type="button"
               onClick={() => pickLang("zh")}
               aria-pressed={lang === "zh"}
-              className={`px-2 py-0.5 rounded font-mono text-[10.5px] tracking-[0.14em] uppercase transition-colors ${
-                lang === "zh" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(lang === "zh", "sm")}
             >
               中
             </button>
@@ -139,9 +138,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
               type="button"
               onClick={() => pickLang("en")}
               aria-pressed={lang === "en"}
-              className={`px-2 py-0.5 rounded font-mono text-[10.5px] tracking-[0.14em] uppercase transition-colors ${
-                lang === "en" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(lang === "en", "sm")}
             >
               EN
             </button>

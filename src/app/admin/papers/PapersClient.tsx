@@ -21,6 +21,7 @@ import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
 import type { DuplicateGroup } from "@/lib/admin/paper-dedup";
 import type { Lang } from "@/lib/i18n/dict";
+import { tabClass, badgeClass } from "@/lib/admin/ui";
 import type { SortDir } from "@/lib/admin/pagination";
 
 type PapersLabels = {
@@ -153,20 +154,16 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
           <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
-          <div className="flex items-center rounded-full border border-line overflow-hidden">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 min-h-[36px] font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-                viewMode === "list" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(viewMode === "list", "sm")}
             >
               {labels.viewList}
             </button>
             <button
               onClick={() => setViewMode("cluster")}
-              className={`px-3 py-1.5 min-h-[36px] font-mono text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-                viewMode === "cluster" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-              }`}
+              className={tabClass(viewMode === "cluster", "sm")}
             >
               {labels.viewCluster}
             </button>
@@ -283,7 +280,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                   <path d="M4.5 3 L7.5 6 L4.5 9" />
                 </svg>
                 <span className="font-mono text-[12px] font-semibold text-ink-700">{cluster.topic}</span>
-                <span className="rounded-full bg-navy-700 text-navy-50 px-1.5 py-0.5 font-mono text-[9px]">
+                <span className={badgeClass()}>
                   {cluster.count} {labels.papersCount}
                 </span>
                 <span className="font-mono text-[10px] text-ink-400 ml-auto">

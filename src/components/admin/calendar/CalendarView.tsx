@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { tabClass } from "@/lib/admin/ui";
 import type { Conference } from "@/lib/admin/types";
 import type { Dict, Lang } from "@/lib/i18n/dict";
 import { navigateMonth, formatMonthKey } from "@/lib/admin/calendar-utils";
@@ -81,20 +82,16 @@ export function CalendarView({ conferences, yearConferences, year, month, lang, 
             {t.conf.today}
           </button>
         </div>
-        <div className="flex items-center rounded-full border border-line overflow-hidden">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setMode("month")}
-            className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-              mode === "month" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-            }`}
+            className={tabClass(mode === "month", "sm")}
           >
             {t.conf.monthView}
           </button>
           <button
             onClick={() => setMode("year")}
-            className={`px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-              mode === "year" ? "bg-navy-700 text-navy-50" : "text-ink-500 hover:text-ink-800"
-            }`}
+            className={tabClass(mode === "year", "sm")}
           >
             {t.conf.yearView}
           </button>
