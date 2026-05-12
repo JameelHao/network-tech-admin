@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
-import type { Lang } from "@/lib/i18n/dict";
-import { dict } from "@/lib/i18n/dict";
+import { Topbar } from "@/components/admin/Topbar";
+import { getDict } from "@/lib/i18n/server";
 import { StatCard } from "@/components/admin/StatCard";
 import { MiniBar } from "@/components/admin/charts/MiniBar";
 import { MiniLine } from "@/components/admin/charts/MiniLine";
@@ -59,9 +58,7 @@ function ChartCard({
 }
 
 export default async function InsightsPage() {
-  const jar = await cookies();
-  const lang = (jar.get("lang")?.value ?? "en") as Lang;
-  const t = dict[lang];
+  const { lang, t } = await getDict();
 
   const [
     paperTrend,
@@ -106,8 +103,17 @@ export default async function InsightsPage() {
   const newsTotal = newsTrend.reduce((s, p) => s + p.value, 0);
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-display text-2xl tracking-tight">{t.insights.title}</h1>
+    <>
+      <Topbar
+        crumbs={[
+          { label: t.nav.dashboard, href: "/admin" },
+          { label: t.nav.insights },
+        ]}
+        t={t}
+        lang={lang}
+      />
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-8">
+        <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">{t.insights.title}</h1>
 
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard label={t.insights.papers} value={paperTotal} />
@@ -210,6 +216,7 @@ export default async function InsightsPage() {
           </ChartCard>
         </div>
       </SectionCard>
-    </div>
+      </main>
+    </>
   );
 }
