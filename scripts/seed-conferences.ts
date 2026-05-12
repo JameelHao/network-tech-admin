@@ -204,6 +204,17 @@ const conferences = [
     tier: "top",
     topics: ["protocol-security", "side-channels", "privacy-anonymity", "ddos-defense"],
   },
+  {
+    name: "DPDK Summit 2026",
+    abbreviation: "DPDK Summit",
+    url: "https://events.linuxfoundation.org/dpdk-summit/",
+    location: "Stockholm, Sweden",
+    start_date: "2026-05-12",
+    end_date: "2026-05-13",
+    category: "infrastructure",
+    tier: "workshop",
+    topics: ["ebpf-xdp", "programmable-net", "high-speed-networking", "os-network-stack", "cloud-infra"],
+  },
 ];
 
 async function seed() {
