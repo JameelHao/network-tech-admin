@@ -318,7 +318,7 @@ function PaperRow({ paper: p, lang, publishedLabel, newLabel }: { paper: Paper; 
       href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`block px-5 py-4 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}
+      className={`block px-3 sm:px-5 py-4 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}
     >
       <div className="flex items-start gap-2">
         <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{p.title}</p>
