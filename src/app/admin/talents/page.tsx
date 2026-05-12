@@ -117,7 +117,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                     <td className="px-5 py-3 text-ink-600">{tl.company ?? "—"}</td>
                     <td className="px-5 py-3 text-ink-600 text-[12px]">{tl.source ?? "—"}</td>
                     <td className="px-5 py-3">
-                      <StatusPill label={tl.stage} />
+                      <StatusPill label={tl.stage} lang={lang} />
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex flex-wrap gap-1">

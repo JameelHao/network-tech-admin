@@ -139,7 +139,7 @@ export default async function DashboardPage() {
                       {t.leads.source}: {t.sourceType[l.source_type]} · {l.source_label}
                     </p>
                   </div>
-                  <StatusPill label={l.stage} />
+                  <StatusPill label={l.stage} lang={lang} />
                 </Link>
               ))}
             </div>
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
           <div className="flex flex-wrap gap-3 sm:gap-4">
             {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
               <div key={stage} className="flex items-center gap-2">
-                <StatusPill label={stage} />
+                <StatusPill label={stage} lang={lang} />
                 <span className="text-[13px] font-semibold text-ink-800 tabular-nums">{count}</span>
               </div>
             ))}
