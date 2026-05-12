@@ -8,7 +8,8 @@ import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
-import { MobileFilterBar } from "@/components/admin/MobileFilterBar";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { DuplicateWarning } from "@/components/admin/DuplicateWarning";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
@@ -168,9 +169,15 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               {labels.viewCluster}
             </button>
           </div>
-          <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
-          <ExportButton entity="papers" format="json" label={labels.exportJSON} />
-          <MobileFilterBar label={labels.filter}>
+          <div className="hidden lg:flex items-center gap-2">
+            <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
+            <ExportButton entity="papers" format="json" label={labels.exportJSON} />
+          </div>
+          <OverflowMenu>
+            <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
+            <ExportButton entity="papers" format="json" label={labels.exportJSON} />
+          </OverflowMenu>
+          <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, topic, dateFrom, dateTo].filter(Boolean).length}>
             <input
               type="text"
               key={keyword}
@@ -178,13 +185,13 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               placeholder={labels.searchPlaceholder}
               onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
               onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
-              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-40"
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
             />
             {venues.length > 1 && (
               <select
                 value={venue}
                 onChange={(e) => fp.set("venue", e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
               >
                 <option value="">{labels.allSources}</option>
                 {venues.map((v) => (
@@ -196,7 +203,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               <select
                 value={topic}
                 onChange={(e) => fp.set("topic", e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-auto"
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
               >
                 <option value="">{labels.allCategories}</option>
                 {topics.map((t) => (
@@ -221,7 +228,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                 className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
               />
             </div>
-          </MobileFilterBar>
+          </MobileFilterPanel>
         </div>
       </div>
 

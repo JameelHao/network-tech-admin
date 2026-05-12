@@ -319,6 +319,7 @@ const en = {
     allSourceTypes: "All types",
     allStages: "All stages",
     companyPlaceholder: "Search company...",
+    filterLabel: "Filter",
   },
   list: {
     ongoing: "Ongoing",
@@ -740,6 +741,7 @@ const zh: typeof en = {
     allSourceTypes: "全部类型",
     allStages: "全部阶段",
     companyPlaceholder: "搜索公司...",
+    filterLabel: "筛选",
   },
   list: {
     ongoing: "进行中",

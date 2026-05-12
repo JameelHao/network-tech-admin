@@ -9,6 +9,8 @@ import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterDateRange, FilterSelect, FilterInput } from "@/components/admin/FilterControls";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { listJobs } from "@/lib/admin/jobs";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { relativeTime, isExpired } from "@/lib/admin/format";
@@ -81,12 +83,12 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
         <SyncStatusBar entity="jobs" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
 
         <section data-fav-filter="jobs" className="rounded-lg border border-line bg-surface overflow-hidden">
-          <header className="flex items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-[17px] tracking-tight text-ink-800 shrink-0">
-                {t.jobs.title}
-                <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
-              </h1>
+          <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+            <h1 className="font-display text-[17px] tracking-tight text-ink-800 shrink-0">
+              {t.jobs.title}
+              <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
+            </h1>
+            <div className="hidden lg:flex flex-wrap items-center gap-2">
               <FilterInput
                 paramKey="q"
                 value={keyword ?? ""}
@@ -123,10 +125,50 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                 searchParams={filterParams}
               />
             </div>
+            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+              <FilterInput
+                paramKey="q"
+                value={keyword ?? ""}
+                placeholder={t.jobs.searchPlaceholder}
+                searchParams={filterParams}
+              />
+              {sources.length > 1 && (
+                <FilterSelect
+                  paramKey="source"
+                  label={t.jobs.allSources}
+                  options={sources.map((s) => ({ value: s, label: s }))}
+                  value={source ?? ""}
+                  searchParams={filterParams}
+                />
+              )}
+              <div className="flex flex-wrap gap-1">
+                {(["", "active", "expired"] as const).map((s) => {
+                  const isActive = (status ?? "") === s;
+                  const label = s === "" ? t.jobs.allStatuses : s === "active" ? t.jobs.active : t.list.expired;
+                  const p = new URLSearchParams(filterParams);
+                  p.delete("status"); p.delete("page");
+                  if (s) p.set("status", s);
+                  const href = p.toString() ? `/admin/jobs?${p.toString()}` : "/admin/jobs";
+                  return <Link key={s} href={href} className={tabClass(isActive, "sm")}>{label}</Link>;
+                })}
+              </div>
+              <FilterDateRange
+                fromKey="dateFrom" toKey="dateTo"
+                fromValue={dateFrom ?? ""} toValue={dateTo ?? ""}
+                fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo}
+                searchParams={filterParams}
+              />
+            </MobileFilterPanel>
             <div className="flex items-center gap-2 shrink-0">
               <FavoriteFilter entity="jobs" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <ExportButton entity="jobs" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="jobs" format="json" label={t.common.exportJSON} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="jobs" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="jobs" format="json" label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="jobs" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="jobs" format="json" label={t.common.exportJSON} />
+              </OverflowMenu>
             </div>
           </header>
 

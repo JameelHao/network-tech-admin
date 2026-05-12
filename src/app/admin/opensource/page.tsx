@@ -10,6 +10,8 @@ import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterSelect, FilterNumberRange } from "@/components/admin/FilterControls";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -61,11 +63,17 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.opensource}</h1>
             <div className="flex items-center gap-2">
               <FavoriteFilter entity="opensource" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+              </OverflowMenu>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
+          <div className="hidden lg:flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
             {allLanguages.length > 1 && (
               <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
             )}
@@ -73,6 +81,17 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
               <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
             )}
             <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
+          </div>
+          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
+            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+              {allLanguages.length > 1 && (
+                <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
+              )}
+              {allTopics.length > 1 && (
+                <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+              )}
+              <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
+            </MobileFilterPanel>
           </div>
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
           <table className="w-full text-[13px]">

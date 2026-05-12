@@ -11,6 +11,8 @@ import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterInput, FilterSelect } from "@/components/admin/FilterControls";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
@@ -56,8 +58,14 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.talents}</h1>
             <div className="flex items-center gap-2">
               <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
-              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              </OverflowMenu>
               <Link
                 href="/admin/talents/new"
                 className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
@@ -67,7 +75,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
+          <div className="hidden lg:flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
             {[undefined, ...LEAD_STAGES].map((s) => {
               const isActive = filterStage === s;
               const p = new URLSearchParams(filterParams);
@@ -85,6 +93,24 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             {allTopics.length > 1 && (
               <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
             )}
+          </div>
+          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
+            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+              <div className="flex flex-wrap gap-1">
+                {[undefined, ...LEAD_STAGES].map((s) => {
+                  const isActive = filterStage === s;
+                  const p = new URLSearchParams(filterParams);
+                  p.delete("stage"); p.delete("page");
+                  if (s) p.set("stage", s);
+                  const href = p.toString() ? `/admin/talents?${p.toString()}` : "/admin/talents";
+                  return <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>{s ?? t.common.all}</Link>;
+                })}
+              </div>
+              <FilterInput paramKey="company" value={companyFilter ?? ""} placeholder={t.filter.companyPlaceholder} searchParams={filterParams} />
+              {allTopics.length > 1 && (
+                <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+              )}
+            </MobileFilterPanel>
           </div>
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 

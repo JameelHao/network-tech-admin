@@ -21,6 +21,8 @@ import { FilterDateRange } from "@/components/admin/FilterControls";
 import { CONF_SORTABLE } from "@/lib/admin/conferences";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { tabClass } from "@/lib/admin/ui";
 import type { SortDir } from "@/lib/admin/pagination";
 
@@ -117,8 +119,8 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
 
         {view === "list" ? (
           <section data-fav-filter="conferences" className="rounded-lg border border-line bg-surface overflow-hidden">
-            <header className="flex items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-              <div className="flex items-center gap-2 overflow-x-auto">
+            <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+              <div className="hidden lg:flex items-center gap-2 overflow-x-auto">
                 {CATEGORY_KEYS.map((key) => {
                   const isActive = key === activeCategory;
                   const label = key === "all" ? t.conf.filterAll : TOPIC_CATEGORIES[key][lang];
@@ -157,6 +159,36 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   searchParams={filterParams}
                 />
               </div>
+              <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORY_KEYS.map((key) => {
+                    const isActive = key === activeCategory;
+                    const label = key === "all" ? t.conf.filterAll : TOPIC_CATEGORIES[key][lang];
+                    const p = new URLSearchParams(filterParams);
+                    p.delete("cat"); p.delete("page");
+                    if (key !== "all") p.set("cat", key);
+                    const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
+                    return <Link key={key} href={href} className={tabClass(isActive, "sm")}>{label}</Link>;
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(["", "upcoming", "past"] as const).map((s) => {
+                    const isActive = (statusFilter ?? "") === s;
+                    const label = s === "" ? t.filter.allStatuses : s === "upcoming" ? t.filter.upcoming : t.filter.past;
+                    const p = new URLSearchParams(filterParams);
+                    p.delete("status"); p.delete("page");
+                    if (s) p.set("status", s);
+                    const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
+                    return <Link key={s} href={href} className={tabClass(isActive, "sm")}>{label}</Link>;
+                  })}
+                </div>
+                <FilterDateRange
+                  fromKey="dateFrom" toKey="dateTo"
+                  fromValue={dateFrom ?? ""} toValue={dateTo ?? ""}
+                  fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo}
+                  searchParams={filterParams}
+                />
+              </MobileFilterPanel>
               <div className="flex items-center gap-2 shrink-0">
                 <FavoriteFilter entity="conferences" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
                 <ViewToggle
@@ -165,8 +197,14 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   searchParams={filterParams}
                   labels={{ list: t.conf.viewList, calendar: t.conf.viewCalendar }}
                 />
-                <ExportButton entity="conferences" format="csv" filters={filterParams} label={t.common.exportCSV} />
-                <ExportButton entity="conferences" format="json" filters={filterParams} label={t.common.exportJSON} />
+                <div className="hidden lg:flex items-center gap-2">
+                  <ExportButton entity="conferences" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                  <ExportButton entity="conferences" format="json" filters={filterParams} label={t.common.exportJSON} />
+                </div>
+                <OverflowMenu>
+                  <ExportButton entity="conferences" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                  <ExportButton entity="conferences" format="json" filters={filterParams} label={t.common.exportJSON} />
+                </OverflowMenu>
                 <RefreshAllButton label={t.conf.refresh} />
                 <Link
                   href="/admin/conferences/new"
