@@ -50,7 +50,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.talents }]} t={t} lang={lang} />
-      <main className="flex-1 px-6 xl:px-10 py-10">
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
             <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.talents}</h1>
