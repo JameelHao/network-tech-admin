@@ -10,6 +10,8 @@ import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterSelect, FilterDateRange } from "@/components/admin/FilterControls";
+import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
 import { relativeTime } from "@/lib/admin/format";
 import { LEAD_STAGES } from "@/lib/admin/types";
@@ -58,14 +60,27 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             </h1>
             <div className="flex items-center gap-2">
               <FavoriteFilter entity="leads" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+              </OverflowMenu>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
+          <div className="hidden lg:flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
             <FilterSelect paramKey="stage" label={t.filter.allStages} value={filterStage ?? ""} searchParams={filterParams} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
             <FilterSelect paramKey="sourceType" label={t.filter.allSourceTypes} value={sourceType ?? ""} searchParams={filterParams} options={[{ value: "conference", label: t.sourceType.conference }, { value: "paper", label: t.sourceType.paper }, { value: "opensource", label: t.sourceType.opensource }]} />
             <FilterDateRange fromKey="dateFrom" toKey="dateTo" fromValue={dateFrom ?? ""} toValue={dateTo ?? ""} fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo} searchParams={filterParams} />
+          </div>
+          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
+            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+              <FilterSelect paramKey="stage" label={t.filter.allStages} value={filterStage ?? ""} searchParams={filterParams} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
+              <FilterSelect paramKey="sourceType" label={t.filter.allSourceTypes} value={sourceType ?? ""} searchParams={filterParams} options={[{ value: "conference", label: t.sourceType.conference }, { value: "paper", label: t.sourceType.paper }, { value: "opensource", label: t.sourceType.opensource }]} />
+              <FilterDateRange fromKey="dateFrom" toKey="dateTo" fromValue={dateFrom ?? ""} toValue={dateTo ?? ""} fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo} searchParams={filterParams} />
+            </MobileFilterPanel>
           </div>
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 
