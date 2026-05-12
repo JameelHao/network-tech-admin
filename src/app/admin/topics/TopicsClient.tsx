@@ -27,6 +27,9 @@ type TopicsLabels = {
   conferences: string;
   talents: string;
   opensource: string;
+  totalTopics: string;
+  hottest: string;
+  covered: string;
 };
 
 type SortKey = "slug" | "total" | "papers" | "conferences" | "talents" | "opensource";
@@ -47,27 +50,56 @@ const ENTITY_ICONS: Record<string, string> = {
 
 const DRILL_LIMIT = 5;
 
+const TAB_COLORS: Record<string, { active: string; inactive: string }> = {
+  navy:   { active: "border-navy-500 bg-navy-50 text-navy-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
+  cobalt: { active: "border-cobalt-500 bg-cobalt-50 text-cobalt-700", inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
+  rust:   { active: "border-rust-500 bg-rust-50 text-rust-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
+  moss:   { active: "border-moss-500 bg-moss-50 text-moss-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
+  amber:  { active: "border-amber-500 bg-amber-50 text-amber-700",   inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
+};
+
+const CATEGORY_KEYS = Object.keys(TOPIC_CATEGORIES) as TopicCategory[];
+
 export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labels: TopicsLabels; lang: Lang }) {
   const [view, setView] = useState<"table" | "heatmap">("table");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("total");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [category, setCategory] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<TopicCategory>(CATEGORY_KEYS[0]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const key of CATEGORY_KEYS) counts[key] = 0;
+    for (const s of stats) {
+      if (counts[s.category] !== undefined) counts[s.category]++;
+    }
+    return counts;
+  }, [stats]);
+
+  const summary = useMemo(() => {
+    let totalPapers = 0, totalConf = 0, totalTalents = 0, totalOs = 0;
+    let hottest: TopicStat | null = null;
+    for (const s of stats) {
+      totalPapers += s.counts.papers;
+      totalConf += s.counts.conferences;
+      totalTalents += s.counts.talents;
+      totalOs += s.counts.opensource;
+      if (!hottest || s.total > hottest.total) hottest = s;
+    }
+    return { totalPapers, totalConf, totalTalents, totalOs, hottest };
+  }, [stats]);
 
   const filtered = useMemo(() => {
-    let list = stats;
+    let list = stats.filter((s) => s.category === activeTab);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((s) =>
         s.slug.toLowerCase().includes(q) || getTopicLabel(s.slug, lang).toLowerCase().includes(q),
       );
     }
-    if (category !== "all") {
-      list = list.filter((s) => s.category === category);
-    }
     return list;
-  }, [stats, search, category, lang]);
+  }, [stats, activeTab, search, lang]);
 
   const sorted = useMemo(() => {
     const mult = sortDir === "asc" ? 1 : -1;
@@ -109,19 +141,17 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
     return groups;
   }, [stats]);
 
-  const categoryKeys = Object.keys(TOPIC_CATEGORIES) as TopicCategory[];
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">
           {labels.title}
-          <span className="ml-2 font-mono text-[13px] text-ink-400 tabular-nums">{filtered.length}</span>
         </h1>
         <div className="flex items-center gap-2">
           <input
             type="text"
             placeholder={labels.search}
+            aria-label={labels.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] text-ink-800 placeholder:text-ink-400 w-48 focus:outline-none focus:ring-1 focus:ring-navy-300"
@@ -149,32 +179,42 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          type="button"
-          onClick={() => setCategory("all")}
-          className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors border ${
-            category === "all"
-              ? "border-navy-300 bg-navy-50 text-navy-700"
-              : "border-line text-ink-500 hover:text-ink-800"
-          }`}
-        >
-          {labels.allCategories}
-        </button>
-        {categoryKeys.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setCategory(key)}
-            className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors border ${
-              category === key
-                ? "border-navy-300 bg-navy-50 text-navy-700"
-                : "border-line text-ink-500 hover:text-ink-800"
-            }`}
-          >
-            {TOPIC_CATEGORIES[key][lang]}
-          </button>
-        ))}
+      {/* Summary stats */}
+      <div className="flex flex-wrap gap-3 sm:gap-5 text-[13px] text-ink-600">
+        <span><span className="font-semibold text-ink-800">{stats.length}</span> {labels.totalTopics}</span>
+        <span>{labels.papers}: <span className="font-semibold text-ink-800">{summary.totalPapers}</span></span>
+        <span>{labels.conferences}: <span className="font-semibold text-ink-800">{summary.totalConf}</span></span>
+        <span>{labels.talents}: <span className="font-semibold text-ink-800">{summary.totalTalents}</span></span>
+        <span>{labels.opensource}: <span className="font-semibold text-ink-800">{summary.totalOs}</span></span>
+        {summary.hottest && (
+          <span>{labels.hottest}: <span className="font-semibold text-ink-800">{getTopicLabel(summary.hottest.slug, lang)}</span> ({summary.hottest.total})</span>
+        )}
+      </div>
+
+      {/* Category tabs */}
+      <div className="overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-1 min-w-max" role="tablist">
+          {CATEGORY_KEYS.map((key) => {
+            const color = TOPIC_CATEGORIES[key].color;
+            const tabColor = TAB_COLORS[color] ?? TAB_COLORS.navy;
+            const isActive = activeTab === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(key)}
+                className={`rounded-md border-b-2 px-3 py-2 font-mono text-[11px] tracking-[0.08em] transition-colors whitespace-nowrap ${
+                  isActive ? tabColor.active : tabColor.inactive
+                }`}
+              >
+                {TOPIC_CATEGORIES[key][lang]}
+                <span className="ml-1.5 rounded-full bg-ink-100 px-1.5 py-0.5 text-[9px] text-ink-500 tabular-nums">{categoryCounts[key]}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {view === "heatmap" ? (
@@ -199,9 +239,6 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                   <th className="px-5 py-3">
                     <SortableHeaderClient column="slug" label="Topic" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
-                  <th className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-                    {labels.allCategories.replace("All ", "")}
-                  </th>
                   {(["papers", "conferences", "talents", "opensource"] as const).map((e) => (
                     <th key={e} className="px-5 py-3">
                       <SortableHeaderClient
@@ -221,7 +258,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
               <tbody className="divide-y divide-line">
                 {sorted.length === 0 && (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={6}>
                       <EmptyState title={labels.noTopics} description={labels.noTopicsDesc} compact />
                     </td>
                   </tr>
@@ -237,7 +274,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                       className={`group cursor-pointer hover:bg-paper/40 transition-colors ${isDup ? "bg-amber-50/40" : ""}`}
                       onClick={() => toggleExpand(s.slug)}
                     >
-                      <td className="px-5 py-3" colSpan={isExpanded ? 7 : 1}>
+                      <td className="px-5 py-3" colSpan={isExpanded ? 6 : 1}>
                         {isExpanded ? (
                           <DrillDown
                             stat={s}
@@ -260,9 +297,6 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                       </td>
                       {!isExpanded && (
                         <>
-                          <td className="px-5 py-3 font-mono text-[10px] text-ink-500 uppercase tracking-[0.12em]">
-                            {TOPIC_CATEGORIES[s.category as TopicCategory]?.[lang] ?? s.category}
-                          </td>
                           {(["papers", "conferences", "talents", "opensource"] as const).map((e) => (
                             <td key={e} className="px-5 py-3 text-[13px] tabular-nums text-ink-700">
                               {s.counts[e] || <span className="text-ink-200">—</span>}
