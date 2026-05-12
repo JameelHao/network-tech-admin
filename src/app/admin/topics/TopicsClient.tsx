@@ -6,6 +6,7 @@ import type { TopicStat } from "@/lib/admin/topic-aggregator";
 import { TopicHeatmap } from "@/components/admin/TopicHeatmap";
 import { TopicTag } from "@/components/admin/TopicTag";
 import { EmptyState } from "@/components/admin/EmptyState";
+import { PaginationClient } from "@/components/admin/PaginationClient";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { TOPIC_CATEGORIES, getTopicLabel, type TopicCategory } from "@/lib/admin/topics";
 import type { Lang } from "@/lib/i18n/dict";
@@ -31,6 +32,10 @@ type TopicsLabels = {
   totalTopics: string;
   hottest: string;
   covered: string;
+  showing: string;
+  ofTopics: string;
+  rows: string;
+  page: string;
 };
 
 type SortKey = "slug" | "total" | "papers" | "conferences" | "talents" | "opensource";
@@ -68,6 +73,8 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<TopicCategory>(CATEGORY_KEYS[0]);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -110,6 +117,12 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
       return mult * ((a.counts[sortKey as keyof typeof a.counts] ?? 0) - (b.counts[sortKey as keyof typeof b.counts] ?? 0));
     });
   }, [filtered, sortKey, sortDir]);
+
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = useMemo(() => {
+    const from = (page - 1) * PAGE_SIZE;
+    return sorted.slice(from, from + PAGE_SIZE);
+  }, [sorted, page]);
 
   function handleSort(col: string, dir: SortDir | null) {
     if (dir) {
@@ -154,7 +167,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             placeholder={labels.search}
             aria-label={labels.search}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] text-ink-800 placeholder:text-ink-400 w-48 focus:outline-none focus:ring-1 focus:ring-navy-300"
           />
           <div className="flex items-center gap-1">
@@ -201,7 +214,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                 type="button"
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => setActiveTab(key)}
+                onClick={() => { setActiveTab(key); setPage(1); }}
                 className={`rounded-md border-b-2 px-3 py-2 font-mono text-[11px] tracking-[0.08em] transition-colors whitespace-nowrap ${
                   isActive ? tabColor.active : tabColor.inactive
                 }`}
@@ -229,6 +242,9 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
         </div>
       ) : (
         <div className="rounded-lg border border-line bg-surface overflow-hidden">
+          <div className="px-5 py-2 border-b border-line bg-paper/30 text-[12px] text-ink-500">
+            {labels.showing} <span className="font-semibold text-ink-700">{paginated.length}</span> {labels.ofTopics} <span className="font-semibold text-ink-700">{sorted.length}</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -253,14 +269,14 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {sorted.length === 0 && (
+                {paginated.length === 0 && (
                   <tr>
                     <td colSpan={6}>
                       <EmptyState title={labels.noTopics} description={labels.noTopicsDesc} compact />
                     </td>
                   </tr>
                 )}
-                {sorted.map((s) => {
+                {paginated.map((s) => {
                   const isExpanded = expanded.has(s.slug);
                   const isDup = !!s.duplicateGroup;
                   const dupSiblings = isDup ? (dupGroups.get(s.duplicateGroup!) ?? []).filter((sl) => sl !== s.slug) : [];
@@ -308,6 +324,14 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
               </tbody>
             </table>
           </div>
+          <PaginationClient
+            page={page}
+            totalPages={totalPages}
+            total={sorted.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setPage}
+            labels={{ rows: labels.rows, page: labels.page }}
+          />
         </div>
       )}
     </div>
