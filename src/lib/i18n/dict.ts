@@ -389,6 +389,9 @@ const en = {
     noTopics: "No topics found",
     noTopicsDesc: "Adjust filters or add topics to your items.",
     items: "items",
+    totalTopics: "Topics",
+    hottest: "Hottest",
+    covered: "Covered",
   },
   a11y: {
     skipToMain: "Skip to main content",
@@ -789,6 +792,9 @@ const zh: typeof en = {
     noTopics: "未找到主题",
     noTopicsDesc: "调整筛选条件或为项目添加主题。",
     items: "项",
+    totalTopics: "主题",
+    hottest: "最热",
+    covered: "覆盖",
   },
   a11y: {
     skipToMain: "跳转到主要内容",
