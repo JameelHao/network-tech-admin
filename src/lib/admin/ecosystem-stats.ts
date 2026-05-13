@@ -141,9 +141,9 @@ export function buildOpenSourceBubbles(
     const def = TOPICS.find((t) => t.slug === firstTopic);
     return {
       name: o.name,
-      stars: o.stars,
+      stars: o.stars ?? 0,
       category: def?.category ?? "other",
-      lastActive: o.last_active,
+      lastActive: o.last_active ?? "",
       repoUrl: o.repo_url,
     };
   });
