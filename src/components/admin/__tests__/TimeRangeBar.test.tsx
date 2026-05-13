@@ -16,7 +16,7 @@ describe("TimeRangeBar", () => {
   it("highlights active range", () => {
     const { container } = render(<TimeRangeBar value="today" onChange={() => {}} labels={labels} />);
     const activeBtn = screen.getByText("Today");
-    expect(activeBtn.className).toContain("bg-[rgba(238,247,255,0.98)]");
+    expect(activeBtn.className).toContain("text-[#0059b2]");
   });
 
   it("calls onChange with selected range", () => {

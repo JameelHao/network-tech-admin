@@ -1,6 +1,6 @@
 "use client";
 
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 type Props = {
   value: string;
@@ -19,7 +19,7 @@ export function TimeRangeBar({ value, onChange, labels }: Props) {
   };
 
   return (
-    <div className="inline-flex items-center gap-1" role="group" aria-label="Time range">
+    <div className={tabGroupClass()} role="group" aria-label="Time range">
       {RANGES.map((r) => (
         <button
           key={r}

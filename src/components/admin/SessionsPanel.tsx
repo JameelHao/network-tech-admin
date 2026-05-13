@@ -10,7 +10,7 @@ import type { ConferenceSession } from "@/lib/admin/types";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
 import { getTopicLabel } from "@/lib/admin/topics";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 type SessionsPanelLabels = {
   searchSessions: string;
@@ -124,7 +124,7 @@ export function SessionsPanel({ sessions, labels, lang }: { sessions: Conference
         <span className="font-mono text-[10px] text-ink-400">
           {filtered.length} {labels.entries}
         </span>
-        <div className="flex items-center gap-1 ml-auto">
+        <div className={tabGroupClass("ml-auto")}>
           <button type="button" onClick={() => setView("grouped")} className={tabClass(view === "grouped", "sm")}>
             {labels.groupedView}
           </button>

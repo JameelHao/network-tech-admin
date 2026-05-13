@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 type Props = {
   active: "list" | "calendar";
@@ -16,7 +16,7 @@ export function ViewToggle({ active, basePath, searchParams = {}, labels }: Prop
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={tabGroupClass()}>
       <Link href={href("list")} className={tabClass(active === "list", "sm")}>
         {labels.list}
       </Link>

@@ -11,7 +11,7 @@ import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { TOPIC_CATEGORIES, getTopicLabel, type TopicCategory } from "@/lib/admin/topics";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 type TopicsLabels = {
   title: string;
@@ -170,7 +170,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] text-ink-800 placeholder:text-ink-400 w-48 focus:outline-none focus:ring-1 focus:ring-navy-300"
           />
-          <div className="flex items-center gap-1">
+          <div className={tabGroupClass()}>
             <button
               type="button"
               onClick={() => setView("table")}

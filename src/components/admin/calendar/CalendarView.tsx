@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 import type { Conference } from "@/lib/admin/types";
 import type { Dict, Lang } from "@/lib/i18n/dict";
 import { navigateMonth, formatMonthKey } from "@/lib/admin/calendar-utils";
@@ -82,7 +82,7 @@ export function CalendarView({ conferences, yearConferences, year, month, lang, 
             {t.conf.today}
           </button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className={tabGroupClass()}>
           <button
             onClick={() => setMode("month")}
             className={tabClass(mode === "month", "sm")}

@@ -6,7 +6,7 @@ import type { Conference } from "@/lib/admin/types";
 import { TOPICS, TOPIC_CATEGORIES, CONFERENCE_TIERS, type TopicCategory, type ConferenceTier } from "@/lib/admin/topics";
 import { createConference, updateConference, type ConferenceFormState } from "@/app/admin/conferences/actions";
 import { TopicTag } from "./TopicTag";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 const CATEGORY_KEYS: TopicCategory[] = ["network-systems", "measurement", "security", "emerging", "infrastructure"];
 const TIER_KEYS: ConferenceTier[] = ["top", "good", "workshop"];
@@ -80,7 +80,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
         </Field>
 
         <Field label={t.conf.category}>
-          <div className="inline-flex rounded-md border border-line bg-surface p-0.5">
+          <div className={tabGroupClass()}>
             {CATEGORY_KEYS.map((key) => (
               <button
                 key={key}
@@ -95,7 +95,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
         </Field>
 
         <Field label={t.conf.tier}>
-          <div className="inline-flex rounded-md border border-line bg-surface p-0.5">
+          <div className={tabGroupClass()}>
             {TIER_KEYS.map((key) => (
               <button
                 key={key}
