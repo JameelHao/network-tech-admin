@@ -4,7 +4,9 @@ import { TopicTag } from "@/components/admin/TopicTag";
 import { StatusPill } from "@/components/admin/StatusPill";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { getVendor } from "@/lib/admin/vendors";
+import { listProducts } from "@/lib/admin/products";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
+import { createClient } from "@/lib/supabase/server";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -25,6 +27,13 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
     getAdjacentItems("vendors", id, "name", "created_at", false),
   ]);
   if (!vendor) notFound();
+
+  const supabase = await createClient();
+  const [relatedProducts, relatedTalents] = await Promise.all([
+    listProducts({ page: 1, pageSize: 10 }, { vendor: vendor.name }),
+    supabase.from("talent_leads").select("id, name, role, company, stage").ilike("company", `%${vendor.name}%`).limit(10),
+  ]);
+  const talents = relatedTalents.data ?? [];
 
   return (
     <>
@@ -92,6 +101,44 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
             </div>
           )}
         </div>
+
+        {relatedProducts.data.length > 0 && (
+          <div className="mt-6 rounded-lg border border-line bg-surface">
+            <div className="px-5 pt-4 pb-3 border-b border-line">
+              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">
+                {t.vendor.keyProducts} <span className="ml-1 font-mono text-[11px] text-ink-400">{relatedProducts.total}</span>
+              </h2>
+            </div>
+            <div className="divide-y divide-line">
+              {relatedProducts.data.map((p) => (
+                <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-paper/40 transition-colors min-h-[44px]">
+                  <span className="text-[13px] font-medium text-ink-800 truncate flex-1">{p.name}</span>
+                  {p.latest_version && <span className="font-mono text-[11px] text-ink-400">{p.latest_version}</span>}
+                  <StatusPill label={p.stage} lang={lang} />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {talents.length > 0 && (
+          <div className="mt-4 rounded-lg border border-line bg-surface">
+            <div className="px-5 pt-4 pb-3 border-b border-line">
+              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">
+                {t.nav.talents} <span className="ml-1 font-mono text-[11px] text-ink-400">{talents.length}</span>
+              </h2>
+            </div>
+            <div className="divide-y divide-line">
+              {talents.map((tl) => (
+                <Link key={tl.id} href={`/admin/talents/${tl.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-paper/40 transition-colors min-h-[44px]">
+                  <span className="text-[13px] font-medium text-ink-800 truncate flex-1">{tl.name}</span>
+                  {tl.role && <span className="text-[12px] text-ink-400 truncate max-w-[120px]">{tl.role}</span>}
+                  <StatusPill label={tl.stage} lang={lang} />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </>
   );
