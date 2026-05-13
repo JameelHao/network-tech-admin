@@ -58,21 +58,22 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.opensource }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <div data-fav-filter="opensource" className="rounded-lg border border-line bg-surface">
-          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.opensource}</h1>
-            <div className="flex items-center gap-2">
-              <FavoriteFilter entity="opensource" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <div className="hidden lg:flex items-center gap-2">
-                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
-                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
-              </div>
-              <OverflowMenu>
-                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
-                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
-              </OverflowMenu>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.opensource}</h1>
+          <div className="flex items-center gap-2">
+            <FavoriteFilter entity="opensource" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+            <div className="hidden lg:flex items-center gap-2">
+              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
             </div>
+            <OverflowMenu>
+              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+            </OverflowMenu>
           </div>
+        </div>
+
+        <div data-fav-filter="opensource" className="rounded-lg border border-line bg-surface">
           <div className="hidden lg:flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
             {allLanguages.length > 1 && (
               <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />

@@ -103,12 +103,10 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
           </p>
         </header>
 
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
+          {t.conf.overview}
+        </p>
         <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
-          <div className="px-5 py-3 border-b border-line bg-paper/30">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-              {t.conf.overview}
-            </p>
-          </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
             <Stat label={t.conf.total} value={total} sub={t.conf.tracked} />
             <Stat label={t.conf.upcoming} value={upcoming} sub={t.conf.scheduledAhead} />
