@@ -339,6 +339,11 @@ const en = {
     news: "News",
     noEvents: "No recent events",
     noEventsDesc: "Events from the last 30 days will appear here.",
+    topicHeatMatrix: "Topic Heat Matrix",
+    vendorTopicLayout: "Vendor-Topic Layout",
+    techTrend: "Tech Trend (Papers by Quarter)",
+    openSourceBubble: "Open Source Ecosystem",
+    opensource: "Open Source",
   },
   insights: {
     title: "Insights",
@@ -861,6 +866,11 @@ const zh: typeof en = {
     news: "新闻",
     noEvents: "暂无近期事件",
     noEventsDesc: "最近 30 天的事件将在此显示。",
+    topicHeatMatrix: "主题热度矩阵",
+    vendorTopicLayout: "厂商-技术布局图",
+    techTrend: "技术趋势（按季度论文量）",
+    openSourceBubble: "开源生态图",
+    opensource: "开源项目",
   },
   insights: {
     title: "数据洞察",
