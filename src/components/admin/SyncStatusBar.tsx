@@ -40,7 +40,7 @@ export function SyncStatusBar({
   labels,
   lang,
 }: {
-  entity: "papers" | "news" | "jobs" | "products";
+  entity: "papers" | "news" | "jobs" | "products" | "opensource";
   labels: SyncLabels;
   lang: Lang;
 }) {
