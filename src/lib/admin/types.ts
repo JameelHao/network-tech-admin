@@ -99,3 +99,52 @@ export const SOURCE_TYPE_LABEL: Record<InsightType, string> = {
   paper: "论文",
   opensource: "开源",
 };
+
+export type ProductCategory = "platform" | "tool" | "hardware" | "saas" | "library" | "other";
+export type ProductPricing = "free" | "freemium" | "paid" | "enterprise" | "open-source" | "unknown";
+export type ProductStage = "watching" | "evaluating" | "using" | "archived";
+
+export type Product = {
+  id: string;
+  name: string;
+  vendor: string | null;
+  category: ProductCategory;
+  description: string | null;
+  url: string | null;
+  changelog_url: string | null;
+  latest_version: string | null;
+  release_date: string | null;
+  pricing: ProductPricing;
+  topics: string[];
+  stage: ProductStage;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const PRODUCT_CATEGORIES: ProductCategory[] = ["platform", "tool", "hardware", "saas", "library", "other"];
+export const PRODUCT_PRICING: ProductPricing[] = ["free", "freemium", "paid", "enterprise", "open-source", "unknown"];
+export const PRODUCT_STAGES: ProductStage[] = ["watching", "evaluating", "using", "archived"];
+
+export type VendorType = "vendor" | "partner" | "competitor" | "startup" | "academic";
+export type VendorStage = "watching" | "engaging" | "partnered" | "archived";
+
+export type Vendor = {
+  id: string;
+  name: string;
+  type: VendorType;
+  website: string | null;
+  description: string | null;
+  hq_location: string | null;
+  founded_year: number | null;
+  employee_range: string | null;
+  key_products: string[];
+  topics: string[];
+  stage: VendorStage;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const VENDOR_TYPES: VendorType[] = ["vendor", "partner", "competitor", "startup", "academic"];
+export const VENDOR_STAGES: VendorStage[] = ["watching", "engaging", "partnered", "archived"];

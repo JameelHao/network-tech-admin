@@ -16,6 +16,7 @@ export function Sidebar({ t }: { t: Dict }) {
       items: [
         { href: "/admin", label: t.nav.dashboard },
         { href: "/admin/insights", label: t.nav.insights },
+        { href: "/admin/ecosystem", label: t.nav.ecosystem },
         { href: "/admin/topics", label: t.nav.topics },
       ],
     },
@@ -25,6 +26,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/conferences", label: t.nav.conferences },
         { href: "/admin/papers", label: t.nav.papers },
         { href: "/admin/opensource", label: t.nav.opensource },
+        { href: "/admin/products", label: t.nav.products },
         { href: "/admin/news", label: t.nav.news },
         { href: "/admin/jobs", label: t.nav.jobs },
       ],
@@ -34,6 +36,7 @@ export function Sidebar({ t }: { t: Dict }) {
       items: [
         { href: "/admin/leads", label: t.nav.leads },
         { href: "/admin/talents", label: t.nav.talents },
+        { href: "/admin/vendors", label: t.nav.vendors },
       ],
     },
   ];

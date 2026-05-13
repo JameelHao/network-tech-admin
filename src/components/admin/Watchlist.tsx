@@ -12,6 +12,8 @@ const ENTITY_PATHS: Record<EntityType, string> = {
   opensource: "/admin/opensource",
   news: "/admin/news",
   jobs: "/admin/jobs",
+  products: "/admin/products",
+  vendors: "/admin/vendors",
 };
 
 const ENTITY_COLORS: Record<EntityType, string> = {
@@ -22,6 +24,8 @@ const ENTITY_COLORS: Record<EntityType, string> = {
   opensource: "bg-ink-100 text-ink-600",
   news: "bg-rust-100 text-rust-600",
   jobs: "bg-violet-100 text-violet-600",
+  products: "bg-teal-100 text-teal-600",
+  vendors: "bg-indigo-100 text-indigo-600",
 };
 
 export function Watchlist({

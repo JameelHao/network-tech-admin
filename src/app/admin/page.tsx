@@ -9,6 +9,8 @@ import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
 import { listOpenSource } from "@/lib/admin/opensource";
 import { listLeads, getStageCounts } from "@/lib/admin/leads";
+import { listProducts } from "@/lib/admin/products";
+import { listVendors } from "@/lib/admin/vendors";
 import { getDict } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -16,11 +18,13 @@ import Link from "next/link";
 export default async function DashboardPage() {
   const { lang, t } = await getDict();
   const supabase = await createClient();
-  const [confResult, paperResult, osResult, leadResult] = await Promise.all([
+  const [confResult, paperResult, osResult, leadResult, productResult, vendorResult] = await Promise.all([
     listConferences(),
     listPapers(),
     listOpenSource(),
     listLeads(),
+    listProducts(),
+    listVendors(),
   ]);
 
   const conferences = confResult.data;
@@ -53,10 +57,12 @@ export default async function DashboardPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-line rounded-lg overflow-hidden border border-line">
           <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
           <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
           <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
+          <StatCard label={t.dashboard.products} value={productResult.total} sub={t.dashboard.tracking} />
+          <StatCard label={t.dashboard.vendors} value={vendorResult.total} sub={t.dashboard.tracking} />
           <StatCard label={t.dashboard.activeLeads} value={activeLeads.length} accent="text-navy-500" />
         </div>
 
@@ -158,6 +164,8 @@ export default async function DashboardPage() {
             opensource: t.nav.opensource,
             news: t.nav.news,
             jobs: t.nav.jobs,
+            products: t.nav.products,
+            vendors: t.nav.vendors,
           },
         }} />
 
