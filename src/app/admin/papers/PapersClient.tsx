@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { NewBadge } from "@/components/admin/NewBadge";
-import { TimeGroupHeader } from "@/components/admin/TimeGroupHeader";
 import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
 import { ExportButton } from "@/components/admin/ExportButton";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
@@ -12,9 +11,10 @@ import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { DuplicateWarning } from "@/components/admin/DuplicateWarning";
 import { FilterSummary } from "@/components/admin/FilterSummary";
+import { PaginationClient } from "@/components/admin/PaginationClient";
+import { TopicTag } from "@/components/admin/TopicTag";
 import { clusterByTopics } from "@/lib/admin/paper-utils";
-import { relativeTime, isCurrentYear, getTimeGroup, isNew, isExpired } from "@/lib/admin/format";
-import type { TimeGroup } from "@/lib/admin/format";
+import { relativeTime, isCurrentYear, isNew, isExpired } from "@/lib/admin/format";
 import { SortableHeaderClient } from "@/components/admin/SortableHeader";
 import { useFilterParams } from "@/hooks/useFilterParams";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -47,10 +47,14 @@ type PapersLabels = {
   dateFrom: string;
   dateTo: string;
   timeRange: { today: string; week: string; month: string; all: string };
-  timeGroup: Record<TimeGroup, string>;
   newLabel: string;
   favorites: string;
   favoritesAll: string;
+  authors: string;
+  venue: string;
+  topics: string;
+  rows: string;
+  page: string;
   dedup: {
     warning: string;
     groupsFound: string;
@@ -65,6 +69,8 @@ type PapersLabels = {
   };
 };
 
+const PAGE_SIZE = 25;
+
 export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers: Paper[]; duplicateGroups?: DuplicateGroup[]; labels: PapersLabels; lang: Lang }) {
   const fp = useFilterParams();
   const keyword = fp.get("keyword");
@@ -75,6 +81,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
   const timeRange = fp.get("timeRange");
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
   const [showOnlyFavs, setShowOnlyFavs] = useState(false);
+  const [page, setPage] = useState(1);
   const { favIds } = useFavorites("papers");
 
   const venues = useMemo(() => {
@@ -135,19 +142,20 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
 
   const clusters = useMemo(() => clusterByTopics(sorted), [sorted]);
 
-  const groups = useMemo(() => {
-    const map = new Map<TimeGroup, Paper[]>();
-    for (const p of sorted) {
-      const g = getTimeGroup(p.published_date);
-      if (!map.has(g)) map.set(g, []);
-      map.get(g)!.push(p);
-    }
-    return Array.from(map.entries());
-  }, [sorted]);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [sorted.length]);
+
+  const paginated = useMemo(() => {
+    const from = (page - 1) * PAGE_SIZE;
+    return sorted.slice(from, from + PAGE_SIZE);
+  }, [sorted, page]);
 
   return (
-    <div className="rounded-lg border border-line bg-surface">
-      <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
         <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
           {labels.title}
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
@@ -232,77 +240,143 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
         </div>
       </div>
 
-      <FilterSummary
-        filters={[
-          ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
-          ...(venue ? [{ label: labels.allSources, value: venue }] : []),
-          ...(topic ? [{ label: labels.allCategories, value: topic }] : []),
-          ...(dateFrom ? [{ label: labels.dateFrom, value: dateFrom }] : []),
-          ...(dateTo ? [{ label: labels.dateTo, value: dateTo }] : []),
-        ]}
-        labels={{ activeFilters: labels.activeFilters, clearAll: labels.clearAll }}
-        onClear={fp.clearAll}
-      />
+      <div className="rounded-lg border border-line bg-surface overflow-hidden">
+        <FilterSummary
+          filters={[
+            ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
+            ...(venue ? [{ label: labels.allSources, value: venue }] : []),
+            ...(topic ? [{ label: labels.allCategories, value: topic }] : []),
+            ...(dateFrom ? [{ label: labels.dateFrom, value: dateFrom }] : []),
+            ...(dateTo ? [{ label: labels.dateTo, value: dateTo }] : []),
+          ]}
+          labels={{ activeFilters: labels.activeFilters, clearAll: labels.clearAll }}
+          onClear={fp.clearAll}
+        />
 
-      {duplicateGroups && duplicateGroups.length > 0 && (
-        <DuplicateWarning groups={duplicateGroups} labels={labels.dedup} />
-      )}
+        {duplicateGroups && duplicateGroups.length > 0 && (
+          <DuplicateWarning groups={duplicateGroups} labels={labels.dedup} />
+        )}
 
-      {viewMode === "list" && sorted.length > 0 && (
-        <div className="flex items-center gap-3 px-5 py-2 border-b border-line bg-paper/20">
-          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-400">{labels.sortLabel}</span>
-          <SortableHeaderClient column="title" label={labels.titleLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
-          <SortableHeaderClient column="published_date" label={labels.publishedAt} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
-        </div>
-      )}
-
-      {sorted.length === 0 ? (
-        <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
-      ) : viewMode === "list" ? (
-        <div>
-          {groups.map(([group, groupItems]) => (
-            <div key={group}>
-              <TimeGroupHeader group={group} count={groupItems.length} labels={labels.timeGroup} />
-              <div className="divide-y divide-line">
-                {groupItems.map((p) => (
-                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} newLabel={labels.newLabel} />
-                ))}
-              </div>
+        {sorted.length === 0 ? (
+          <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
+        ) : viewMode === "list" ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13.5px]">
+                <thead>
+                  <tr className="border-b border-line bg-paper/30">
+                    <Th>
+                      <SortableHeaderClient column="title" label={labels.titleLabel} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+                    </Th>
+                    <Th>{labels.authors}</Th>
+                    <Th>
+                      <SortableHeaderClient column="venue" label={labels.venue} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+                    </Th>
+                    <Th className="hidden lg:table-cell">{labels.topics}</Th>
+                    <Th>
+                      <SortableHeaderClient column="published_date" label={labels.publishedAt} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+                    </Th>
+                    <Th className="hidden lg:table-cell">★</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {paginated.length === 0 && (
+                    <tr><td colSpan={6}>
+                      <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
+                    </td></tr>
+                  )}
+                  {paginated.map((p) => {
+                    const stale = isExpired(p.published_date, 30);
+                    return (
+                      <tr key={p.id} className={`group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}>
+                        <Td>
+                          <div className="flex items-center gap-1.5">
+                            <a
+                              href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-[13px] font-medium line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                            >
+                              {p.title}
+                            </a>
+                            {isNew(p.published_date) && <NewBadge label={labels.newLabel} />}
+                          </div>
+                        </Td>
+                        <Td>
+                          <span className="text-[12px] text-ink-600">
+                            {p.authors.slice(0, 2).join(", ")}
+                            {p.authors.length > 2 && <span className="text-ink-400"> +{p.authors.length - 2}</span>}
+                          </span>
+                        </Td>
+                        <Td>
+                          {p.venue ? (
+                            <span className="rounded-full bg-navy-50 border border-navy-200 px-2 py-0.5 font-mono text-[10px] text-navy-700">{p.venue}</span>
+                          ) : <span className="text-ink-400">—</span>}
+                        </Td>
+                        <Td className="hidden lg:table-cell">
+                          <div className="flex flex-wrap gap-1">
+                            {p.topics.slice(0, 3).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
+                            {p.topics.length > 3 && <span className="text-[10px] text-ink-400">+{p.topics.length - 3}</span>}
+                          </div>
+                        </Td>
+                        <Td className="whitespace-nowrap">
+                          {p.published_date ? (
+                            <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={p.published_date}>
+                              {relativeTime(p.published_date, lang)}
+                            </span>
+                          ) : <span className="text-ink-400">—</span>}
+                        </Td>
+                        <Td className="hidden lg:table-cell">
+                          <FavoriteButton entity="papers" id={p.id} label={p.title} />
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="divide-y divide-line">
-          {clusters.map((cluster) => (
-            <details key={cluster.topic} className="group">
-              <summary className="flex items-center gap-3 px-5 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-paper/40 transition-colors select-none">
-                <svg
-                  viewBox="0 0 12 12"
-                  className="h-3 w-3 shrink-0 text-ink-400 transition-transform group-open:rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                >
-                  <path d="M4.5 3 L7.5 6 L4.5 9" />
-                </svg>
-                <span className="font-mono text-[12px] font-semibold text-ink-700">{cluster.topic}</span>
-                <span className={badgeClass()}>
-                  {cluster.count} {labels.papersCount}
-                </span>
-                <span className="font-mono text-[10px] text-ink-400 ml-auto">
-                  {labels.dateRange}: {cluster.dateRange}
-                </span>
-              </summary>
-              <div className="divide-y divide-line border-t border-line">
-                {cluster.papers.map((p) => (
-                  <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} newLabel={labels.newLabel} />
-                ))}
-              </div>
-            </details>
-          ))}
-        </div>
-      )}
+            <PaginationClient
+              page={page}
+              totalPages={totalPages}
+              total={sorted.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+              labels={{ rows: labels.rows, page: labels.page }}
+            />
+          </>
+        ) : (
+          <div className="divide-y divide-line">
+            {clusters.map((cluster) => (
+              <details key={cluster.topic} className="group">
+                <summary className="flex items-center gap-3 px-5 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-paper/40 transition-colors select-none">
+                  <svg
+                    viewBox="0 0 12 12"
+                    className="h-3 w-3 shrink-0 text-ink-400 transition-transform group-open:rotate-90"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  >
+                    <path d="M4.5 3 L7.5 6 L4.5 9" />
+                  </svg>
+                  <span className="font-mono text-[12px] font-semibold text-ink-700">{cluster.topic}</span>
+                  <span className={badgeClass()}>
+                    {cluster.count} {labels.papersCount}
+                  </span>
+                  <span className="font-mono text-[10px] text-ink-400 ml-auto">
+                    {labels.dateRange}: {cluster.dateRange}
+                  </span>
+                </summary>
+                <div className="divide-y divide-line border-t border-line">
+                  {cluster.papers.map((p) => (
+                    <PaperRow key={p.id} paper={p} lang={lang} publishedLabel={labels.publishedAt} newLabel={labels.newLabel} />
+                  ))}
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -338,4 +412,12 @@ function PaperRow({ paper: p, lang, publishedLabel, newLabel }: { paper: Paper; 
       )}
     </a>
   );
+}
+
+function Th({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <th className={`px-3 sm:px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
+}
+
+function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <td className={`px-3 sm:px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }

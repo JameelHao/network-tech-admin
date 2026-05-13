@@ -70,12 +70,26 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <SyncStatusBar entity="news" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
 
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800 shrink-0">
+            {t.news.title}
+            <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
+          </h1>
+          <div className="flex items-center gap-2 shrink-0">
+            <FavoriteFilter entity="news" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+            <div className="hidden lg:flex items-center gap-2">
+              <ExportButton entity="news" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="news" format="json" label={t.common.exportJSON} />
+            </div>
+            <OverflowMenu>
+              <ExportButton entity="news" format="csv" label={t.common.exportCSV} />
+              <ExportButton entity="news" format="json" label={t.common.exportJSON} />
+            </OverflowMenu>
+          </div>
+        </div>
+
         <section data-fav-filter="news" className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800 shrink-0">
-              {t.news.title}
-              <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
-            </h1>
             <div className="hidden lg:flex flex-wrap items-center gap-2">
               <FilterInput
                 paramKey="q"
@@ -122,17 +136,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 searchParams={filterParams}
               />
             </MobileFilterPanel>
-            <div className="flex items-center gap-2 shrink-0">
-              <FavoriteFilter entity="news" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <div className="hidden lg:flex items-center gap-2">
-                <ExportButton entity="news" format="csv" label={t.common.exportCSV} />
-                <ExportButton entity="news" format="json" label={t.common.exportJSON} />
-              </div>
-              <OverflowMenu>
-                <ExportButton entity="news" format="csv" label={t.common.exportCSV} />
-                <ExportButton entity="news" format="json" label={t.common.exportJSON} />
-              </OverflowMenu>
-            </div>
           </header>
 
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />

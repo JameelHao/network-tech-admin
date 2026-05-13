@@ -53,27 +53,28 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.talents }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
-          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.talents}</h1>
-            <div className="flex items-center gap-2">
-              <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-              <div className="hidden lg:flex items-center gap-2">
-                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
-                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
-              </div>
-              <OverflowMenu>
-                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
-                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
-              </OverflowMenu>
-              <Link
-                href="/admin/talents/new"
-                className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
-              >
-                + {t.common.new}
-              </Link>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.talents}</h1>
+          <div className="flex items-center gap-2">
+            <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+            <div className="hidden lg:flex items-center gap-2">
+              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
             </div>
+            <OverflowMenu>
+              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+            </OverflowMenu>
+            <Link
+              href="/admin/talents/new"
+              className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
+            >
+              + {t.common.new}
+            </Link>
           </div>
+        </div>
+
+        <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
 
           <div className="hidden lg:flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
             {[undefined, ...LEAD_STAGES].map((s) => {
