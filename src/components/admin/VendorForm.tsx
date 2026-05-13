@@ -81,7 +81,7 @@ export function VendorForm({ t, vendor }: { t: Dict; vendor?: Vendor }) {
         <input name="key_products" defaultValue={vendor?.key_products.join(", ") ?? ""} placeholder={t.vendor.keyProductsPlaceholder} className={inputCls} />
       </Field>
 
-      <Field label={t.detail.description ?? "Description"}>
+      <Field label="Description">
         <textarea name="description" rows={2} defaultValue={vendor?.description ?? ""} placeholder={t.vendor.descriptionPlaceholder} className={`${inputCls} leading-relaxed resize-y`} />
       </Field>
 

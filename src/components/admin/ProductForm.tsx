@@ -81,7 +81,7 @@ export function ProductForm({ t, product }: { t: Dict; product?: Product }) {
         </Field>
       </div>
 
-      <Field label={t.detail.description ?? "Description"}>
+      <Field label="Description">
         <textarea name="description" rows={2} defaultValue={product?.description ?? ""} placeholder={t.product.descriptionPlaceholder} className={`${inputCls} leading-relaxed resize-y`} />
       </Field>
 
