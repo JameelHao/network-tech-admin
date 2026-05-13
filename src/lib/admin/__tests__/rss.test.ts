@@ -66,8 +66,68 @@ describe("rss module", () => {
   });
 
   describe("NEWS_FEEDS", () => {
-    it("has 8 news sources", () => {
-      expect(getNewsFeeds().length).toBe(8);
+    it("has 13 news sources", () => {
+      expect(getNewsFeeds().length).toBe(13);
+    });
+
+    it("includes Chinese tech feeds", () => {
+      const feeds = getNewsFeeds();
+      const sources = feeds.map((f) => f.source);
+      expect(sources).toContain("InfoQ 中文");
+      expect(sources).toContain("开源中国");
+      expect(sources).toContain("FreeBuf");
+      expect(sources).toContain("Cloudflare 中文");
+      expect(sources).toContain("LWN.net");
+    });
+
+    it("Chinese feeds have valid RSS URLs", () => {
+      const feeds = getNewsFeeds();
+      const cnFeeds = feeds.filter((f) =>
+        ["InfoQ 中文", "开源中国", "FreeBuf", "Cloudflare 中文", "LWN.net"].includes(f.source),
+      );
+      expect(cnFeeds.length).toBe(5);
+      for (const feed of cnFeeds) {
+        expect(feed.url).toMatch(/^https:\/\//);
+      }
+    });
+  });
+
+  describe("parseRSSXml with Chinese content", () => {
+    it("parses Chinese RSS items correctly", async () => {
+      const chineseRss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <item>
+    <title>云原生网络架构演进：从 SDN 到 eBPF</title>
+    <link>https://example.cn/article/1</link>
+    <description>本文介绍了云原生网络架构的演进历程</description>
+    <pubDate>Tue, 13 May 2026 08:00:00 GMT</pubDate>
+  </item>
+  <item>
+    <title><![CDATA[深入理解 Kubernetes CNI 插件：Cilium & Calico 对比]]></title>
+    <link>https://example.cn/article/2</link>
+    <description><![CDATA[<p>从性能、安全和可观测性三个维度对比两大 CNI 方案</p>]]></description>
+    <pubDate>Mon, 12 May 2026 12:00:00 GMT</pubDate>
+  </item>
+</channel>
+</rss>`;
+
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve(chineseRss),
+      }));
+
+      const result = await fetchRSSItemsWithStats(
+        [{ url: "https://example.cn/rss", source: "中文测试" }],
+        10,
+      );
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0].title).toBe("云原生网络架构演进：从 SDN 到 eBPF");
+      expect(result.items[0].source).toBe("中文测试");
+      expect(result.items[1].title).toBe("深入理解 Kubernetes CNI 插件：Cilium & Calico 对比");
+      expect(result.items[1].snippet).toContain("从性能、安全和可观测性");
+      expect(result.feedStats[0]).toEqual({ source: "中文测试", status: "ok", count: 2 });
     });
   });
 

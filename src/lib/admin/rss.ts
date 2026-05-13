@@ -27,6 +27,12 @@ const NEWS_FEEDS = [
   { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
   { url: "https://www.theregister.com/networks/headlines.rss", source: "The Register" },
   { url: "https://engineering.fb.com/category/networking-traffic/feed/", source: "Meta Engineering" },
+  // Chinese tech feeds
+  { url: "https://www.infoq.cn/feed", source: "InfoQ 中文" },
+  { url: "https://www.oschina.net/news/rss", source: "开源中国" },
+  { url: "https://www.freebuf.com/feed", source: "FreeBuf" },
+  { url: "https://blog.cloudflare.com/zh-cn/rss/", source: "Cloudflare 中文" },
+  { url: "https://lwn.net/headlines/rss", source: "LWN.net" },
 ];
 
 const JOBS_FEEDS = [
