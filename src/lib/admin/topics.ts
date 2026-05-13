@@ -24,26 +24,33 @@ export const TOPICS: TopicDef[] = [
   { slug: "congestion-ctrl",    category: "network-systems",  en: "Congestion Control",       zh: "拥塞控制" },
 
   // Measurement & Analysis
-  { slug: "internet-measure",   category: "measurement",      en: "Internet Measurement",     zh: "互联网测量" },
-  { slug: "traffic-analysis",   category: "measurement",      en: "Traffic Analysis",         zh: "流量分析" },
-  { slug: "dns-bgp",            category: "measurement",      en: "DNS/BGP Analysis",         zh: "DNS/BGP分析" },
-  { slug: "network-monitoring", category: "measurement",      en: "Network Monitoring",       zh: "网络监控" },
+  { slug: "internet-measure",      category: "measurement",      en: "Internet Measurement",     zh: "互联网测量" },
+  { slug: "traffic-analysis",      category: "measurement",      en: "Traffic Analysis",         zh: "流量分析" },
+  { slug: "dns-bgp",               category: "measurement",      en: "DNS/BGP Analysis",         zh: "DNS/BGP分析" },
+  { slug: "network-monitoring",    category: "measurement",      en: "Network Monitoring",       zh: "网络监控" },
+  { slug: "network-observability", category: "measurement",      en: "Network Observability",    zh: "网络可观测性" },
 
   // Network Security
   { slug: "ddos-defense",       category: "security",         en: "DDoS Defense",             zh: "DDoS防御" },
   { slug: "protocol-security",  category: "security",         en: "Protocol Security",        zh: "协议安全" },
   { slug: "privacy-anonymity",  category: "security",         en: "Privacy & Anonymity",      zh: "隐私与匿名" },
   { slug: "side-channels",      category: "security",         en: "Side Channels",            zh: "侧信道攻击" },
+  { slug: "zero-trust",         category: "security",         en: "Zero Trust Architecture",  zh: "零信任架构" },
+  { slug: "sase-sse",           category: "security",         en: "SASE/SSE",                 zh: "SASE/SSE" },
 
   // Emerging Networks
-  { slug: "edge-computing",     category: "emerging",         en: "Edge Computing",           zh: "边缘计算" },
-  { slug: "network-ai",         category: "emerging",         en: "Network Intelligence",     zh: "网络AI/ML" },
-  { slug: "machine-learning",   category: "emerging",         en: "Machine Learning",         zh: "机器学习" },
-  { slug: "optimization",       category: "emerging",         en: "Optimization",             zh: "优化" },
-  { slug: "5g-wireless",        category: "emerging",         en: "5G & Wireless",            zh: "5G与无线" },
-  { slug: "5g-6g",              category: "emerging",         en: "5G/6G",                    zh: "5G/6G" },
-  { slug: "mobile-wireless",    category: "emerging",         en: "Mobile & Wireless",        zh: "移动与无线" },
-  { slug: "ebpf-xdp",           category: "emerging",         en: "eBPF/XDP",                 zh: "eBPF/XDP" },
+  { slug: "edge-computing",            category: "emerging",         en: "Edge Computing",              zh: "边缘计算" },
+  { slug: "network-ai",                category: "emerging",         en: "Network Intelligence",        zh: "网络AI/ML" },
+  { slug: "machine-learning",          category: "emerging",         en: "Machine Learning",            zh: "机器学习" },
+  { slug: "optimization",              category: "emerging",         en: "Optimization",                zh: "优化" },
+  { slug: "ai-networking",             category: "emerging",         en: "AI for Networking",           zh: "AI驱动网络" },
+  { slug: "network-digital-twin",      category: "emerging",         en: "Network Digital Twin",        zh: "网络数字孪生" },
+  { slug: "intent-based-networking",   category: "emerging",         en: "Intent-Based Networking",     zh: "意图驱动网络" },
+  { slug: "satellite-leo",             category: "emerging",         en: "Satellite/LEO Networks",      zh: "卫星/LEO网络" },
+  { slug: "quantum-networking",        category: "emerging",         en: "Quantum Networking",          zh: "量子网络" },
+  { slug: "5g-6g",                     category: "emerging",         en: "5G/6G",                       zh: "5G/6G" },
+  { slug: "mobile-wireless",           category: "emerging",         en: "Mobile & Wireless",           zh: "移动与无线" },
+  { slug: "ebpf-xdp",                  category: "emerging",         en: "eBPF/XDP",                    zh: "eBPF/XDP" },
 
   // Systems Infrastructure
   { slug: "distributed-sys",    category: "infrastructure",   en: "Distributed Systems",      zh: "分布式系统" },
