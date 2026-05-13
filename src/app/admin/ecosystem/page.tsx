@@ -12,9 +12,9 @@ import Link from "next/link";
 export default async function EcosystemPage() {
   const { lang, t } = await getDict();
   const [productResult, vendorResult, osResult] = await Promise.all([
-    listProducts({ pageSize: 100 }),
-    listVendors({ pageSize: 100 }),
-    listOpenSource({ pageSize: 100 }),
+    listProducts({ page: 1, pageSize: 100 }),
+    listVendors({ page: 1, pageSize: 100 }),
+    listOpenSource({ page: 1, pageSize: 100 }),
   ]);
 
   const products = productResult.data;
