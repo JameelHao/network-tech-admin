@@ -53,6 +53,23 @@ export default async function DashboardPage() {
     .filter((p) => p.published_date && Date.now() - new Date(p.published_date).getTime() < 7 * 86_400_000)
     .slice(0, 5);
 
+  const latestUpdatedProducts = productResult.data
+    .filter((p) => p.release_date)
+    .sort((a, b) => b.release_date!.localeCompare(a.release_date!))
+    .slice(0, 5);
+
+  const keyVendors = vendorResult.data
+    .filter((v) => v.stage === "engaging" || v.stage === "partnered")
+    .slice(0, 5);
+
+  const TYPE_I18N_MAP: Record<string, string> = {
+    vendor: "vendorType",
+    partner: "partner",
+    competitor: "competitor",
+    startup: "startup",
+    academic: "academic",
+  };
+
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
@@ -130,6 +147,54 @@ export default async function DashboardPage() {
               ))}
             </div>
           </section>
+
+          {latestUpdatedProducts.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.latestProductUpdates}</h2>
+                <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+              </div>
+              <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+                {latestUpdatedProducts.map((p) => (
+                  <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-medium text-ink-800 truncate">{p.name}</p>
+                      <p className="text-[12px] text-ink-400 mt-0.5 truncate">
+                        {p.vendor ?? "—"} · {p.release_date}
+                      </p>
+                    </div>
+                    {p.latest_version && (
+                      <span className="font-mono text-[11px] text-ink-400">{p.latest_version}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          {keyVendors.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.keyVendors}</h2>
+                <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+              </div>
+              <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+                {keyVendors.map((v) => (
+                  <Link key={v.id} href={`/admin/vendors/${v.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-medium text-ink-800 truncate">{v.name}</p>
+                      {v.key_products.length > 0 && (
+                        <p className="text-[12px] text-ink-400 mt-0.5 truncate">{v.key_products.slice(0, 3).join(", ")}</p>
+                      )}
+                    </div>
+                    <StatusPill label={t.vendor[TYPE_I18N_MAP[v.type] as keyof typeof t.vendor] as string} lang={lang} />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section>
             <div className="flex items-center justify-between mb-2">

@@ -39,6 +39,8 @@ const en = {
     viewAll: "View all",
     stageDistribution: "Lead Stage Distribution",
     noUpcoming: "No upcoming conferences",
+    latestProductUpdates: "Latest Product Updates",
+    keyVendors: "Key Vendors",
   },
   detail: {
     location: "Location",
@@ -549,6 +551,8 @@ const zh: typeof en = {
     viewAll: "查看全部",
     stageDistribution: "线索阶段分布",
     noUpcoming: "暂无即将到来的会议",
+    latestProductUpdates: "最近产品更新",
+    keyVendors: "重点厂商",
   },
   detail: {
     location: "地点",
