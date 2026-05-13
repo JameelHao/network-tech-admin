@@ -35,7 +35,7 @@ export function EmptyState({ icon, title, description, action, compact }: EmptyS
       <div aria-hidden="true" className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-paper">
         {icon ?? defaultIcon}
       </div>
-      <h3 className="font-display text-[18px] tracking-tight text-ink-700">{title}</h3>
+      <h3 className="font-sans text-[18px] font-semibold tracking-tight text-ink-700">{title}</h3>
       <p className="mt-1 text-[13px] text-ink-400 max-w-xs mx-auto">{description}</p>
       {action && (
         <div className="mt-5">

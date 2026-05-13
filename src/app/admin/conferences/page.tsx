@@ -237,7 +237,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                       <tr key={c.id} className="group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors">
                         <Td>
                           <Link href={`/admin/conferences/${c.id}`} className="block">
-                            <div className="font-display text-[14.5px] tracking-tight text-ink-900 group-hover:text-navy-700">
+                            <div className="font-sans text-[14.5px] font-semibold tracking-tight text-ink-900 group-hover:text-navy-700">
                               {c.abbreviation ?? c.name}
                             </div>
                             {c.abbreviation && (
@@ -329,7 +329,7 @@ function Stat({ label, value, sub }: { label: string; value: number; sub: string
   return (
     <div className="bg-surface p-6">
       <p className="tracked-label">{label}</p>
-      <p className="mt-3 font-display text-[30px] leading-none text-ink-900 tabular-nums">
+      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
         {value}
       </p>
       <p className="mt-2 text-[12px] text-ink-500">{sub}</p>

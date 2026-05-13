@@ -36,7 +36,7 @@ export async function DataSourceStatus({ labels, lang }: { labels: Labels; lang:
   return (
     <section className="rounded-lg border border-line bg-surface">
       <div className="px-5 pt-4 pb-3 border-b border-line">
-        <h2 className="font-display text-[15px] tracking-tight text-ink-800">{labels.title}</h2>
+        <h2 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{labels.title}</h2>
       </div>
       <table className="w-full text-[13px]">
         <thead>

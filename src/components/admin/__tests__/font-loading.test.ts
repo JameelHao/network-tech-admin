@@ -17,40 +17,50 @@ describe("font loading via next/font/google", () => {
   });
 
   it.each([
-    ["--font-fraunces", "Fraunces"],
-    ["--font-plex", "IBM_Plex_Sans"],
-    ["--font-plex-mono", "IBM_Plex_Mono"],
-    ["--font-noto-serif-sc", "Noto_Serif_SC"],
-    ["--font-noto-sans-sc", "Noto_Sans_SC"],
+    ["--font-inter", "Inter"],
+    ["--font-jb-mono", "JetBrains_Mono"],
   ])("declares CSS variable %s for %s", (variable) => {
     expect(layout).toContain(`variable: "${variable}"`);
   });
 
   it("applies all font variable classes to body", () => {
-    expect(layout).toContain("fraunces.variable");
-    expect(layout).toContain("plexSans.variable");
-    expect(layout).toContain("plexMono.variable");
-    expect(layout).toContain("notoSerifSC.variable");
-    expect(layout).toContain("notoSansSC.variable");
+    expect(layout).toContain("inter.variable");
+    expect(layout).toContain("jetbrainsMono.variable");
+  });
+
+  it("does not reference old fonts", () => {
+    expect(layout).not.toContain("Fraunces");
+    expect(layout).not.toContain("IBM_Plex_Sans");
+    expect(layout).not.toContain("IBM_Plex_Mono");
+    expect(layout).not.toContain("Noto_Serif_SC");
+    expect(layout).not.toContain("Noto_Sans_SC");
   });
 
   it("all fonts use display swap", () => {
     const swapCount = (layout.match(/display:\s*"swap"/g) || []).length;
-    expect(swapCount).toBe(5);
+    expect(swapCount).toBe(2);
   });
 
-  it("globals.css --font-display uses var(--font-fraunces)", () => {
-    expect(globals).toContain("var(--font-fraunces)");
-    expect(globals).toContain("var(--font-noto-serif-sc)");
+  it("globals.css --font-sans uses var(--font-inter)", () => {
+    expect(globals).toContain("var(--font-inter)");
+    expect(globals).toContain("LXGW WenKai");
   });
 
-  it("globals.css --font-sans uses var(--font-plex)", () => {
-    expect(globals).toContain("var(--font-plex)");
-    expect(globals).toContain("var(--font-noto-sans-sc)");
+  it("globals.css --font-mono uses var(--font-jb-mono)", () => {
+    expect(globals).toContain("var(--font-jb-mono)");
+    expect(globals).toContain("LXGW WenKai Mono");
   });
 
-  it("globals.css --font-mono uses var(--font-plex-mono)", () => {
-    expect(globals).toContain("var(--font-plex-mono)");
+  it("globals.css does not define --font-display", () => {
+    expect(globals).not.toContain("--font-display");
+  });
+
+  it("globals.css does not reference old font variables", () => {
+    expect(globals).not.toContain("var(--font-fraunces)");
+    expect(globals).not.toContain("var(--font-plex)");
+    expect(globals).not.toContain("var(--font-plex-mono)");
+    expect(globals).not.toContain("var(--font-noto-serif-sc)");
+    expect(globals).not.toContain("var(--font-noto-sans-sc)");
   });
 
   it("globals.css does not use hardcoded font family strings", () => {
