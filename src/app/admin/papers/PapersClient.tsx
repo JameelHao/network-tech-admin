@@ -22,7 +22,7 @@ import { useSortable } from "@/hooks/useSortable";
 import type { Paper } from "@/lib/admin/types";
 import type { DuplicateGroup } from "@/lib/admin/paper-dedup";
 import type { Lang } from "@/lib/i18n/dict";
-import { tabClass, badgeClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass, badgeClass } from "@/lib/admin/ui";
 import type { SortDir } from "@/lib/admin/pagination";
 
 type PapersLabels = {
@@ -155,7 +155,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
           <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
-          <div className="flex items-center gap-1">
+          <div className={tabGroupClass()}>
             <button
               onClick={() => setViewMode("list")}
               className={tabClass(viewMode === "list", "sm")}

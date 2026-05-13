@@ -1,28 +1,31 @@
 import { describe, it, expect } from "vitest";
-import { tabClass, pageClass, badgeClass, calendarTodayClass } from "../ui";
+import { tabClass, tabGroupClass, pageClass, badgeClass, calendarTodayClass } from "../ui";
 
 describe("ui utility functions", () => {
   describe("tabClass", () => {
-    it("returns active styles with pill shape", () => {
+    it("returns active styles with pill shape and blue glow", () => {
       const cls = tabClass(true);
       expect(cls).toContain("rounded-full");
-      expect(cls).toContain("bg-[rgba(238,247,255,0.98)]");
-      expect(cls).toContain("border");
-      expect(cls).toContain("shadow-");
+      expect(cls).toContain("text-[#0059b2]");
+      expect(cls).toContain("bg-gradient-to-b");
+      expect(cls).toContain("shadow-[inset_0_0_0_1px_rgba(0,113,227,0.16)");
     });
 
-    it("returns inactive styles with hover", () => {
+    it("returns inactive styles with hover lift", () => {
       const cls = tabClass(false);
       expect(cls).toContain("rounded-full");
-      expect(cls).toContain("hover:bg-");
-      expect(cls).toContain("hover:shadow-");
+      expect(cls).toContain("text-[#4f545a]");
+      expect(cls).toContain("hover:-translate-y-px");
+      expect(cls).toContain("hover:bg-white/[0.72]");
     });
 
     it("uses smaller sizing for sm variant", () => {
       const sm = tabClass(true, "sm");
       const md = tabClass(true, "md");
-      expect(sm).toContain("text-[11px]");
-      expect(md).toContain("text-[12px]");
+      expect(sm).toContain("text-[12px]");
+      expect(sm).toContain("min-h-[36px]");
+      expect(md).toContain("text-[13px]");
+      expect(md).toContain("min-h-[40px]");
     });
 
     it("includes dark mode variants", () => {
@@ -30,9 +33,36 @@ describe("ui utility functions", () => {
       expect(cls).toContain("dark:");
     });
 
-    it("includes 140ms transition", () => {
+    it("includes 160ms transition", () => {
       const cls = tabClass(true);
-      expect(cls).toContain("duration-[140ms]");
+      expect(cls).toContain("duration-[160ms]");
+    });
+
+    it("active has font-semibold and tracking", () => {
+      const cls = tabClass(true);
+      expect(cls).toContain("font-semibold");
+      expect(cls).toContain("tracking-[-0.01em]");
+    });
+
+    it("inactive has cursor-pointer", () => {
+      const cls = tabClass(false);
+      expect(cls).toContain("cursor-pointer");
+    });
+  });
+
+  describe("tabGroupClass", () => {
+    it("returns segment control container with rounded-full", () => {
+      const cls = tabGroupClass();
+      expect(cls).toContain("inline-flex");
+      expect(cls).toContain("rounded-full");
+      expect(cls).toContain("border");
+      expect(cls).toContain("bg-gradient-to-b");
+      expect(cls).toContain("shadow-[inset_0_1px_0");
+    });
+
+    it("appends extra classes when provided", () => {
+      const cls = tabGroupClass("ml-auto");
+      expect(cls).toContain("ml-auto");
     });
   });
 

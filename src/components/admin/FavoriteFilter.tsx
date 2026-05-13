@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFavorites, type EntityType } from "@/hooks/useFavorites";
-import { tabClass } from "@/lib/admin/ui";
+import { tabClass, tabGroupClass } from "@/lib/admin/ui";
 
 export function FavoriteFilter({
   entity,
@@ -23,7 +23,7 @@ export function FavoriteFilter({
 
   return (
     <>
-      <div className="flex items-center gap-1">
+      <div className={tabGroupClass()}>
         <button
           type="button"
           onClick={() => toggle(true)}
