@@ -148,7 +148,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
   return (
     <div className="rounded-lg border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-3 px-5 pt-4 pb-3 border-b border-line">
-        <h1 className="font-display text-[17px] tracking-tight text-ink-800">
+        <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
           {labels.title}
           <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
         </h1>
