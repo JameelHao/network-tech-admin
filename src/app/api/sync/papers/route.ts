@@ -7,10 +7,14 @@ export const maxDuration = 60;
 
 export async function POST() {
   const supabase = await createClient();
-  const fetched = await fetchAllNetworkPapers(2026);
+  const { papers: fetched, categoryStats } = await fetchAllNetworkPapers(2026);
 
   if (fetched.length === 0) {
-    return NextResponse.json({ imported: 0, message: "No papers found" });
+    await supabase.from("sync_meta").upsert(
+      { entity: "papers", last_sync_at: new Date().toISOString(), last_result: { categoryStats } },
+      { onConflict: "entity" },
+    );
+    return NextResponse.json({ imported: 0, total_fetched: 0, categoryStats });
   }
 
   const { data: existing } = await supabase.from("papers").select("title");
@@ -32,5 +36,10 @@ export async function POST() {
     if (!error) imported += batch.length;
   }
 
-  return NextResponse.json({ imported, total_fetched: fetched.length });
+  await supabase.from("sync_meta").upsert(
+    { entity: "papers", last_sync_at: new Date().toISOString(), last_result: { categoryStats } },
+    { onConflict: "entity" },
+  );
+
+  return NextResponse.json({ imported, total_fetched: fetched.length, categoryStats });
 }

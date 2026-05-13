@@ -17,9 +17,11 @@ type SyncLabels = {
 type SyncData = { lastSync: string | null; count: number };
 
 type SyncResultInfo = {
-  news: number;
-  jobs: number;
-  feedStats: { source: string; status: string; count: number; error?: string }[];
+  news?: number;
+  jobs?: number;
+  imported?: number;
+  feedStats?: { source: string; status: string; count: number; error?: string }[];
+  categoryStats?: { category: string; status: string; count: number; error?: string }[];
 };
 
 const SYNC_ENDPOINTS: Record<string, string> = {
@@ -52,8 +54,9 @@ export function SyncStatusBar({
 
   useEffect(() => {
     if (!syncResult) return;
-    const failedCount = syncResult.feedStats.filter((s) => s.status === "error").length;
-    if (failedCount === syncResult.feedStats.length) return;
+    const stats = syncResult.feedStats ?? syncResult.categoryStats ?? [];
+    const failedCount = stats.filter((s) => s.status === "error").length;
+    if (failedCount === stats.length) return;
     const timer = setTimeout(() => setSyncResult(null), 5000);
     return () => clearTimeout(timer);
   }, [syncResult]);
@@ -64,7 +67,7 @@ export function SyncStatusBar({
     try {
       const res = await fetch(SYNC_ENDPOINTS[entity], { method: "POST" });
       const json = await res.json();
-      if (json.feedStats) setSyncResult(json);
+      if (json.feedStats || json.categoryStats) setSyncResult(json);
       fetchStatus();
     } finally {
       setRefreshing(false);
@@ -85,9 +88,12 @@ export function SyncStatusBar({
       })
     : null;
 
-  const failedFeeds = syncResult?.feedStats.filter((s) => s.status === "error") ?? [];
-  const totalItems = syncResult ? syncResult.news + syncResult.jobs : 0;
-  const allFailed = syncResult && failedFeeds.length === syncResult.feedStats.length;
+  const allStats = syncResult?.feedStats ?? syncResult?.categoryStats ?? [];
+  const failedFeeds = allStats.filter((s) => s.status === "error");
+  const totalItems = syncResult
+    ? (syncResult.imported ?? ((syncResult.news ?? 0) + (syncResult.jobs ?? 0)))
+    : 0;
+  const allFailed = syncResult && allStats.length > 0 && failedFeeds.length === allStats.length;
 
   return (
     <div className="mb-4 space-y-1.5">
@@ -121,13 +127,13 @@ export function SyncStatusBar({
               : "border-emerald-200 bg-emerald-50 text-emerald-700"
         }`}>
           <span className="font-semibold">
-            {labels.syncResult ?? "Sync"}: {totalItems} {lang === "zh" ? "条" : "items"}
+            {labels.syncResult ?? "Sync"}: {totalItems} {syncResult?.imported !== undefined ? (lang === "zh" ? "篇导入" : "imported") : (lang === "zh" ? "条" : "items")}
           </span>
           {failedFeeds.length > 0 && (
             <span>
               · {failedFeeds.length} {labels.sourcesFailed ?? (lang === "zh" ? "个源失败" : "sources failed")}
               <span className="text-[11px] ml-1 opacity-70">
-                ({failedFeeds.map((f) => f.source).join(", ")})
+                ({failedFeeds.map((f) => ("source" in f ? f.source : (f as { category: string }).category)).join(", ")})
               </span>
             </span>
           )}
