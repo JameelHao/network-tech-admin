@@ -1,5 +1,41 @@
 import type { Metadata } from "next";
+import { Fraunces, IBM_Plex_Sans, IBM_Plex_Mono, Noto_Serif_SC, Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-plex",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
+  display: "swap",
+});
+
+const notoSerifSC = Noto_Serif_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-noto-serif-sc",
+  display: "swap",
+});
+
+const notoSansSC = Noto_Sans_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-noto-sans-sc",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Network Technology Radar",
@@ -25,12 +61,8 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("nt-theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})();if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js")` }}
         />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className={`min-h-full flex flex-col ${fraunces.variable} ${plexSans.variable} ${plexMono.variable} ${notoSerifSC.variable} ${notoSansSC.variable}`}>{children}</body>
     </html>
   );
 }
