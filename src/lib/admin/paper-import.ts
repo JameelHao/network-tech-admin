@@ -8,6 +8,18 @@ export type ImportedPaper = {
   topics: string[];
 };
 
+export type CategoryStat = {
+  category: string;
+  status: "ok" | "error";
+  count: number;
+  error?: string;
+};
+
+export type PaperFetchResult = {
+  papers: ImportedPaper[];
+  categoryStats: CategoryStat[];
+};
+
 function parseArxivXml(xml: string): ImportedPaper[] {
   const papers: ImportedPaper[] = [];
   const entries = xml.split("<entry>").slice(1);
@@ -46,37 +58,44 @@ function parseArxivXml(xml: string): ImportedPaper[] {
   return papers;
 }
 
-async function fetchFromArxiv(year: number): Promise<ImportedPaper[]> {
+async function fetchFromArxiv(year: number): Promise<PaperFetchResult> {
   const categories = ["cs.NI", "cs.AI", "cs.DC", "cs.PF", "cs.LG", "cs.CR"];
   const allPapers: ImportedPaper[] = [];
+  const categoryStats: CategoryStat[] = [];
   const seen = new Set<string>();
 
   for (const cat of categories) {
     const query = `cat:${cat}+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
-    const url = `http://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
+    const url = `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) continue;
+      const res = await fetch(url, { redirect: "follow" });
+      if (!res.ok) {
+        categoryStats.push({ category: cat, status: "error", count: 0, error: `HTTP ${res.status}` });
+        continue;
+      }
       const xml = await res.text();
       const papers = parseArxivXml(xml);
+      let added = 0;
 
       for (const p of papers) {
         const key = p.title.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
         allPapers.push(p);
+        added++;
       }
-    } catch {
-      // skip
+      categoryStats.push({ category: cat, status: "ok", count: added });
+    } catch (err) {
+      categoryStats.push({ category: cat, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" });
     }
 
     await new Promise((r) => setTimeout(r, 3000));
   }
 
-  return allPapers;
+  return { papers: allPapers, categoryStats };
 }
 
-export async function fetchAllNetworkPapers(year: number): Promise<ImportedPaper[]> {
+export async function fetchAllNetworkPapers(year: number): Promise<PaperFetchResult> {
   return fetchFromArxiv(year);
 }

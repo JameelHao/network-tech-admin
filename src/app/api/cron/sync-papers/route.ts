@@ -12,10 +12,15 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createClient();
-  const fetched = await fetchAllNetworkPapers(2026);
+  const { papers: fetched, categoryStats } = await fetchAllNetworkPapers(2026);
+
+  await supabase.from("sync_meta").upsert(
+    { entity: "papers", last_sync_at: new Date().toISOString(), last_result: { categoryStats } },
+    { onConflict: "entity" },
+  );
 
   if (fetched.length === 0) {
-    return NextResponse.json({ imported: 0, message: "No papers found" });
+    return NextResponse.json({ imported: 0, message: "No papers found", categoryStats });
   }
 
   const { data: existing } = await supabase.from("papers").select("title");
@@ -41,5 +46,6 @@ export async function GET(request: Request) {
     imported,
     total_fetched: fetched.length,
     already_existed: fetched.length - newPapers.length,
+    categoryStats,
   });
 }
