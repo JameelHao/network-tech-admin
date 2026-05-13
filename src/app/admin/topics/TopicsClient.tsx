@@ -56,14 +56,6 @@ const ENTITY_ICONS: Record<string, string> = {
 
 const DRILL_LIMIT = 5;
 
-const TAB_COLORS: Record<string, { active: string; inactive: string }> = {
-  navy:   { active: "border-navy-500 bg-navy-50 text-navy-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
-  cobalt: { active: "border-cobalt-500 bg-cobalt-50 text-cobalt-700", inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
-  rust:   { active: "border-rust-500 bg-rust-50 text-rust-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
-  moss:   { active: "border-moss-500 bg-moss-50 text-moss-700",     inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
-  amber:  { active: "border-amber-500 bg-amber-50 text-amber-700",   inactive: "border-transparent text-ink-500 hover:text-ink-700 hover:border-ink-200" },
-};
-
 const CATEGORY_KEYS = Object.keys(TOPIC_CATEGORIES) as TopicCategory[];
 
 export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labels: TopicsLabels; lang: Lang }) {
@@ -203,10 +195,8 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
 
       {/* Category tabs */}
       <div className="overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-1 min-w-max" role="tablist">
+        <div className={tabGroupClass()} role="tablist">
           {CATEGORY_KEYS.map((key) => {
-            const color = TOPIC_CATEGORIES[key].color;
-            const tabColor = TAB_COLORS[color] ?? TAB_COLORS.navy;
             const isActive = activeTab === key;
             return (
               <button
@@ -215,9 +205,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => { setActiveTab(key); setPage(1); }}
-                className={`rounded-md border-b-2 px-3 py-2 font-mono text-[11px] tracking-[0.08em] transition-colors whitespace-nowrap ${
-                  isActive ? tabColor.active : tabColor.inactive
-                }`}
+                className={tabClass(isActive, "sm")}
               >
                 {TOPIC_CATEGORIES[key][lang]}
                 <span className="ml-1.5 rounded-full bg-ink-100 px-1.5 py-0.5 text-[9px] text-ink-500 tabular-nums">{categoryCounts[key]}</span>
