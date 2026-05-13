@@ -48,6 +48,12 @@ describe("ui utility functions", () => {
       const cls = tabClass(false);
       expect(cls).toContain("cursor-pointer");
     });
+
+    it("active shadow is inset-only (no outer glow)", () => {
+      const cls = tabClass(true);
+      expect(cls).toContain("shadow-[inset_0_0_0_1px_rgba(0,113,227,0.16)]");
+      expect(cls).not.toContain("0_8px_18px");
+    });
   });
 
   describe("tabGroupClass", () => {
@@ -58,6 +64,12 @@ describe("ui utility functions", () => {
       expect(cls).toContain("border");
       expect(cls).toContain("bg-gradient-to-b");
       expect(cls).toContain("shadow-[inset_0_1px_0");
+    });
+
+    it("uses subtle outer shadow (not heavy 8px)", () => {
+      const cls = tabGroupClass();
+      expect(cls).toContain("0_2px_6px_rgba(17,24,39,0.04)");
+      expect(cls).not.toContain("0_8px_18px");
     });
 
     it("appends extra classes when provided", () => {
