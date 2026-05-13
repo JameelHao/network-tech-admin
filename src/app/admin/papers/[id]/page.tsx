@@ -47,6 +47,8 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.venue}</dt><dd className="mt-1 text-ink-800">{paper.venue ?? "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.date}</dt><dd className="mt-1 text-ink-800 tabular-nums">{paper.published_date ?? "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.link}</dt><dd className="mt-1">{paper.url ? <a href={paper.url} target="_blank" rel="noreferrer" className="text-navy-500 hover:text-navy-700 transition-colors truncate block">{paper.url}</a> : "—"}</dd></div>
+            <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.papers.citations}</dt><dd className="mt-1 text-ink-800 tabular-nums">{paper.citation_count != null ? paper.citation_count.toLocaleString() : "—"}</dd></div>
+            <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.papers.source}</dt><dd className="mt-1 text-ink-800">{paper.source ?? "—"}</dd></div>
           </dl>
           {paper.abstract && (
             <div>

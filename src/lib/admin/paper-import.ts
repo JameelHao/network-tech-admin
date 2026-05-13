@@ -6,6 +6,8 @@ export type ImportedPaper = {
   published_date: string | null;
   abstract: string | null;
   topics: string[];
+  citation_count?: number;
+  source: "arxiv" | "semantic-scholar";
 };
 
 export type CategoryStat = {
@@ -20,7 +22,7 @@ export type PaperFetchResult = {
   categoryStats: CategoryStat[];
 };
 
-function parseArxivXml(xml: string): ImportedPaper[] {
+export function parseArxivXml(xml: string): ImportedPaper[] {
   const papers: ImportedPaper[] = [];
   const entries = xml.split("<entry>").slice(1);
 
@@ -52,6 +54,7 @@ function parseArxivXml(xml: string): ImportedPaper[] {
       published_date: published ? published.slice(0, 10) : null,
       abstract,
       topics: categories.filter((c) => c.startsWith("cs.")),
+      source: "arxiv",
     });
   }
 
@@ -96,6 +99,122 @@ async function fetchFromArxiv(year: number): Promise<PaperFetchResult> {
   return { papers: allPapers, categoryStats };
 }
 
+const S2_VENUES = ["SIGCOMM", "NSDI", "IMC", "OSDI", "SOSP", "CoNEXT"];
+const S2_FIELDS = "title,authors,venue,year,citationCount,url,abstract,externalIds";
+
+type S2Author = { name: string };
+type S2Paper = {
+  title: string;
+  authors: S2Author[];
+  venue: string | null;
+  year: number | null;
+  citationCount: number | null;
+  url: string | null;
+  abstract: string | null;
+  externalIds: Record<string, string> | null;
+};
+type S2Response = { data: S2Paper[] };
+
+export function parseS2Papers(data: S2Paper[], venue: string): ImportedPaper[] {
+  return data.map((p) => {
+    const arxivId = p.externalIds?.ArXiv;
+    const paperUrl = arxivId
+      ? `https://arxiv.org/abs/${arxivId}`
+      : p.url;
+    return {
+      title: p.title,
+      authors: p.authors.map((a) => a.name),
+      venue,
+      url: paperUrl,
+      published_date: p.year ? `${p.year}-01-01` : null,
+      abstract: p.abstract?.slice(0, 2000) ?? null,
+      topics: [],
+      citation_count: p.citationCount ?? undefined,
+      source: "semantic-scholar" as const,
+    };
+  });
+}
+
+async function fetchFromSemanticScholar(year: number): Promise<PaperFetchResult> {
+  const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
+  if (!apiKey) {
+    return { papers: [], categoryStats: [{ category: "semantic-scholar", status: "error", count: 0, error: "no API key" }] };
+  }
+
+  const headers: Record<string, string> = { "x-api-key": apiKey };
+  const allPapers: ImportedPaper[] = [];
+  const categoryStats: CategoryStat[] = [];
+
+  for (const venue of S2_VENUES) {
+    const params = new URLSearchParams({
+      query: "networking OR SDN OR eBPF OR datacenter",
+      year: String(year),
+      venue,
+      fieldsOfStudy: "Computer Science",
+      fields: S2_FIELDS,
+      limit: "100",
+    });
+    const url = `https://api.semanticscholar.org/graph/v1/paper/search?${params}`;
+
+    try {
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
+      if (!res.ok) {
+        categoryStats.push({ category: venue, status: "error", count: 0, error: `HTTP ${res.status}` });
+        continue;
+      }
+      const json: S2Response = await res.json();
+      const papers = parseS2Papers(json.data ?? [], venue);
+      allPapers.push(...papers);
+      categoryStats.push({ category: venue, status: "ok", count: papers.length });
+    } catch (err) {
+      categoryStats.push({ category: venue, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" });
+    }
+
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+
+  return { papers: allPapers, categoryStats };
+}
+
+export function normalizeTitle(t: string): string {
+  return t.toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+}
+
+export function mergeResults(arxiv: PaperFetchResult, s2: PaperFetchResult): PaperFetchResult {
+  const seen = new Set<string>();
+  const merged: ImportedPaper[] = [];
+
+  for (const p of arxiv.papers) {
+    const key = normalizeTitle(p.title);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(p);
+    }
+  }
+
+  for (const p of s2.papers) {
+    const key = normalizeTitle(p.title);
+    if (seen.has(key)) {
+      const existing = merged.find((m) => normalizeTitle(m.title) === key);
+      if (existing && p.citation_count !== undefined) {
+        existing.citation_count = p.citation_count;
+      }
+    } else {
+      seen.add(key);
+      merged.push(p);
+    }
+  }
+
+  return {
+    papers: merged,
+    categoryStats: [...arxiv.categoryStats, ...s2.categoryStats],
+  };
+}
+
 export async function fetchAllNetworkPapers(year: number): Promise<PaperFetchResult> {
-  return fetchFromArxiv(year);
+  const [arxiv, s2] = await Promise.all([
+    fetchFromArxiv(year),
+    fetchFromSemanticScholar(year),
+  ]);
+  return mergeResults(arxiv, s2);
 }
