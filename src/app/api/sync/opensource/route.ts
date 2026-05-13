@@ -115,10 +115,13 @@ export async function POST() {
     if (existingMap.has(repoUrl)) {
       if (existingMap.get(repoUrl) !== repo.stargazers_count) {
         updateTasks.push(
-          supabase.from("opensource").update({
-            stars: repo.stargazers_count,
-            last_active: lastActive,
-          }).eq("repo_url", repoUrl).then(() => { updated++; }),
+          (async () => {
+            await supabase.from("opensource").update({
+              stars: repo.stargazers_count,
+              last_active: lastActive,
+            }).eq("repo_url", repoUrl);
+            updated++;
+          })(),
         );
       }
     } else {
