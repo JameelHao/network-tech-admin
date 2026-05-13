@@ -1,3 +1,4 @@
+import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
@@ -58,6 +59,7 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.opensource }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
+        <SyncStatusBar entity="opensource" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.opensource}</h1>
           <div className="flex items-center gap-2">

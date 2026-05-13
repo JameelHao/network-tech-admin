@@ -8,19 +8,21 @@ type SourceStatus = { lastSync: string | null; count: number };
 export async function GET() {
   const supabase = await createClient();
 
-  const [papersRes, newsRes, jobsRes, productsRes, syncMetaRes] = await Promise.all([
+  const [papersRes, newsRes, jobsRes, productsRes, opensourceRes, syncMetaRes] = await Promise.all([
     supabase.from("papers").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "news").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "job").order("created_at", { ascending: false }).limit(1),
     supabase.from("products").select("updated_at").order("updated_at", { ascending: false }).limit(1),
-    supabase.from("sync_meta").select("entity, last_sync_at").in("entity", ["papers", "news", "jobs", "products"]),
+    supabase.from("opensource").select("created_at").order("created_at", { ascending: false }).limit(1),
+    supabase.from("sync_meta").select("entity, last_sync_at").in("entity", ["papers", "news", "jobs", "products", "opensource"]),
   ]);
 
-  const [papersCount, newsCount, jobsCount, productsCount] = await Promise.all([
+  const [papersCount, newsCount, jobsCount, productsCount, opensourceCount] = await Promise.all([
     supabase.from("papers").select("*", { count: "exact", head: true }),
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "news"),
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "job"),
     supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("opensource").select("*", { count: "exact", head: true }),
   ]);
 
   const syncMeta: Record<string, string | null> = {};
@@ -44,6 +46,10 @@ export async function GET() {
     products: {
       lastSync: syncMeta.products ?? productsRes.data?.[0]?.updated_at ?? null,
       count: productsCount.count ?? 0,
+    },
+    opensource: {
+      lastSync: syncMeta.opensource ?? opensourceRes.data?.[0]?.created_at ?? null,
+      count: opensourceCount.count ?? 0,
     },
   };
 
