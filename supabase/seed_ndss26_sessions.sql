@@ -1,0 +1,19 @@
+DO $$
+DECLARE cid uuid;
+BEGIN
+SELECT id INTO cid FROM conferences WHERE abbreviation = 'NDSS' AND start_date = '2026-02-23';
+INSERT INTO conference_sessions (conference_id, title, authors, affiliations, topics, url) VALUES
+(cid, 'Crack in the Armor: Underlying Infrastructure Threats to RPKI Publication Point Reachability', ARRAY['Yunhao Liu','Jessie Hui Wang','Yuedong Xu','Zongpeng Li','Yangyang Wang','Jilong Wang'], ARRAY['Tsinghua University','Zhongguancun Laboratory','Fudan University'], ARRAY['dns-bgp','protocol-security'], NULL),
+(cid, 'Demystifying RPKI-Invalid Prefixes: Hidden Causes and Security Risks', ARRAY['Weitong Li','Tao Wan','Tijay Chung'], ARRAY['Virginia Tech','CableLabs'], ARRAY['dns-bgp','protocol-security'], NULL),
+(cid, 'Should I Trust You? Rethinking the Principle of Zone-Based Isolation DNS Bailiwick Checking', ARRAY['Yuxiao Wu','Yunkai Zou','Ding Wang','Fei Duan','Chaoyi Lu','Baojun Liu'], ARRAY['Tsinghua University','Nankai University','Zhongguancun Laboratory'], ARRAY['dns-bgp','protocol-security'], NULL),
+(cid, 'Continuous User Behavior Monitoring using DNS Cache Timing Attacks', ARRAY['Hannes Weissteiner','Roland Czerny','Simone Franza','Stefan Gast','Johanna Ullrich','Daniel Gruss'], ARRAY['Graz University of Technology'], ARRAY['dns-bgp','side-channels','privacy-anonymity'], NULL),
+(cid, 'ACTS: Attestations of Contents in TLS Sessions', ARRAY['Pierpaolo Della Monica','Ivan Visconti','Andrea Vitaletti','Marco Zecchini'], ARRAY['University of Salerno','Sapienza University of Rome'], ARRAY['protocol-security','privacy-anonymity'], NULL),
+(cid, 'Aliens Among Us: Observing Private or Reserved IPs on the Public Internet', ARRAY['Radu Anghel','Carlos Gañán','Qasim Lone','Matthew Luckie','Yury Zhauniarovich'], ARRAY['Delft University of Technology','University of Waikato'], ARRAY['internet-measure','dns-bgp'], NULL),
+(cid, 'NetRadar: Enabling Robust Carpet Bombing DDoS Detection', ARRAY['Junchen Pan','Lei Zhang','Xiaoyong Si','Jie Zhang','Xinggong Zhang','Yong Cui'], ARRAY['Tsinghua University','Zhongguancun Laboratory','Tencent Technology','Peking University'], ARRAY['ddos-defense','network-monitoring'], NULL),
+(cid, 'WiFinger: Fingerprinting Noisy IoT Event Traffic Using Packet-level Sequence Matching', ARRAY['Ronghua Li','Shinan Liu','Haibo Hu','Qingqing Ye'], ARRAY['Hong Kong Polytechnic University','University of Hong Kong'], ARRAY['traffic-analysis','privacy-anonymity'], NULL),
+(cid, 'FirmAgent: Leveraging Fuzzing to Assist LLM Agents with IoT Firmware Vulnerability Discovery', ARRAY['Jiangan Ji','Chao Zhang','Shuitao Gan','Jian Lin','Hangtian Liu','Tieming Liu','Lei Zheng','Zhipeng Jia'], ARRAY['Tsinghua University'], ARRAY['protocol-security','network-ai'], NULL),
+(cid, 'FirmCross: Detecting Taint-style Vulnerabilities in Modern C-Lua Hybrid Web Services of Linux-based Firmware', ARRAY['Runhao Liu','Jiarun Dai','Haoyu Xiao','Yuan Zhang','Yeqi Mou','Lukai Xu','Bo Yu','Baosheng Wang','Min Yang'], ARRAY['National University of Defense Technology','Fudan University'], ARRAY['protocol-security'], NULL),
+(cid, 'Fuzzilicon: A Post-Silicon Microcode-Guided x86 CPU Fuzzer', ARRAY['Johannes Lenzen','Mohamadreza Rostami','Lichao Wu','Ahmad-Reza Sadeghi'], ARRAY['Technical University of Darmstadt'], ARRAY['side-channels','protocol-security'], NULL),
+(cid, 'One Email, Many Faces: A Deep Dive into Identity Confusion in Email Aliases', ARRAY['Mengying Wu','Geng Hong','Jiatao Chen','Baojun Liu','Mingxuan Liu','Min Yang'], ARRAY['Fudan University','Tsinghua University','Zhongguancun Laboratory'], ARRAY['protocol-security','privacy-anonymity'], NULL),
+(cid, 'Consensus in the Known Participation Model with Byzantine Faults and Sleepy Replicas', ARRAY['Chenxu Wang','Sisi Duan','Minghui Xu','Feng Li','Xiuzhen Cheng'], ARRAY['Shandong University','Tsinghua University'], ARRAY['distributed-sys','protocol-security'], NULL);
+END $$;
