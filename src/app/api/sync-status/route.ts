@@ -8,10 +8,11 @@ type SourceStatus = { lastSync: string | null; count: number };
 export async function GET() {
   const supabase = await createClient();
 
-  const [papersRes, newsRes, jobsRes] = await Promise.all([
+  const [papersRes, newsRes, jobsRes, syncMetaRes] = await Promise.all([
     supabase.from("papers").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "news").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "job").order("created_at", { ascending: false }).limit(1),
+    supabase.from("sync_meta").select("entity, last_sync_at").in("entity", ["papers", "news", "jobs"]),
   ]);
 
   const [papersCount, newsCount, jobsCount] = await Promise.all([
@@ -20,17 +21,22 @@ export async function GET() {
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "job"),
   ]);
 
+  const syncMeta: Record<string, string | null> = {};
+  for (const row of syncMetaRes.data ?? []) {
+    syncMeta[row.entity] = row.last_sync_at;
+  }
+
   const result: Record<string, SourceStatus> = {
     papers: {
-      lastSync: papersRes.data?.[0]?.created_at ?? null,
+      lastSync: syncMeta.papers ?? papersRes.data?.[0]?.created_at ?? null,
       count: papersCount.count ?? 0,
     },
     news: {
-      lastSync: newsRes.data?.[0]?.created_at ?? null,
+      lastSync: syncMeta.news ?? newsRes.data?.[0]?.created_at ?? null,
       count: newsCount.count ?? 0,
     },
     jobs: {
-      lastSync: jobsRes.data?.[0]?.created_at ?? null,
+      lastSync: syncMeta.jobs ?? jobsRes.data?.[0]?.created_at ?? null,
       count: jobsCount.count ?? 0,
     },
   };

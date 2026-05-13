@@ -68,7 +68,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.news }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <SyncStatusBar entity="news" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
+        <SyncStatusBar entity="news" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
 
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800 shrink-0">

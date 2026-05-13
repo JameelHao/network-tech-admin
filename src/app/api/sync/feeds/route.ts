@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { fetchRSSItems, getNewsFeeds, getJobsFeeds } from "@/lib/admin/rss";
+import { fetchRSSItemsWithStats, getNewsFeeds, getJobsFeeds } from "@/lib/admin/rss";
+import type { FeedStat } from "@/lib/admin/rss";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
   const supabase = await createClient();
 
-  const [newsItems, jobItems] = await Promise.all([
-    fetchRSSItems(getNewsFeeds(), 30),
-    fetchRSSItems(getJobsFeeds(), 20),
+  const [newsResult, jobsResult] = await Promise.all([
+    fetchRSSItemsWithStats(getNewsFeeds(), 30),
+    fetchRSSItemsWithStats(getJobsFeeds(), 20),
   ]);
 
   const allRows = [
-    ...newsItems.map((item) => ({
+    ...newsResult.items.map((item) => ({
       title: item.title,
       link: item.link,
       snippet: item.snippet,
@@ -21,7 +22,7 @@ export async function POST() {
       pub_date: item.pubDate || null,
       category: "news" as const,
     })),
-    ...jobItems.map((item) => ({
+    ...jobsResult.items.map((item) => ({
       title: item.title,
       link: item.link,
       snippet: item.snippet,
@@ -31,14 +32,23 @@ export async function POST() {
     })),
   ];
 
-  const { error } = await supabase
-    .from("news_items")
-    .upsert(allRows, { onConflict: "link", ignoreDuplicates: true });
+  const { error } = allRows.length > 0
+    ? await supabase.from("news_items").upsert(allRows, { onConflict: "link", ignoreDuplicates: true })
+    : { error: null };
+
+  const feedStats: FeedStat[] = [...newsResult.feedStats, ...jobsResult.feedStats];
+  const now = new Date().toISOString();
+
+  await Promise.all([
+    supabase.from("sync_meta").upsert({ entity: "news", last_sync_at: now, last_result: { feedStats: newsResult.feedStats } }, { onConflict: "entity" }),
+    supabase.from("sync_meta").upsert({ entity: "jobs", last_sync_at: now, last_result: { feedStats: jobsResult.feedStats } }, { onConflict: "entity" }),
+  ]);
 
   return NextResponse.json({
     success: !error,
-    news: newsItems.length,
-    jobs: jobItems.length,
-    error: error?.message,
+    news: newsResult.items.length,
+    jobs: jobsResult.items.length,
+    feedStats,
+    error: error?.message ?? null,
   });
 }

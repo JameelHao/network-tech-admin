@@ -10,9 +10,17 @@ type SyncLabels = {
   refresh: string;
   refreshing: string;
   noData: string;
+  syncResult?: string;
+  sourcesFailed?: string;
 };
 
 type SyncData = { lastSync: string | null; count: number };
+
+type SyncResultInfo = {
+  news: number;
+  jobs: number;
+  feedStats: { source: string; status: string; count: number; error?: string }[];
+};
 
 const SYNC_ENDPOINTS: Record<string, string> = {
   papers: "/api/sync/papers",
@@ -31,6 +39,7 @@ export function SyncStatusBar({
 }) {
   const [data, setData] = useState<SyncData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [syncResult, setSyncResult] = useState<SyncResultInfo | null>(null);
 
   const fetchStatus = useCallback(() => {
     fetch("/api/sync-status")
@@ -41,10 +50,21 @@ export function SyncStatusBar({
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
+  useEffect(() => {
+    if (!syncResult) return;
+    const failedCount = syncResult.feedStats.filter((s) => s.status === "error").length;
+    if (failedCount === syncResult.feedStats.length) return;
+    const timer = setTimeout(() => setSyncResult(null), 5000);
+    return () => clearTimeout(timer);
+  }, [syncResult]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
+    setSyncResult(null);
     try {
-      await fetch(SYNC_ENDPOINTS[entity], { method: "POST" });
+      const res = await fetch(SYNC_ENDPOINTS[entity], { method: "POST" });
+      const json = await res.json();
+      if (json.feedStats) setSyncResult(json);
       fetchStatus();
     } finally {
       setRefreshing(false);
@@ -65,26 +85,63 @@ export function SyncStatusBar({
       })
     : null;
 
+  const failedFeeds = syncResult?.feedStats.filter((s) => s.status === "error") ?? [];
+  const totalItems = syncResult ? syncResult.news + syncResult.jobs : 0;
+  const allFailed = syncResult && failedFeeds.length === syncResult.feedStats.length;
+
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-4 py-2.5 mb-4">
-      <span className={`inline-block h-2 w-2 rounded-full ${freshness.dotClass}`} />
-      <span className={`font-mono text-[11px] ${freshness.color}`}>{fLabel}</span>
-      {timeStr ? (
-        <span className="text-[12px] text-ink-500">
-          {labels.lastSync}: {timeStr}
-          {dateStr && <span className="text-ink-400 ml-1">({dateStr})</span>}
-        </span>
-      ) : (
-        <span className="text-[12px] text-ink-400">{labels.noData}</span>
+    <div className="mb-4 space-y-1.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-4 py-2.5">
+        <span className={`inline-block h-2 w-2 rounded-full ${freshness.dotClass}`} />
+        <span className={`font-mono text-[11px] ${freshness.color}`}>{fLabel}</span>
+        {timeStr ? (
+          <span className="text-[12px] text-ink-500">
+            {labels.lastSync}: {timeStr}
+            {dateStr && <span className="text-ink-400 ml-1">({dateStr})</span>}
+          </span>
+        ) : (
+          <span className="text-[12px] text-ink-400">{labels.noData}</span>
+        )}
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="ml-auto rounded-md border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-600 hover:text-ink-800 hover:border-line-strong transition-colors disabled:opacity-50"
+        >
+          {refreshing ? labels.refreshing : labels.refresh}
+        </button>
+      </div>
+
+      {syncResult && (
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-[12px] ${
+          allFailed
+            ? "border-red-200 bg-red-50 text-red-700"
+            : failedFeeds.length > 0
+              ? "border-amber-200 bg-amber-50 text-amber-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+        }`}>
+          <span className="font-semibold">
+            {labels.syncResult ?? "Sync"}: {totalItems} {lang === "zh" ? "条" : "items"}
+          </span>
+          {failedFeeds.length > 0 && (
+            <span>
+              · {failedFeeds.length} {labels.sourcesFailed ?? (lang === "zh" ? "个源失败" : "sources failed")}
+              <span className="text-[11px] ml-1 opacity-70">
+                ({failedFeeds.map((f) => f.source).join(", ")})
+              </span>
+            </span>
+          )}
+          {!allFailed && (
+            <button
+              type="button"
+              onClick={() => setSyncResult(null)}
+              className="ml-auto text-[10px] opacity-60 hover:opacity-100"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       )}
-      <button
-        type="button"
-        onClick={handleRefresh}
-        disabled={refreshing}
-        className="ml-auto rounded-md border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-600 hover:text-ink-800 hover:border-line-strong transition-colors disabled:opacity-50"
-      >
-        {refreshing ? labels.refreshing : labels.refresh}
-      </button>
     </div>
   );
 }

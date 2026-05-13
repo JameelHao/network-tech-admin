@@ -6,6 +6,18 @@ export type RSSItem = {
   pubDate: string | null;
 };
 
+export type FeedStat = {
+  source: string;
+  status: "ok" | "error";
+  count: number;
+  error?: string;
+};
+
+export type FetchResult = {
+  items: RSSItem[];
+  feedStats: FeedStat[];
+};
+
 const NEWS_FEEDS = [
   { url: "https://hnrss.org/newest?q=networking+OR+SDN+OR+datacenter+OR+BGP+OR+eBPF+OR+network+protocol", source: "Hacker News" },
   { url: "https://hnrss.org/newest?q=cloudflare+OR+AWS+networking+OR+network+infrastructure+OR+xAI+cluster+OR+colossus", source: "Hacker News" },
@@ -18,26 +30,48 @@ const NEWS_FEEDS = [
 ];
 
 const JOBS_FEEDS = [
-  { url: "https://hnrss.org/jobs?q=network+engineer+OR+networking+OR+infrastructure+OR+SDN", source: "HN Jobs" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+%28Amazon+OR+AWS%29&sort=date", source: "Amazon/AWS" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Cloudflare&sort=date", source: "Cloudflare" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Google&sort=date", source: "Google" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Meta&sort=date", source: "Meta" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+Microsoft+Azure&sort=date", source: "Microsoft" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+xAI&sort=date", source: "xAI" },
-  { url: "https://www.indeed.com/rss?q=%22network+engineer%22+%28Juniper+OR+Cisco+OR+Arista%29&sort=date", source: "Juniper/Cisco/Arista" },
+  { url: "https://hnrss.org/jobs?q=network+engineer+OR+SDN+OR+datacenter+networking+OR+BGP+OR+network+infrastructure", source: "HN Jobs" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Amazon+OR+AWS+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Amazon/AWS" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Cloudflare+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Cloudflare" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Google+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Google" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Meta+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Meta" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Microsoft+Azure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Microsoft" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+xAI+when:7d&hl=en-US&gl=US&ceid=US:en", source: "xAI" },
+  { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Juniper+OR+Cisco+OR+Arista+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Juniper/Cisco/Arista" },
+  { url: "https://remoteok.com/remote-networking-jobs.rss", source: "RemoteOK" },
 ];
 
 export async function fetchRSSItems(feeds: { url: string; source: string }[], limit = 20): Promise<RSSItem[]> {
+  const { items } = await fetchRSSItemsWithStats(feeds, limit);
+  return items;
+}
+
+export async function fetchRSSItemsWithStats(feeds: { url: string; source: string }[], limit = 20): Promise<FetchResult> {
+  const feedStats: FeedStat[] = [];
+
   const results = await Promise.allSettled(
     feeds.map(async (feed) => {
-      const res = await fetch(feed.url, {
-        next: { revalidate: 0 },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!res.ok) return [];
-      const xml = await res.text();
-      return parseRSSXml(xml, feed.source);
+      try {
+        const res = await fetch(feed.url, {
+          next: { revalidate: 0 },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) {
+          feedStats.push({ source: feed.source, status: "error", count: 0, error: `HTTP ${res.status}` });
+          return [];
+        }
+        const text = await res.text();
+        if (!text.includes("<item>") && !text.includes("<entry>")) {
+          feedStats.push({ source: feed.source, status: "error", count: 0, error: "not RSS/XML" });
+          return [];
+        }
+        const parsed = parseRSSXml(text, feed.source);
+        feedStats.push({ source: feed.source, status: "ok", count: parsed.length });
+        return parsed;
+      } catch (err) {
+        feedStats.push({ source: feed.source, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" });
+        return [];
+      }
     })
   );
 
@@ -53,11 +87,13 @@ export async function fetchRSSItems(feeds: { url: string; source: string }[], li
   });
 
   const seen = new Set<string>();
-  return items.filter((item) => {
+  const deduped = items.filter((item) => {
     if (seen.has(item.link)) return false;
     seen.add(item.link);
     return true;
   }).slice(0, limit);
+
+  return { items: deduped, feedStats };
 }
 
 function parseRSSXml(xml: string, source: string): RSSItem[] {
