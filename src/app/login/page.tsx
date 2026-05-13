@@ -19,7 +19,7 @@ export default async function LoginPage() {
         </div>
 
         <div className="relative z-10">
-          <h1 className="font-display text-[44px] leading-[1.05] tracking-tight text-[#C9A94E] font-bold whitespace-pre-line">
+          <h1 className="font-sans text-[44px] leading-[1.05] tracking-tight text-[#C9A94E] font-bold whitespace-pre-line">
             {t.login.heroTitle}
           </h1>
           <p className="mt-5 max-w-md text-[14px] leading-relaxed text-[#C9A94E]/80">
@@ -44,7 +44,7 @@ export default async function LoginPage() {
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
             {t.login.eyebrow}
           </p>
-          <h2 className="mt-2 font-display text-[32px] leading-tight tracking-tight text-ink-900">
+          <h2 className="mt-2 font-sans text-[32px] font-bold leading-tight tracking-tight text-ink-900">
             {t.login.title}
           </h2>
 

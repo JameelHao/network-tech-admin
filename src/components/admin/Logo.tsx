@@ -13,7 +13,7 @@ export function Logo({ size = 28, className = "" }: { size?: number; className?:
         x="16"
         y="22.5"
         textAnchor="middle"
-        fontFamily="ui-serif, 'Playfair Display', Georgia, serif"
+        fontFamily="var(--font-sans)"
         fontSize="16"
         fontWeight={700}
         fill="#C9A94E"

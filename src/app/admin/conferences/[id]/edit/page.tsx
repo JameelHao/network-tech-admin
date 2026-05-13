@@ -28,7 +28,7 @@ export default async function EditConferencePage({ params }: { params: Promise<{
             <p className="mt-6 font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
               {t.conf.edit}
             </p>
-            <h1 className="mt-2 font-display text-[32px] leading-tight tracking-tight text-ink-900">
+            <h1 className="mt-2 font-sans text-[32px] font-bold leading-tight tracking-tight text-ink-900">
               {conf.abbreviation ?? conf.name}
             </h1>
           </header>

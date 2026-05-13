@@ -61,7 +61,7 @@ export function CalendarView({ conferences, yearConferences, year, month, lang, 
           {mode === "month" ? (
             <>
               <NavButton onClick={handlePrev} label="‹" />
-              <span className="font-display text-[15px] font-semibold tracking-tight min-w-[140px] text-center">
+              <span className="font-sans text-[15px] font-semibold tracking-tight min-w-[140px] text-center">
                 {monthLabels[month - 1]} {year}
               </span>
               <NavButton onClick={handleNext} label="›" />
@@ -69,7 +69,7 @@ export function CalendarView({ conferences, yearConferences, year, month, lang, 
           ) : (
             <>
               <NavButton onClick={handlePrevYear} label="‹" />
-              <span className="font-display text-[15px] font-semibold tracking-tight min-w-[60px] text-center">
+              <span className="font-sans text-[15px] font-semibold tracking-tight min-w-[60px] text-center">
                 {year}
               </span>
               <NavButton onClick={handleNextYear} label="›" />

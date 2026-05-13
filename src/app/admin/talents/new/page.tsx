@@ -19,7 +19,7 @@ export default async function NewTalentPage() {
             <Link href="/admin/talents" className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400 hover:text-ink-700">
               ← {t.nav.talents}
             </Link>
-            <h1 className="mt-6 font-display text-[32px] leading-tight tracking-tight text-ink-900">
+            <h1 className="mt-6 font-sans text-[32px] font-bold leading-tight tracking-tight text-ink-900">
               {t.talent.newTalent}
             </h1>
           </header>

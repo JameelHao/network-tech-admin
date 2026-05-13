@@ -41,7 +41,7 @@ export function Watchlist({
   return (
     <section className="rounded-lg border border-line bg-surface">
       <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-        <h2 className="font-display text-[15px] tracking-tight text-ink-800">
+        <h2 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
           {labels.watchlist}
           <span className="ml-2 font-mono text-[11px] text-ink-400">{totalCount}</span>
         </h2>

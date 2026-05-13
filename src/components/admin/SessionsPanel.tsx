@@ -182,7 +182,7 @@ export function SessionsPanel({ sessions, labels, lang }: { sessions: Conference
                       <div key={s.id} className="px-5 py-3 hover:bg-paper/30 transition-colors">
                         <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="font-display text-[14px] tracking-tight text-ink-900">
+                            <p className="font-sans text-[14px] font-semibold tracking-tight text-ink-900">
                               {s.url ? (
                                 <a href={s.url} target="_blank" rel="noreferrer" className="hover:text-navy-700">
                                   {s.title}

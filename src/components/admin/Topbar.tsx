@@ -72,7 +72,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
         </button>
 
         <a href="/admin" className="lg:hidden inline-flex items-center gap-2 min-w-0">
-          <span className="font-display text-[14px] font-semibold tracking-tight text-ink-900 truncate">
+          <span className="font-sans text-[14px] font-semibold tracking-tight text-ink-900 truncate">
             Tech Radar
           </span>
         </a>

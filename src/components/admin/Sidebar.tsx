@@ -113,7 +113,7 @@ export function Sidebar({ t }: { t: Dict }) {
     <>
       <aside aria-label={t.a11y.navigation} className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
         <div className="px-6 pt-7 pb-9">
-          <span className="font-display text-[17px] font-semibold tracking-tight">Tech Radar</span>
+          <span className="font-sans text-[17px] font-semibold tracking-tight">Tech Radar</span>
         </div>
         {navContent("desktop")}
       </aside>
@@ -132,7 +132,7 @@ export function Sidebar({ t }: { t: Dict }) {
         className="lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-50 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50 border-b border-navy-500/30 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
       >
         <div className="px-5 pt-5 pb-3">
-          <span className="font-display text-[15px] font-semibold tracking-tight">Tech Radar</span>
+          <span className="font-sans text-[15px] font-semibold tracking-tight">Tech Radar</span>
         </div>
         {navContent("mobile")}
       </div>

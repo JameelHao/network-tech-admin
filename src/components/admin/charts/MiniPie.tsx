@@ -63,7 +63,7 @@ export function MiniPie({ data, height = 260, innerRadius = 60, total, className
           textAnchor="middle"
           dominantBaseline="central"
           className="fill-ink-400"
-          style={{ fontSize: 10, fontFamily: "IBM Plex Mono, monospace" }}
+          style={{ fontSize: 10, fontFamily: "var(--font-mono)" }}
         >
           Total
         </text>
@@ -75,7 +75,7 @@ export function MiniPie({ data, height = 260, innerRadius = 60, total, className
           iconSize={6}
           wrapperStyle={{
             fontSize: 10,
-            fontFamily: "IBM Plex Mono, monospace",
+            fontFamily: "var(--font-mono)",
             paddingTop: 12,
           }}
         />

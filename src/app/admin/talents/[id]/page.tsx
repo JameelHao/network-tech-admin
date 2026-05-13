@@ -34,7 +34,7 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
       <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div className="max-w-3xl">
           <div className="flex items-center gap-3 mb-8">
-            <h1 className="font-display text-[32px] leading-tight tracking-tight text-ink-900">
+            <h1 className="font-sans text-[32px] font-bold leading-tight tracking-tight text-ink-900">
               {talent.name}
             </h1>
             <FavoriteButton entity="talents" id={id} label={talent.name} />

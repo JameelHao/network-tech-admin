@@ -71,7 +71,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
                 {conf.abbreviation?.slice(0, 3) ?? "C"}
               </span>
               <div>
-                <h1 className="font-display text-[28px] leading-none tracking-tight text-ink-900">
+                <h1 className="font-sans text-[28px] font-bold leading-none tracking-tight text-ink-900">
                   {conf.abbreviation ?? conf.name}
                 </h1>
                 {conf.abbreviation && (
@@ -188,7 +188,7 @@ function Stat({ label, value, sub }: { label: string; value: number; sub: string
   return (
     <div className="bg-surface p-6">
       <p className="tracked-label">{label}</p>
-      <p className="mt-3 font-display text-[30px] leading-none text-ink-900 tabular-nums">{value}</p>
+      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">{value}</p>
       <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
     </div>
   );

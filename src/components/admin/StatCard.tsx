@@ -11,7 +11,7 @@ export function StatCard({ label, value, sub, accent = "text-ink-900" }: Props) 
       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
         {label}
       </p>
-      <p className={`font-display text-[28px] tracking-tight ${accent}`}>{value}</p>
+      <p className={`font-sans text-[28px] font-semibold tracking-tight ${accent}`}>{value}</p>
       {sub && <p className="text-[12px] text-ink-400 mt-1">{sub}</p>}
     </div>
   );
