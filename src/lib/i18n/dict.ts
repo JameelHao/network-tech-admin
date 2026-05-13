@@ -345,6 +345,8 @@ const en = {
     dataSource: "Source",
     status: "Status",
     count: "Count",
+    syncResult: "Synced",
+    sourcesFailed: "sources failed",
   },
   empty: {
     conferences: "No conferences yet",
@@ -767,6 +769,8 @@ const zh: typeof en = {
     dataSource: "数据源",
     status: "状态",
     count: "条目数",
+    syncResult: "已同步",
+    sourcesFailed: "个源失败",
   },
   empty: {
     conferences: "暂无会议",

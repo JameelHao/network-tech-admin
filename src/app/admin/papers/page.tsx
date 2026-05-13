@@ -15,7 +15,7 @@ export default async function PapersPage() {
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.papers }]} t={t} lang={lang} />
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <SyncStatusBar entity="papers" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData }} />
+        <SyncStatusBar entity="papers" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
         <Suspense>
           <PapersClient papers={papers} duplicateGroups={duplicateGroups} lang={lang} labels={{
             title: t.papers.title,
