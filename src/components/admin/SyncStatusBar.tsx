@@ -20,14 +20,18 @@ type SyncResultInfo = {
   news?: number;
   jobs?: number;
   imported?: number;
+  updated?: number;
+  checked?: number;
   feedStats?: { source: string; status: string; count: number; error?: string }[];
   categoryStats?: { category: string; status: string; count: number; error?: string }[];
+  stats?: { name: string; status: string; version?: string; error?: string }[];
 };
 
 const SYNC_ENDPOINTS: Record<string, string> = {
   papers: "/api/sync/papers",
   news: "/api/sync/feeds",
   jobs: "/api/sync/feeds",
+  products: "/api/sync/products",
 };
 
 export function SyncStatusBar({
@@ -35,7 +39,7 @@ export function SyncStatusBar({
   labels,
   lang,
 }: {
-  entity: "papers" | "news" | "jobs";
+  entity: "papers" | "news" | "jobs" | "products";
   labels: SyncLabels;
   lang: Lang;
 }) {
@@ -54,9 +58,9 @@ export function SyncStatusBar({
 
   useEffect(() => {
     if (!syncResult) return;
-    const stats = syncResult.feedStats ?? syncResult.categoryStats ?? [];
-    const failedCount = stats.filter((s) => s.status === "error").length;
-    if (failedCount === stats.length) return;
+    const resultStats = syncResult.feedStats ?? syncResult.categoryStats ?? syncResult.stats ?? [];
+    const failedCount = resultStats.filter((s) => s.status === "error").length;
+    if (failedCount === resultStats.length) return;
     const timer = setTimeout(() => setSyncResult(null), 5000);
     return () => clearTimeout(timer);
   }, [syncResult]);
@@ -67,7 +71,7 @@ export function SyncStatusBar({
     try {
       const res = await fetch(SYNC_ENDPOINTS[entity], { method: "POST" });
       const json = await res.json();
-      if (json.feedStats || json.categoryStats) setSyncResult(json);
+      if (json.feedStats || json.categoryStats || json.stats) setSyncResult(json);
       fetchStatus();
     } finally {
       setRefreshing(false);
@@ -88,10 +92,11 @@ export function SyncStatusBar({
       })
     : null;
 
-  const allStats = syncResult?.feedStats ?? syncResult?.categoryStats ?? [];
+  const productStats = syncResult?.stats?.map((s) => ({ source: s.name, status: s.status, count: s.version ? 1 : 0, error: s.error }));
+  const allStats = syncResult?.feedStats ?? syncResult?.categoryStats ?? productStats ?? [];
   const failedFeeds = allStats.filter((s) => s.status === "error");
   const totalItems = syncResult
-    ? (syncResult.imported ?? ((syncResult.news ?? 0) + (syncResult.jobs ?? 0)))
+    ? (syncResult.updated ?? syncResult.imported ?? ((syncResult.news ?? 0) + (syncResult.jobs ?? 0)))
     : 0;
   const allFailed = syncResult && allStats.length > 0 && failedFeeds.length === allStats.length;
 
