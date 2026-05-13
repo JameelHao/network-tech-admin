@@ -15,6 +15,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+const EMPLOYEE_RANGES = ["1-50", "51-200", "201-1000", "1001-5000", "5000+"] as const;
+
 const TYPE_I18N_MAP: Record<string, string> = {
   vendor: "vendorType",
   partner: "partner",
@@ -73,7 +75,12 @@ export function VendorForm({ t, vendor }: { t: Dict; vendor?: Vendor }) {
         </Field>
 
         <Field label={t.vendor.employeeRange}>
-          <input name="employee_range" defaultValue={vendor?.employee_range ?? ""} placeholder={t.vendor.employeeRangePlaceholder} className={inputCls} />
+          <select name="employee_range" defaultValue={vendor?.employee_range ?? ""} className={inputCls}>
+            <option value="">—</option>
+            {EMPLOYEE_RANGES.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
         </Field>
       </div>
 
