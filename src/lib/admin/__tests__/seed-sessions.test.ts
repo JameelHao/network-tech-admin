@@ -9,10 +9,11 @@ const sessionFiles = readdirSync(seedDir)
 
 const validSlugs = [
   "dc-networking", "transport-protocols", "programmable-net", "sdn-nfv", "congestion-ctrl",
-  "internet-measure", "traffic-analysis", "dns-bgp", "network-monitoring",
-  "ddos-defense", "protocol-security", "privacy-anonymity", "side-channels",
+  "internet-measure", "traffic-analysis", "dns-bgp", "network-monitoring", "network-observability",
+  "ddos-defense", "protocol-security", "privacy-anonymity", "side-channels", "zero-trust", "sase-sse",
   "edge-computing", "network-ai", "machine-learning", "optimization",
-  "5g-wireless", "5g-6g", "mobile-wireless", "ebpf-xdp",
+  "ai-networking", "network-digital-twin", "intent-based-networking", "satellite-leo", "quantum-networking",
+  "5g-6g", "mobile-wireless", "ebpf-xdp",
   "distributed-sys", "storage-net", "os-network-stack", "cloud-infra",
   "hpc", "high-speed-networking", "parallel-computing",
 ];
