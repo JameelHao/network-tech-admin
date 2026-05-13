@@ -72,7 +72,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
 
         <section data-fav-filter="news" className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-            <h1 className="font-display text-[17px] tracking-tight text-ink-800 shrink-0">
+            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800 shrink-0">
               {t.news.title}
               <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
             </h1>

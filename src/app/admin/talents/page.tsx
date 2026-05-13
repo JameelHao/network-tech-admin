@@ -55,7 +55,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-            <h1 className="font-display text-[17px] tracking-tight text-ink-800">{t.nav.talents}</h1>
+            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.talents}</h1>
             <div className="flex items-center gap-2">
               <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
               <div className="hidden lg:flex items-center gap-2">

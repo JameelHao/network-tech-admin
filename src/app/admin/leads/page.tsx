@@ -54,7 +54,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
       <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
         <div data-fav-filter="leads" className="rounded-lg border border-line bg-surface">
           <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-line">
-            <h1 className="font-display text-[17px] tracking-tight text-ink-800">
+            <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
               {t.leads.title}
               <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
             </h1>

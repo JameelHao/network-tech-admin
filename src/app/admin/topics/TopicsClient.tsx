@@ -158,7 +158,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h1 className="font-display text-[20px] sm:text-[22px] tracking-tight text-ink-900">
+        <h1 className="font-sans text-[20px] sm:text-[22px] font-bold tracking-[-0.02em] text-ink-900">
           {labels.title}
         </h1>
         <div className="flex items-center gap-2">

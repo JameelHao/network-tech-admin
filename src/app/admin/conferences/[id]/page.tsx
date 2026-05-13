@@ -67,7 +67,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
           </div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-5">
-              <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-navy-50 ring-1 ring-navy-100 font-display text-[20px] tracking-tight text-navy-700">
+              <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-navy-50 ring-1 ring-navy-100 font-sans text-[20px] font-bold tracking-[-0.02em] text-navy-700">
                 {conf.abbreviation?.slice(0, 3) ?? "C"}
               </span>
               <div>
@@ -148,7 +148,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
 
           {sessions.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="font-display text-[20px] text-ink-700">{t.conf.noPapers}</div>
+              <div className="font-sans text-[20px] font-bold tracking-[-0.02em] text-ink-700">{t.conf.noPapers}</div>
               <p className="mt-1 text-[13px] text-ink-500">{t.conf.noPapersHint}</p>
             </div>
           ) : (
