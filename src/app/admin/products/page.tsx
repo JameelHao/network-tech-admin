@@ -13,6 +13,7 @@ import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterSelect, FilterInput } from "@/components/admin/FilterControls";
 import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
+import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { getDict } from "@/lib/i18n/server";
 import { PRODUCT_CATEGORIES, PRODUCT_STAGES, PRODUCT_PRICING } from "@/lib/admin/types";
 import Link from "next/link";
@@ -86,6 +87,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </Link>
           </div>
         </div>
+
+        <SyncStatusBar entity="products" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
 
         <div data-fav-filter="products" className="rounded-lg border border-line bg-surface">
           <div className="hidden lg:flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
