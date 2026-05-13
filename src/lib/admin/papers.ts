@@ -34,7 +34,7 @@ export async function fetchAndSyncPapers(): Promise<Paper[]> {
   if (data && data.length > 0) return data as Paper[];
 
   // DB empty — fetch from arXiv and populate
-  const fetched = await fetchAllNetworkPapers(2026);
+  const { papers: fetched } = await fetchAllNetworkPapers(2026);
 
   if (fetched.length > 0) {
     for (let i = 0; i < fetched.length; i += 50) {
