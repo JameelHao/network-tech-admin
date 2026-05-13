@@ -22,6 +22,8 @@ create table papers (
   published_date date,
   abstract text,
   topics text[] not null default '{}',
+  citation_count integer,
+  source text default 'arxiv',
   notes text,
   created_at timestamptz not null default now()
 );

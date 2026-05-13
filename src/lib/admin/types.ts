@@ -41,6 +41,8 @@ export type Paper = {
   published_date: string | null;
   abstract: string | null;
   topics: string[];
+  citation_count: number | null;
+  source: string | null;
   notes: string | null;
   created_at: string;
 };

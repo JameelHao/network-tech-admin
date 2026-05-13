@@ -190,6 +190,8 @@ const en = {
     relatedPapers: "Related Papers",
     similarity: "Similarity",
     commonTopics: "Common topics",
+    citations: "Citations",
+    source: "Source",
   },
   news: {
     title: "Network Tech News",
@@ -710,6 +712,8 @@ const zh: typeof en = {
     relatedPapers: "相似论文",
     similarity: "相似度",
     commonTopics: "共同主题",
+    citations: "引用数",
+    source: "来源",
   },
   news: {
     title: "网络科技新闻",

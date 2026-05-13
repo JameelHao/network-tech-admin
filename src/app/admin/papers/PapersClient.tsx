@@ -53,6 +53,8 @@ type PapersLabels = {
   authors: string;
   venue: string;
   topics: string;
+  citations: string;
+  source: string;
   rows: string;
   page: string;
   dedup: {
@@ -76,6 +78,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
   const keyword = fp.get("keyword");
   const venue = fp.get("venue");
   const topic = fp.get("topic");
+  const sourceFilter = fp.get("source");
   const dateFrom = fp.get("dateFrom");
   const dateTo = fp.get("dateTo");
   const timeRange = fp.get("timeRange");
@@ -100,6 +103,14 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
     return Array.from(set).sort();
   }, [papers]);
 
+  const sources = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of papers) {
+      if (p.source) set.add(p.source);
+    }
+    return Array.from(set).sort();
+  }, [papers]);
+
   const filtered = useMemo(() => {
     let list = papers;
     if (keyword) {
@@ -116,6 +127,9 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
     }
     if (topic) {
       list = list.filter((p) => p.topics.includes(topic));
+    }
+    if (sourceFilter) {
+      list = list.filter((p) => p.source === sourceFilter);
     }
     if (dateFrom) {
       list = list.filter((p) => p.published_date && p.published_date >= dateFrom);
@@ -136,7 +150,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
       list = list.filter((p) => favIds.has(p.id));
     }
     return list;
-  }, [papers, keyword, venue, topic, dateFrom, dateTo, timeRange, showOnlyFavs, favIds]);
+  }, [papers, keyword, venue, topic, sourceFilter, dateFrom, dateTo, timeRange, showOnlyFavs, favIds]);
 
   const { sorted, sortKey, sortDir, onSort } = useSortable<Paper>(filtered, { key: "published_date", dir: "desc" });
 
@@ -185,7 +199,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
             <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
             <ExportButton entity="papers" format="json" label={labels.exportJSON} />
           </OverflowMenu>
-          <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, topic, dateFrom, dateTo].filter(Boolean).length}>
+          <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, topic, sourceFilter, dateFrom, dateTo].filter(Boolean).length}>
             <input
               type="text"
               key={keyword}
@@ -219,6 +233,18 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                 ))}
               </select>
             )}
+            {sources.length > 1 && (
+              <select
+                value={sourceFilter}
+                onChange={(e) => fp.set("source", e.target.value)}
+                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
+              >
+                <option value="">{labels.source}</option>
+                {sources.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
             <div className="flex items-center gap-1">
               <input
                 type="date"
@@ -246,6 +272,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
             ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
             ...(venue ? [{ label: labels.allSources, value: venue }] : []),
             ...(topic ? [{ label: labels.allCategories, value: topic }] : []),
+            ...(sourceFilter ? [{ label: labels.source, value: sourceFilter }] : []),
             ...(dateFrom ? [{ label: labels.dateFrom, value: dateFrom }] : []),
             ...(dateTo ? [{ label: labels.dateTo, value: dateTo }] : []),
           ]}
@@ -272,6 +299,9 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                     <Th>
                       <SortableHeaderClient column="venue" label={labels.venue} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
                     </Th>
+                    <Th className="hidden lg:table-cell">
+                      <SortableHeaderClient column="citation_count" label={labels.citations} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
+                    </Th>
                     <Th className="hidden lg:table-cell">{labels.topics}</Th>
                     <Th>
                       <SortableHeaderClient column="published_date" label={labels.publishedAt} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
@@ -281,7 +311,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                 </thead>
                 <tbody className="divide-y divide-line">
                   {paginated.length === 0 && (
-                    <tr><td colSpan={6}>
+                    <tr><td colSpan={7}>
                       <EmptyState title={labels.noMatch} description={labels.emptyDesc} compact />
                     </td></tr>
                   )}
@@ -312,6 +342,11 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                           {p.venue ? (
                             <span className="rounded-full bg-navy-50 border border-navy-200 px-2 py-0.5 font-mono text-[10px] text-navy-700">{p.venue}</span>
                           ) : <span className="text-ink-400">—</span>}
+                        </Td>
+                        <Td className="hidden lg:table-cell">
+                          {p.citation_count != null ? (
+                            <span className="font-mono text-[11.5px] tabular-nums text-ink-600">{p.citation_count.toLocaleString()}</span>
+                          ) : <span className="text-ink-300">—</span>}
                         </Td>
                         <Td className="hidden lg:table-cell">
                           <div className="flex flex-wrap gap-1">
