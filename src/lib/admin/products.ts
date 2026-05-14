@@ -1,6 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
-import type { Product } from "./types";
+import type { Product, ProductCategory, ProductPricing } from "./types";
+
+export type CloudProductInput = {
+  name: string;
+  vendor: string;
+  category: ProductCategory;
+  description: string;
+  url: string;
+  pricing: ProductPricing;
+  topics: string[];
+  source_url: string;
+  published_at: string;
+};
 
 export const PRODUCT_SORTABLE = ["name", "vendor", "category", "release_date", "stage"] as const;
 
@@ -67,4 +79,58 @@ export async function updateProduct(id: string, data: Partial<Omit<Product, "id"
 
   if (error) throw error;
   return row as Product;
+}
+
+export async function upsertCloudProducts(
+  items: CloudProductInput[],
+): Promise<{ inserted: number; updated: number }> {
+  if (items.length === 0) return { inserted: 0, updated: 0 };
+
+  const supabase = await createClient();
+  const urls = items.map((i) => i.source_url);
+
+  const { data: existing } = await supabase
+    .from("products")
+    .select("id, source_url")
+    .in("source_url", urls);
+
+  const existingMap = new Map((existing ?? []).map((r) => [r.source_url, r.id]));
+
+  let inserted = 0;
+  let updated = 0;
+
+  for (const item of items) {
+    const existingId = existingMap.get(item.source_url);
+
+    if (existingId) {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          description: item.description,
+          topics: item.topics,
+          published_at: item.published_at,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingId);
+
+      if (!error) updated++;
+    } else {
+      const { error } = await supabase.from("products").insert({
+        name: item.name,
+        vendor: item.vendor,
+        category: item.category,
+        description: item.description,
+        url: item.url,
+        pricing: item.pricing,
+        topics: item.topics,
+        source: "cloud-releases",
+        source_url: item.source_url,
+        published_at: item.published_at,
+      });
+
+      if (!error) inserted++;
+    }
+  }
+
+  return { inserted, updated };
 }
