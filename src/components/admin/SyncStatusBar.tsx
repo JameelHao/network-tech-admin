@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { getFreshness, freshnessLabel } from "@/lib/admin/freshness";
 import { relativeTime } from "@/lib/admin/format";
 import type { Lang } from "@/lib/i18n/dict";
@@ -12,6 +12,7 @@ type SyncLabels = {
   noData: string;
   syncResult?: string;
   sourcesFailed?: string;
+  syncProgress?: string;
 };
 
 type SyncData = { lastSync: string | null; count: number };
@@ -26,6 +27,8 @@ type SyncResultInfo = {
   categoryStats?: { category: string; status: string; count: number; error?: string }[];
   stats?: { name: string; status: string; version?: string; error?: string }[];
 };
+
+type StepInfo = { source: "arxiv" | "s2"; key: string; label: string };
 
 const SYNC_ENDPOINTS: Record<string, string> = {
   papers: "/api/sync/papers",
@@ -47,6 +50,8 @@ export function SyncStatusBar({
   const [data, setData] = useState<SyncData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResultInfo | null>(null);
+  const [progress, setProgress] = useState<{ current: number; total: number; label: string } | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchStatus = useCallback(() => {
     fetch("/api/sync-status")
@@ -66,7 +71,61 @@ export function SyncStatusBar({
     return () => clearTimeout(timer);
   }, [syncResult]);
 
-  const handleRefresh = async () => {
+  const handleSteppedRefresh = async () => {
+    setRefreshing(true);
+    setSyncResult(null);
+    setProgress(null);
+    abortRef.current = new AbortController();
+
+    try {
+      const stepsRes = await fetch("/api/sync/papers/steps", { signal: abortRef.current.signal });
+      const { steps } = (await stepsRes.json()) as { steps: StepInfo[] };
+
+      let totalImported = 0;
+      let totalUpdated = 0;
+      const categoryStats: { category: string; status: string; count: number; error?: string }[] = [];
+
+      for (let i = 0; i < steps.length; i++) {
+        if (abortRef.current.signal.aborted) break;
+        const step = steps[i];
+        setProgress({ current: i + 1, total: steps.length, label: step.label });
+
+        const param = step.source === "arxiv"
+          ? `source=arxiv&category=${encodeURIComponent(step.key)}`
+          : `source=s2&venue=${encodeURIComponent(step.key)}`;
+
+        try {
+          const res = await fetch(`/api/sync/papers?${param}`, {
+            method: "POST",
+            signal: abortRef.current.signal,
+          });
+          const json = await res.json();
+          totalImported += json.imported ?? 0;
+          totalUpdated += json.updated ?? 0;
+          if (json.step) categoryStats.push(json.step);
+        } catch {
+          if (abortRef.current.signal.aborted) break;
+          categoryStats.push({ category: step.key, status: "error", count: 0, error: "fetch failed" });
+        }
+      }
+
+      if (!abortRef.current.signal.aborted) {
+        await fetch("/api/sync/papers/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoryStats }),
+        }).catch(() => {});
+        setSyncResult({ imported: totalImported, updated: totalUpdated, categoryStats });
+        fetchStatus();
+      }
+    } finally {
+      setRefreshing(false);
+      setProgress(null);
+      abortRef.current = null;
+    }
+  };
+
+  const handleSimpleRefresh = async () => {
     setRefreshing(true);
     setSyncResult(null);
     try {
@@ -78,6 +137,8 @@ export function SyncStatusBar({
       setRefreshing(false);
     }
   };
+
+  const handleRefresh = entity === "papers" ? handleSteppedRefresh : handleSimpleRefresh;
 
   if (!data) return null;
 
@@ -113,6 +174,11 @@ export function SyncStatusBar({
           </span>
         ) : (
           <span className="text-[12px] text-ink-400">{labels.noData}</span>
+        )}
+        {progress && (
+          <span className="text-[11px] text-blue-600 font-mono">
+            {progress.label} {progress.current}/{progress.total}
+          </span>
         )}
         <button
           type="button"
