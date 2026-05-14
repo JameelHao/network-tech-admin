@@ -9,9 +9,9 @@ import { computePaperStats } from "@/lib/admin/paper-utils";
 
 export default async function PapersPage() {
   const { lang, t } = await getDict();
-  const papers = await fetchAndSyncPapers();
+  const { papers, total: dbTotal } = await fetchAndSyncPapers();
   const duplicateGroups = findDuplicateGroups(papers);
-  const { total, thisWeek, arxivCount, venueCount } = computePaperStats(papers);
+  const { total, thisWeek, arxivCount, venueCount } = computePaperStats(papers, Date.now(), dbTotal);
 
   return (
     <>

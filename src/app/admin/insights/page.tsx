@@ -24,6 +24,7 @@ import {
   getNewsSourceActivity,
   getJobsByCompany,
 } from "@/lib/admin/insights";
+import { getPaperCount } from "@/lib/admin/papers";
 
 function SectionCard({
   title,
@@ -77,6 +78,7 @@ export default async function InsightsPage() {
     newsTrend,
     newsSources,
     jobCompanies,
+    paperTotal,
   ] = await Promise.all([
     getPaperMonthlyTrend(),
     getPaperTopTopics(),
@@ -94,9 +96,8 @@ export default async function InsightsPage() {
     getNewsDailyTrend(),
     getNewsSourceActivity(),
     getJobsByCompany(),
+    getPaperCount(),
   ]);
-
-  const paperTotal = paperTrend.reduce((s, p) => s + p.value, 0);
   const confTotal = confQuarterly.reduce((s, p) => s + p.value, 0);
   const leadTotal = leadFunnel.reduce((s, p) => s + p.value, 0);
   const talentTotal = talentStages.reduce((s, p) => s + p.value, 0);
