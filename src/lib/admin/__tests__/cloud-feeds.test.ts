@@ -5,11 +5,13 @@ import {
   parseItems,
   matchesNetworking,
   mapTopics,
+  truncate,
   FEEDS,
   TOPIC_KEYWORDS,
-} from "../../src/lib/admin/cloud-feeds";
+  type FeedItem,
+} from "../cloud-feeds";
 
-describe("fetch-cloud-products", () => {
+describe("cloud-feeds", () => {
   // ── extractTag ─────────────────────────────────────────────────
 
   describe("extractTag", () => {
@@ -28,6 +30,12 @@ describe("fetch-cloud-products", () => {
     it("handles CDATA content", () => {
       expect(extractTag("<title><![CDATA[Test CDATA]]></title>", "title")).toBe(
         "<![CDATA[Test CDATA]]>",
+      );
+    });
+
+    it("handles tag with attributes", () => {
+      expect(extractTag('<description type="html">Some text</description>', "description")).toBe(
+        "Some text",
       );
     });
   });
@@ -61,7 +69,7 @@ describe("fetch-cloud-products", () => {
   // ── parseItems ─────────────────────────────────────────────────
 
   describe("parseItems", () => {
-    const xml = `
+    const rssXml = `
       <rss><channel>
         <item>
           <title>New VPC Feature</title>
@@ -79,7 +87,7 @@ describe("fetch-cloud-products", () => {
     `;
 
     it("parses RSS items", () => {
-      const items = parseItems(xml);
+      const items = parseItems(rssXml);
       expect(items).toHaveLength(2);
       expect(items[0].title).toBe("New VPC Feature");
       expect(items[0].link).toBe("https://aws.amazon.com/vpc");
@@ -107,29 +115,53 @@ describe("fetch-cloud-products", () => {
       const bad = "<rss><channel><item><link>x</link></item></channel></rss>";
       expect(parseItems(bad)).toHaveLength(0);
     });
+
+    it("falls back to summary or content for description", () => {
+      const xml = `
+        <feed><entry>
+          <title>Test</title>
+          <link href="https://x.com" />
+          <content>Content text</content>
+          <updated>2026-01-01T00:00:00Z</updated>
+        </entry></feed>
+      `;
+      const items = parseItems(xml);
+      expect(items[0].description).toBe("Content text");
+    });
+
+    it("assigns current date when no pubDate found", () => {
+      const xml = "<rss><channel><item><title>No date</title><link>x</link></item></channel></rss>";
+      const items = parseItems(xml);
+      expect(items[0].pubDate).toBeTruthy();
+    });
   });
 
   // ── matchesNetworking ──────────────────────────────────────────
 
   describe("matchesNetworking", () => {
     it("matches when keyword found in title", () => {
-      const item = { title: "New VPC feature", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "New VPC feature", link: "", description: "", pubDate: "" };
       expect(matchesNetworking(item, ["vpc", "cdn"])).toBe(true);
     });
 
     it("matches when keyword found in description", () => {
-      const item = { title: "Update", link: "", description: "Load balancer changes", pubDate: "" };
+      const item: FeedItem = { title: "Update", link: "", description: "Load balancer changes", pubDate: "" };
       expect(matchesNetworking(item, ["load balancer"])).toBe(true);
     });
 
     it("rejects when no keyword matches", () => {
-      const item = { title: "New AI model", link: "", description: "ML updates", pubDate: "" };
+      const item: FeedItem = { title: "New AI model", link: "", description: "ML updates", pubDate: "" };
       expect(matchesNetworking(item, ["vpc", "cdn", "network"])).toBe(false);
     });
 
     it("keeps all items when keywords array is empty (Cloudflare)", () => {
-      const item = { title: "Anything at all", link: "", description: "random", pubDate: "" };
+      const item: FeedItem = { title: "Anything at all", link: "", description: "random", pubDate: "" };
       expect(matchesNetworking(item, [])).toBe(true);
+    });
+
+    it("is case-insensitive", () => {
+      const item: FeedItem = { title: "AWS VPC Update", link: "", description: "", pubDate: "" };
+      expect(matchesNetworking(item, ["vpc"])).toBe(true);
     });
   });
 
@@ -137,47 +169,47 @@ describe("fetch-cloud-products", () => {
 
   describe("mapTopics", () => {
     it("maps VPC to cloud-infra", () => {
-      const item = { title: "VPC peering update", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "VPC peering update", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("cloud-infra");
     });
 
     it("maps CDN to edge-computing", () => {
-      const item = { title: "CloudFront performance", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "CloudFront performance", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("edge-computing");
     });
 
     it("maps firewall/WAF to ddos-defense", () => {
-      const item = { title: "WAF rule updates", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "WAF rule updates", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("ddos-defense");
     });
 
     it("maps DNS to dns-bgp", () => {
-      const item = { title: "Route 53 new records", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "Route 53 new records", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("dns-bgp");
     });
 
     it("maps zero trust to zero-trust", () => {
-      const item = { title: "Zero Trust access", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "Zero Trust access", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("zero-trust");
     });
 
     it("maps monitoring to network-monitoring", () => {
-      const item = { title: "Network observability launch", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "Network observability launch", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("network-monitoring");
     });
 
     it("maps VPN to protocol-security", () => {
-      const item = { title: "VPN gateway update", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "VPN gateway update", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("protocol-security");
     });
 
     it("maps eBPF to ebpf-xdp", () => {
-      const item = { title: "eBPF acceleration", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "eBPF acceleration", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toContain("ebpf-xdp");
     });
 
     it("maps multiple topics from single item", () => {
-      const item = { title: "VPC firewall with DNS", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "VPC firewall with DNS", link: "", description: "", pubDate: "" };
       const topics = mapTopics(item);
       expect(topics).toContain("cloud-infra");
       expect(topics).toContain("ddos-defense");
@@ -185,15 +217,35 @@ describe("fetch-cloud-products", () => {
     });
 
     it("defaults to cloud-infra when no keyword matches", () => {
-      const item = { title: "General platform update", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "General platform update", link: "", description: "", pubDate: "" };
       expect(mapTopics(item)).toEqual(["cloud-infra"]);
     });
 
     it("returns sorted topics", () => {
-      const item = { title: "WAF + VPN + DNS", link: "", description: "", pubDate: "" };
+      const item: FeedItem = { title: "WAF + VPN + DNS", link: "", description: "", pubDate: "" };
       const topics = mapTopics(item);
       const sorted = [...topics].sort();
       expect(topics).toEqual(sorted);
+    });
+  });
+
+  // ── truncate ───────────────────────────────────────────────────
+
+  describe("truncate", () => {
+    it("returns text unchanged when within limit", () => {
+      expect(truncate("short", 200)).toBe("short");
+    });
+
+    it("truncates long text with ellipsis", () => {
+      const long = "a".repeat(210);
+      const result = truncate(long, 200);
+      expect(result).toHaveLength(200);
+      expect(result.endsWith("...")).toBe(true);
+    });
+
+    it("handles exact boundary", () => {
+      const exact = "a".repeat(200);
+      expect(truncate(exact, 200)).toBe(exact);
     });
   });
 
