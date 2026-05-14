@@ -61,45 +61,46 @@ export function parseArxivXml(xml: string): ImportedPaper[] {
   return papers;
 }
 
+export const ARXIV_CATEGORIES = ["cs.NI", "cs.AI", "cs.DC", "cs.PF", "cs.LG", "cs.CR"] as const;
+
+export async function fetchSingleArxivCategory(category: string, year: number): Promise<PaperFetchResult> {
+  const query = `cat:${category}+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
+  const url = `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
+
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) {
+      return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: `HTTP ${res.status}` }] };
+    }
+    const xml = await res.text();
+    const papers = parseArxivXml(xml);
+    return { papers, categoryStats: [{ category, status: "ok", count: papers.length }] };
+  } catch (err) {
+    return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
+  }
+}
+
 async function fetchFromArxiv(year: number): Promise<PaperFetchResult> {
-  const categories = ["cs.NI", "cs.AI", "cs.DC", "cs.PF", "cs.LG", "cs.CR"];
   const allPapers: ImportedPaper[] = [];
   const categoryStats: CategoryStat[] = [];
   const seen = new Set<string>();
 
-  for (const cat of categories) {
-    const query = `cat:${cat}+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
-    const url = `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
-
-    try {
-      const res = await fetch(url, { redirect: "follow" });
-      if (!res.ok) {
-        categoryStats.push({ category: cat, status: "error", count: 0, error: `HTTP ${res.status}` });
-        continue;
-      }
-      const xml = await res.text();
-      const papers = parseArxivXml(xml);
-      let added = 0;
-
-      for (const p of papers) {
-        const key = p.title.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        allPapers.push(p);
-        added++;
-      }
-      categoryStats.push({ category: cat, status: "ok", count: added });
-    } catch (err) {
-      categoryStats.push({ category: cat, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" });
+  for (const cat of ARXIV_CATEGORIES) {
+    const result = await fetchSingleArxivCategory(cat, year);
+    categoryStats.push(...result.categoryStats);
+    for (const p of result.papers) {
+      const key = p.title.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      allPapers.push(p);
     }
-
     await new Promise((r) => setTimeout(r, 3000));
   }
 
   return { papers: allPapers, categoryStats };
 }
 
-const S2_VENUES = ["SIGCOMM", "NSDI", "IMC", "OSDI", "SOSP", "CoNEXT"];
+export const S2_VENUES = ["SIGCOMM", "NSDI", "IMC", "OSDI", "SOSP", "CoNEXT"] as const;
 const S2_FIELDS = "title,authors,venue,year,citationCount,url,abstract,externalIds";
 
 type S2Author = { name: string };
@@ -135,41 +136,49 @@ export function parseS2Papers(data: S2Paper[], venue: string): ImportedPaper[] {
   });
 }
 
+export async function fetchSingleS2Venue(venue: string, year: number): Promise<PaperFetchResult> {
+  const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
+  if (!apiKey) {
+    return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: "no API key" }] };
+  }
+
+  const headers: Record<string, string> = { "x-api-key": apiKey };
+  const params = new URLSearchParams({
+    query: "networking OR SDN OR eBPF OR datacenter",
+    year: String(year),
+    venue,
+    fieldsOfStudy: "Computer Science",
+    fields: S2_FIELDS,
+    limit: "100",
+  });
+  const url = `https://api.semanticscholar.org/graph/v1/paper/search?${params}`;
+
+  try {
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: `HTTP ${res.status}` }] };
+    }
+    const json: S2Response = await res.json();
+    const papers = parseS2Papers(json.data ?? [], venue);
+    return { papers, categoryStats: [{ category: venue, status: "ok", count: papers.length }] };
+  } catch (err) {
+    return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
+  }
+}
+
 async function fetchFromSemanticScholar(year: number): Promise<PaperFetchResult> {
   const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
   if (!apiKey) {
     return { papers: [], categoryStats: [{ category: "semantic-scholar", status: "error", count: 0, error: "no API key" }] };
   }
 
-  const headers: Record<string, string> = { "x-api-key": apiKey };
   const allPapers: ImportedPaper[] = [];
   const categoryStats: CategoryStat[] = [];
 
   for (const venue of S2_VENUES) {
-    const params = new URLSearchParams({
-      query: "networking OR SDN OR eBPF OR datacenter",
-      year: String(year),
-      venue,
-      fieldsOfStudy: "Computer Science",
-      fields: S2_FIELDS,
-      limit: "100",
-    });
-    const url = `https://api.semanticscholar.org/graph/v1/paper/search?${params}`;
-
-    try {
-      const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
-      if (!res.ok) {
-        categoryStats.push({ category: venue, status: "error", count: 0, error: `HTTP ${res.status}` });
-        continue;
-      }
-      const json: S2Response = await res.json();
-      const papers = parseS2Papers(json.data ?? [], venue);
-      allPapers.push(...papers);
-      categoryStats.push({ category: venue, status: "ok", count: papers.length });
-    } catch (err) {
-      categoryStats.push({ category: venue, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" });
-    }
-
+    const result = await fetchSingleS2Venue(venue, year);
+    categoryStats.push(...result.categoryStats);
+    allPapers.push(...result.papers);
     await new Promise((r) => setTimeout(r, 3000));
   }
 

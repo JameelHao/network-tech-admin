@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { fetchAllNetworkPapers } from "@/lib/admin/paper-import";
+import {
+  fetchSingleArxivCategory,
+  fetchSingleS2Venue,
+  ARXIV_CATEGORIES,
+  S2_VENUES,
+} from "@/lib/admin/paper-import";
+import type { CategoryStat, ImportedPaper } from "@/lib/admin/paper-import";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -12,20 +17,33 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createClient();
-  const { papers: fetched, categoryStats } = await fetchAllNetworkPapers(2026);
+  const allPapers: ImportedPaper[] = [];
+  const categoryStats: CategoryStat[] = [];
+
+  for (const cat of ARXIV_CATEGORIES) {
+    const result = await fetchSingleArxivCategory(cat, 2026);
+    allPapers.push(...result.papers);
+    categoryStats.push(...result.categoryStats);
+  }
+
+  for (const venue of S2_VENUES) {
+    const result = await fetchSingleS2Venue(venue, 2026);
+    allPapers.push(...result.papers);
+    categoryStats.push(...result.categoryStats);
+  }
 
   await supabase.from("sync_meta").upsert(
     { entity: "papers", last_sync_at: new Date().toISOString(), last_result: { categoryStats } },
     { onConflict: "entity" },
   );
 
-  if (fetched.length === 0) {
+  if (allPapers.length === 0) {
     return NextResponse.json({ imported: 0, message: "No papers found", categoryStats });
   }
 
   const { data: existing } = await supabase.from("papers").select("title");
   const existingTitles = new Set((existing ?? []).map((p) => p.title.toLowerCase()));
-  const newPapers = fetched.filter((p) => !existingTitles.has(p.title.toLowerCase()));
+  const newPapers = allPapers.filter((p) => !existingTitles.has(p.title.toLowerCase()));
 
   let imported = 0;
   for (let i = 0; i < newPapers.length; i += 50) {
@@ -44,8 +62,8 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     imported,
-    total_fetched: fetched.length,
-    already_existed: fetched.length - newPapers.length,
+    total_fetched: allPapers.length,
+    already_existed: allPapers.length - newPapers.length,
     categoryStats,
   });
 }
