@@ -13,7 +13,6 @@ describe("section titles use font-sans instead of font-display", () => {
   const listPages = [
     "leads/page.tsx",
     "talents/page.tsx",
-    "opensource/page.tsx",
     "news/NewsContent.tsx",
     "news/page.tsx",
     "jobs/JobsContent.tsx",

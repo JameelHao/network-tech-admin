@@ -14,6 +14,7 @@ import { FilterSelect, FilterNumberRange } from "@/components/admin/FilterContro
 import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
+import { computeOpenSourceStats } from "@/lib/admin/opensource-utils";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
 
@@ -34,6 +35,7 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
     starsMax: starsMax ? parseInt(starsMax, 10) : undefined,
   });
   const projects = result.data;
+  const { total, active, highStars, languageCount } = computeOpenSourceStats(projects);
 
   const allLanguages = Array.from(new Set(projects.map((o) => o.language).filter(Boolean) as string[])).sort();
   const allTopics = Array.from(new Set(projects.flatMap((o) => o.topics))).sort();
@@ -58,35 +60,33 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.opensource }]} t={t} lang={lang} />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
+      <main className="px-6 xl:px-10 py-10">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.nav.opensource}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.oss.description}
+          </p>
+        </header>
+
         <SyncStatusBar entity="opensource" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.opensource}</h1>
-          <div className="flex items-center gap-2">
-            <FavoriteFilter entity="opensource" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-            <div className="hidden lg:flex items-center gap-2">
-              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
-            </div>
-            <OverflowMenu>
-              <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
-            </OverflowMenu>
+
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
+          {t.oss.overview}
+        </p>
+        <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
+            <Stat label={t.oss.totalProjects} value={total} sub={t.oss.totalSub} />
+            <Stat label={t.oss.activeProjects} value={active} sub={t.oss.activeSub} />
+            <Stat label={t.oss.highStars} value={highStars} sub={t.oss.highStarsSub} />
+            <Stat label={t.oss.languages} value={languageCount} sub={t.oss.languagesSub} />
           </div>
-        </div>
+        </section>
 
         <div data-fav-filter="opensource" className="rounded-lg border border-line bg-surface">
-          <div className="hidden lg:flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
-            {allLanguages.length > 1 && (
-              <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
-            )}
-            {allTopics.length > 1 && (
-              <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
-            )}
-            <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
-          </div>
-          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
-            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+          <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+            <div className="hidden lg:flex flex-wrap items-center gap-2">
               {allLanguages.length > 1 && (
                 <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
               )}
@@ -94,8 +94,30 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
                 <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
               )}
               <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
-            </MobileFilterPanel>
-          </div>
+            </div>
+            <div className="lg:hidden">
+              <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
+                {allLanguages.length > 1 && (
+                  <FilterSelect paramKey="language" label={t.filter.allLanguages} value={langFilter ?? ""} searchParams={filterParams} options={allLanguages.map((l) => ({ value: l, label: l }))} />
+                )}
+                {allTopics.length > 1 && (
+                  <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+                )}
+                <FilterNumberRange minKey="starsMin" maxKey="starsMax" minValue={starsMin ?? ""} maxValue={starsMax ?? ""} minLabel="Min" maxLabel="Max" searchParams={filterParams} />
+              </MobileFilterPanel>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <FavoriteFilter entity="opensource" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="opensource" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="opensource" format="json" label={t.common.exportJSON} />
+              </OverflowMenu>
+            </div>
+          </header>
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
           <div className="overflow-x-auto">
           <table className="w-full text-[13px]">
@@ -159,5 +181,17 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
         </div>
       </main>
     </>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
+  return (
+    <div className="bg-surface p-6">
+      <p className="tracked-label">{label}</p>
+      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
+        {value}
+      </p>
+      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
+    </div>
   );
 }

@@ -80,7 +80,6 @@ describe("title extraction — titles outside card containers", () => {
     "jobs/page.tsx",
     "leads/page.tsx",
     "talents/page.tsx",
-    "opensource/page.tsx",
   ];
 
   it.each(listPages)("%s has <h1> before the card container", (file) => {
@@ -99,6 +98,15 @@ describe("title extraction — titles outside card containers", () => {
     expect(headerPos).toBeGreaterThan(-1);
     expect(clientPos).toBeGreaterThan(-1);
     expect(headerPos).toBeLessThan(clientPos);
+  });
+
+  it("OpenSource page.tsx has section header before the table section", () => {
+    const content = readFile("opensource/page.tsx");
+    const headerPos = content.indexOf('<header className="mb-6"');
+    const tablePos = content.indexOf('data-fav-filter="opensource"');
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(tablePos).toBeGreaterThan(-1);
+    expect(headerPos).toBeLessThan(tablePos);
   });
 
   it("conferences overview title is outside the stats card", () => {
