@@ -14,7 +14,6 @@ describe("section titles use font-sans instead of font-display", () => {
     "leads/page.tsx",
     "talents/page.tsx",
     "news/NewsContent.tsx",
-    "news/page.tsx",
     "jobs/JobsContent.tsx",
     "jobs/page.tsx",
   ];
