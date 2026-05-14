@@ -10,7 +10,7 @@ export function tabClass(active: boolean, size: "sm" | "md" = "md"): string {
 }
 
 export function tabGroupClass(extra?: string): string {
-  return `inline-flex items-center rounded-full border p-[5px] gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.88),0_2px_6px_rgba(17,24,39,0.04)] border-line-strong bg-paper dark:border-[rgba(17,24,39,0.08)] dark:bg-gradient-to-b dark:from-[rgba(248,250,253,0.98)] dark:to-white/[0.96]${extra ? ` ${extra}` : ""}`;
+  return `inline-flex items-center rounded-full border border-line p-[5px] gap-1.5 bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.88),0_2px_6px_rgba(17,24,39,0.04)]${extra ? ` ${extra}` : ""}`;
 }
 
 export function pageClass(active: boolean): string {
