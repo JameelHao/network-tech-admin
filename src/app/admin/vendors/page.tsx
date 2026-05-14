@@ -174,7 +174,7 @@ export default async function VendorsPage({ searchParams }: { searchParams: Prom
                 vendors.map((v) => (
                   <tr key={v.id} className="hover:bg-paper/40 transition-colors">
                     <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/vendors/${v.id}`} className="font-medium text-ink-800 hover:text-navy-600 transition-colors">
+                      <Link href={`/admin/vendors/${v.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
                         {v.name}
                       </Link>
                       {v.description && (
