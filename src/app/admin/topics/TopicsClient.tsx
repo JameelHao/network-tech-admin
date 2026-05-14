@@ -148,12 +148,9 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   }, [stats]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h1 className="font-sans text-[20px] sm:text-[22px] font-bold tracking-[-0.02em] text-ink-900">
-          {labels.title}
-        </h1>
-        <div className="flex items-center gap-2">
+    <div>
+      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="text"
             placeholder={labels.search}
@@ -179,22 +176,16 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Summary stats */}
-      <div className="flex flex-wrap gap-3 sm:gap-5 text-[13px] text-ink-600">
-        <span><span className="font-semibold text-ink-800">{stats.length}</span> {labels.totalTopics}</span>
-        <span>{labels.papers}: <span className="font-semibold text-ink-800">{summary.totalPapers}</span></span>
-        <span>{labels.conferences}: <span className="font-semibold text-ink-800">{summary.totalConf}</span></span>
-        <span>{labels.talents}: <span className="font-semibold text-ink-800">{summary.totalTalents}</span></span>
-        <span>{labels.opensource}: <span className="font-semibold text-ink-800">{summary.totalOs}</span></span>
-        {summary.hottest && (
-          <span>{labels.hottest}: <span className="font-semibold text-ink-800">{getTopicLabel(summary.hottest.slug, lang)}</span> ({summary.hottest.total})</span>
-        )}
-      </div>
+        <div className="flex flex-wrap gap-3 sm:gap-5 text-[13px] text-ink-600">
+          <span>{labels.papers}: <span className="font-semibold text-ink-800">{summary.totalPapers}</span></span>
+          <span>{labels.conferences}: <span className="font-semibold text-ink-800">{summary.totalConf}</span></span>
+          <span>{labels.talents}: <span className="font-semibold text-ink-800">{summary.totalTalents}</span></span>
+          <span>{labels.opensource}: <span className="font-semibold text-ink-800">{summary.totalOs}</span></span>
+        </div>
+      </header>
 
       {/* Category tabs */}
-      <div className="overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="overflow-x-auto scrollbar-none px-5 py-2 border-b border-line bg-paper/30">
         <div className={tabGroupClass()} role="tablist">
           {CATEGORY_KEYS.map((key) => {
             const isActive = activeTab === key;
@@ -216,7 +207,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
       </div>
 
       {view === "heatmap" ? (
-        <div className="rounded-lg border border-line bg-surface overflow-hidden">
+        <div>
           <TopicHeatmap
             stats={sorted}
             lang={lang}
@@ -229,7 +220,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
           />
         </div>
       ) : (
-        <div className="rounded-lg border border-line bg-surface overflow-hidden">
+        <div>
           <div className="px-5 py-2 border-b border-line bg-paper/30 text-[12px] text-ink-500">
             {labels.showing} <span className="font-semibold text-ink-700">{paginated.length}</span> {labels.ofTopics} <span className="font-semibold text-ink-700">{sorted.length}</span>
           </div>
