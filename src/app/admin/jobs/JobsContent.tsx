@@ -185,7 +185,7 @@ export function JobsContent({ labels, lang }: { labels: JobsLabels; lang: Lang }
                 value={dateFrom}
                 onChange={(e) => fp.set("dateFrom", e.target.value)}
                 aria-label={labels.dateFrom}
-                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
               />
               <span className="text-ink-400 text-[10px]">–</span>
               <input
@@ -193,7 +193,7 @@ export function JobsContent({ labels, lang }: { labels: JobsLabels; lang: Lang }
                 value={dateTo}
                 onChange={(e) => fp.set("dateTo", e.target.value)}
                 aria-label={labels.dateTo}
-                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
               />
             </div>
           </MobileFilterBar>

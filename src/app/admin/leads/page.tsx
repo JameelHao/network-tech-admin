@@ -127,13 +127,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 {leads.map((l) => (
                   <tr key={l.id} data-fav={true} className="hover:bg-paper/40 transition-colors">
                     <Td>
-                      <Link href={`/admin/leads/${l.id}`} className="text-[13px] font-normal text-ink-800 hover:text-navy-600 transition-colors line-clamp-1 max-w-[240px] block">
+                      <Link href={`/admin/leads/${l.id}`} className="text-[13px] font-normal text-ink-800 hover:text-navy-600 transition-colors line-clamp-1 max-w-full sm:max-w-[240px] block">
                         {l.title}
                       </Link>
                     </Td>
                     <Td className="hidden lg:table-cell">
                       {l.summary ? (
-                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={l.summary}>
+                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={l.summary}>
                           {l.summary}
                         </span>
                       ) : <span className="text-ink-400">—</span>}
@@ -153,7 +153,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     </Td>
                     <Td className="hidden lg:table-cell">
                       {l.notes ? (
-                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={l.notes}>
+                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={l.notes}>
                           {l.notes}
                         </span>
                       ) : <span className="text-ink-400">—</span>}

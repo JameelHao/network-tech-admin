@@ -125,7 +125,7 @@ export default async function InsightsPage() {
 
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.insights.overview}</p>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line rounded-lg overflow-hidden border border-line">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-line rounded-lg overflow-hidden border border-line">
           <StatCard label={t.insights.papers} value={paperTotal} />
           <StatCard label={t.insights.conferences} value={confTotal} />
           <StatCard label={t.insights.leads} value={leadTotal} />

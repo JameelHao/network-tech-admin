@@ -182,7 +182,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                           href={item.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`text-[13px] font-normal line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                          className={`text-[13px] font-normal line-clamp-2 max-w-full sm:max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
                         >
                           {item.title}
                         </a>
@@ -209,7 +209,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                       </Td>
                       <Td className="hidden lg:table-cell">
                         {item.snippet ? (
-                          <span className="text-[12px] text-ink-500 line-clamp-1 max-w-[200px] block" title={item.snippet}>
+                          <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={item.snippet}>
                             {item.snippet}
                           </span>
                         ) : <span className="text-ink-400">—</span>}

@@ -80,7 +80,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
               </div>
               <FavoriteButton entity="conferences" id={id} label={conf.abbreviation ?? conf.name} />
             </div>
-            <dl className="grid grid-cols-2 sm:grid-cols-5 gap-x-6 gap-y-3">
+            <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-3">
               <Field label={t.detail.location} value={<span className="font-mono text-[12px] text-ink-700">{conf.location ?? "—"}</span>} />
               <Field label={t.detail.date} value={<span className="font-mono text-[12px] tabular-nums text-ink-700">{conf.start_date}{conf.end_date ? ` ~ ${conf.end_date}` : ""}</span>} />
               <Field label={t.conf.status} value={
@@ -147,7 +147,7 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
           </header>
 
           {sessions.length === 0 ? (
-            <div className="px-6 py-16 text-center">
+            <div className="px-4 sm:px-6 py-8 sm:py-16 text-center">
               <div className="font-sans text-[20px] font-bold tracking-[-0.02em] text-ink-700">{t.conf.noPapers}</div>
               <p className="mt-1 text-[13px] text-ink-500">{t.conf.noPapersHint}</p>
             </div>

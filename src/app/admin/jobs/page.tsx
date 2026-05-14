@@ -220,7 +220,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                           href={item.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`text-[13px] font-normal line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                          className={`text-[13px] font-normal line-clamp-2 max-w-full sm:max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
                         >
                           {item.title}
                         </a>
