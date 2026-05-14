@@ -158,7 +158,7 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                 talents.map((tl) => (
                   <tr key={tl.id} className="hover:bg-paper/40 transition-colors">
                     <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/talents/${tl.id}`} className="font-medium text-ink-800 hover:text-navy-600 transition-colors">
+                      <Link href={`/admin/talents/${tl.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
                         {tl.name}
                       </Link>
                     </td>

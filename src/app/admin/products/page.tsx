@@ -172,7 +172,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 products.map((p) => (
                   <tr key={p.id} className="hover:bg-paper/40 transition-colors">
                     <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/products/${p.id}`} className="font-medium text-ink-800 hover:text-navy-600 transition-colors">
+                      <Link href={`/admin/products/${p.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
                         {p.name}
                       </Link>
                       {p.description && (

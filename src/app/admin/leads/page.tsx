@@ -127,7 +127,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 {leads.map((l) => (
                   <tr key={l.id} data-fav={true} className="hover:bg-paper/40 transition-colors">
                     <Td>
-                      <Link href={`/admin/leads/${l.id}`} className="text-[13px] font-medium text-ink-800 hover:text-navy-600 transition-colors line-clamp-1 max-w-[240px] block">
+                      <Link href={`/admin/leads/${l.id}`} className="text-[13px] font-normal text-ink-800 hover:text-navy-600 transition-colors line-clamp-1 max-w-[240px] block">
                         {l.title}
                       </Link>
                     </Td>

@@ -237,7 +237,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                       <tr key={c.id} className="group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors">
                         <Td>
                           <Link href={`/admin/conferences/${c.id}`} className="block">
-                            <div className="font-sans text-[14.5px] font-semibold tracking-tight text-ink-900 group-hover:text-navy-700">
+                            <div className="font-sans text-[14px] font-normal tracking-tight text-ink-900 group-hover:text-navy-700">
                               {c.abbreviation ?? c.name}
                             </div>
                             {c.abbreviation && (

@@ -141,7 +141,7 @@ export default async function OpenSourcePage({ searchParams }: { searchParams: P
               {projects.map((o) => (
                 <tr key={o.id} className="hover:bg-paper/40 transition-colors">
                   <td className="px-3 sm:px-5 py-3">
-                    <Link href={`/admin/opensource/${o.id}`} className="font-medium text-ink-800 hover:text-navy-600 transition-colors">
+                    <Link href={`/admin/opensource/${o.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
                       {o.name}
                     </Link>
                     {o.description && (

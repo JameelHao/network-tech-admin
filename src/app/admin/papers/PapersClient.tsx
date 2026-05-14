@@ -322,7 +322,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                               href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`text-[13px] font-medium line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                              className={`text-[13px] font-normal line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
                             >
                               {p.title}
                             </a>
@@ -426,7 +426,7 @@ function PaperRow({ paper: p, lang, publishedLabel, newLabel }: { paper: Paper; 
       className={`block px-3 sm:px-5 py-4 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}
     >
       <div className="flex items-start gap-2">
-        <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{p.title}</p>
+        <p className={`text-[13px] font-normal flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{p.title}</p>
         <FavoriteButton entity="papers" id={p.id} label={p.title} />
         {isNew(p.published_date) && <NewBadge label={newLabel} />}
         {yearBadge && (
