@@ -171,19 +171,25 @@ describe("title extraction — titles outside card containers", () => {
 describe("dashboard title extraction", () => {
   const content = readFile("page.tsx");
 
-  it("section titles are outside their card containers", () => {
-    const h2Positions = [...content.matchAll(/<h2/g)].map((m) => m.index!);
+  it("has mono section titles before their card containers", () => {
+    const monoTitlePositions = [...content.matchAll(/font-mono text-\[10px\] uppercase tracking-\[0\.18em\] text-ink-500/g)].map((m) => m.index!);
     const cardDivPositions = [...content.matchAll(/className="rounded-lg border border-line bg-surface/g)].map((m) => m.index!);
 
-    expect(h2Positions.length).toBeGreaterThanOrEqual(4);
+    expect(monoTitlePositions.length).toBeGreaterThanOrEqual(4);
 
-    for (const h2Pos of h2Positions) {
-      const nextCard = cardDivPositions.find((cp) => cp > h2Pos);
+    for (const titlePos of monoTitlePositions) {
+      const nextCard = cardDivPositions.find((cp) => cp > titlePos);
       if (nextCard !== undefined) {
-        const between = content.slice(h2Pos, nextCard);
+        const between = content.slice(titlePos, nextCard);
         expect(between).not.toContain('className="rounded-lg border border-line bg-surface');
       }
     }
+  });
+
+  it("has header with mono page title", () => {
+    const headerPos = content.indexOf('<header className="mb-6"');
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(content).toContain('font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500');
   });
 
   it("stageDistribution title is outside the card", () => {

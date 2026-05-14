@@ -41,6 +41,8 @@ const en = {
     noUpcoming: "No upcoming conferences",
     latestProductUpdates: "Latest Product Updates",
     keyVendors: "Key Vendors",
+    description: "Global overview of the networking technology radar",
+    overview: "Overview",
   },
   detail: {
     location: "Location",
@@ -660,6 +662,8 @@ const zh: typeof en = {
     noUpcoming: "暂无即将到来的会议",
     latestProductUpdates: "最近产品更新",
     keyVendors: "重点厂商",
+    description: "网络技术雷达全局概览",
+    overview: "概览",
   },
   detail: {
     location: "地点",

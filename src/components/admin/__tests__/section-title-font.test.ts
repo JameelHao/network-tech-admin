@@ -23,14 +23,19 @@ describe("section titles use font-sans instead of font-display", () => {
   ];
 
   describe("Type 1: Dashboard section titles", () => {
-    it("uses font-sans text-[13px] font-semibold", () => {
+    it("uses font-mono text-[10px] uppercase for section titles", () => {
       const content = read(dashboardFile);
-      expect(content).toContain("font-sans text-[13px] font-semibold tracking-tight");
+      expect(content).toContain('font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500');
     });
 
-    it("does not use font-display for section titles", () => {
+    it("has mono header with tracking-[0.22em]", () => {
       const content = read(dashboardFile);
-      expect(content).not.toContain("font-display text-[15px]");
+      expect(content).toContain('font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500');
+    });
+
+    it("does not use font-sans text-[13px] font-semibold for section titles", () => {
+      const content = read(dashboardFile);
+      expect(content).not.toContain("font-sans text-[13px] font-semibold tracking-tight");
     });
   });
 

@@ -73,20 +73,32 @@ export default async function DashboardPage() {
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-line rounded-lg overflow-hidden border border-line">
-          <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
-          <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
-          <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
-          <StatCard label={t.dashboard.products} value={productResult.total} sub={t.dashboard.tracking} />
-          <StatCard label={t.dashboard.vendors} value={vendorResult.total} sub={t.dashboard.tracking} />
-          <StatCard label={t.dashboard.activeLeads} value={activeLeads.length} accent="text-navy-500" />
+      <main className="px-6 xl:px-10 py-10 space-y-6 sm:space-y-8">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.nav.dashboard}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.dashboard.description}
+          </p>
+        </header>
+
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.dashboard.overview}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-line rounded-lg overflow-hidden border border-line">
+            <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
+            <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
+            <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.dashboard.products} value={productResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.dashboard.vendors} value={vendorResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.dashboard.activeLeads} value={activeLeads.length} accent="text-navy-500" />
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.upcomingConferences}</h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.upcomingConferences}</p>
               <Link href="/admin/conferences" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -109,7 +121,7 @@ export default async function DashboardPage() {
 
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.latestPapers} <span className="text-[11px] text-ink-400 font-mono">({t.time.recentDays})</span></h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.latestPapers} <span className="text-ink-400">({t.time.recentDays})</span></p>
               <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -132,7 +144,7 @@ export default async function DashboardPage() {
         <div className="grid lg:grid-cols-2 gap-6">
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.news.latestNews} <span className="text-[11px] text-ink-400 font-mono">({t.time.recentDays})</span></h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.news.latestNews} <span className="text-ink-400">({t.time.recentDays})</span></p>
               <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -151,7 +163,7 @@ export default async function DashboardPage() {
           {latestUpdatedProducts.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.latestProductUpdates}</h2>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestProductUpdates}</p>
                 <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
               </div>
               <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -177,7 +189,7 @@ export default async function DashboardPage() {
           {keyVendors.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.keyVendors}</h2>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.keyVendors}</p>
                 <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
               </div>
               <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -198,7 +210,7 @@ export default async function DashboardPage() {
 
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.dashboard.latestLeads}</h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestLeads}</p>
               <Link href="/admin/leads" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -243,7 +255,7 @@ export default async function DashboardPage() {
         }} />
 
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.dashboard.stageDistribution}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.dashboard.stageDistribution}</p>
           <div className="rounded-lg border border-line bg-surface p-5 flex flex-wrap gap-3 sm:gap-4">
             {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
               <div key={stage} className="flex items-center gap-2">
