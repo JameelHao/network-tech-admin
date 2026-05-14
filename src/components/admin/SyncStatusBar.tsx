@@ -157,10 +157,12 @@ export function SyncStatusBar({
   const productStats = syncResult?.stats?.map((s) => ({ source: s.name, status: s.status, count: s.version ? 1 : 0, error: s.error }));
   const allStats = syncResult?.feedStats ?? syncResult?.categoryStats ?? productStats ?? [];
   const failedFeeds = allStats.filter((s) => s.status === "error");
+  const skippedFeeds = allStats.filter((s) => s.status === "skipped");
   const totalItems = syncResult
     ? (syncResult.updated ?? syncResult.imported ?? ((syncResult.news ?? 0) + (syncResult.jobs ?? 0)))
     : 0;
-  const allFailed = syncResult && allStats.length > 0 && failedFeeds.length === allStats.length;
+  const activeStats = allStats.filter((s) => s.status !== "skipped");
+  const allFailed = syncResult && activeStats.length > 0 && failedFeeds.length === activeStats.length;
 
   return (
     <div className="mb-4 space-y-1.5">
@@ -207,6 +209,11 @@ export function SyncStatusBar({
               <span className="text-[11px] ml-1 opacity-70">
                 ({failedFeeds.map((f) => ("source" in f ? f.source : (f as { category: string }).category)).join(", ")})
               </span>
+            </span>
+          )}
+          {skippedFeeds.length > 0 && (
+            <span className="text-ink-400">
+              · {skippedFeeds.length} {lang === "zh" ? "个源跳过" : "skipped"}
             </span>
           )}
           {!allFailed && (

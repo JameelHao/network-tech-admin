@@ -12,7 +12,7 @@ export type ImportedPaper = {
 
 export type CategoryStat = {
   category: string;
-  status: "ok" | "error";
+  status: "ok" | "error" | "skipped";
   count: number;
   error?: string;
 };
@@ -63,20 +63,30 @@ export function parseArxivXml(xml: string): ImportedPaper[] {
 
 export const ARXIV_CATEGORIES = ["cs.NI", "cs.AI", "cs.DC", "cs.PF", "cs.LG", "cs.CR"] as const;
 
+async function fetchArxivOnce(url: string, category: string): Promise<PaperFetchResult> {
+  const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(10000) });
+  if (!res.ok) {
+    return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: `HTTP ${res.status}` }] };
+  }
+  const xml = await res.text();
+  const papers = parseArxivXml(xml);
+  return { papers, categoryStats: [{ category, status: "ok", count: papers.length }] };
+}
+
 export async function fetchSingleArxivCategory(category: string, year: number): Promise<PaperFetchResult> {
   const query = `cat:${category}+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
   const url = `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
 
   try {
-    const res = await fetch(url, { redirect: "follow" });
-    if (!res.ok) {
-      return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: `HTTP ${res.status}` }] };
+    return await fetchArxivOnce(url, category);
+  } catch {
+    // Retry once after 2s
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      return await fetchArxivOnce(url, category);
+    } catch (err) {
+      return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
     }
-    const xml = await res.text();
-    const papers = parseArxivXml(xml);
-    return { papers, categoryStats: [{ category, status: "ok", count: papers.length }] };
-  } catch (err) {
-    return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
   }
 }
 
@@ -139,7 +149,7 @@ export function parseS2Papers(data: S2Paper[], venue: string): ImportedPaper[] {
 export async function fetchSingleS2Venue(venue: string, year: number): Promise<PaperFetchResult> {
   const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
   if (!apiKey) {
-    return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: "no API key" }] };
+    return { papers: [], categoryStats: [{ category: venue, status: "skipped", count: 0, error: "SEMANTIC_SCHOLAR_API_KEY not configured" }] };
   }
 
   const headers: Record<string, string> = { "x-api-key": apiKey };
@@ -169,7 +179,7 @@ export async function fetchSingleS2Venue(venue: string, year: number): Promise<P
 async function fetchFromSemanticScholar(year: number): Promise<PaperFetchResult> {
   const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
   if (!apiKey) {
-    return { papers: [], categoryStats: [{ category: "semantic-scholar", status: "error", count: 0, error: "no API key" }] };
+    return { papers: [], categoryStats: [{ category: "semantic-scholar", status: "skipped", count: 0, error: "SEMANTIC_SCHOLAR_API_KEY not configured" }] };
   }
 
   const allPapers: ImportedPaper[] = [];
@@ -220,10 +230,14 @@ export function mergeResults(arxiv: PaperFetchResult, s2: PaperFetchResult): Pap
   };
 }
 
+const EMPTY_RESULT: PaperFetchResult = { papers: [], categoryStats: [] };
+
 export async function fetchAllNetworkPapers(year: number): Promise<PaperFetchResult> {
-  const [arxiv, s2] = await Promise.all([
+  const [arxivSettled, s2Settled] = await Promise.allSettled([
     fetchFromArxiv(year),
     fetchFromSemanticScholar(year),
   ]);
+  const arxiv = arxivSettled.status === "fulfilled" ? arxivSettled.value : EMPTY_RESULT;
+  const s2 = s2Settled.status === "fulfilled" ? s2Settled.value : EMPTY_RESULT;
   return mergeResults(arxiv, s2);
 }
