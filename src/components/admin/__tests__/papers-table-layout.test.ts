@@ -76,7 +76,6 @@ describe("PapersClient table layout", () => {
 
 describe("title extraction — titles outside card containers", () => {
   const listPages = [
-    "leads/page.tsx",
     "talents/page.tsx",
   ];
 
@@ -120,6 +119,15 @@ describe("title extraction — titles outside card containers", () => {
     const content = readFile("jobs/page.tsx");
     const headerPos = content.indexOf('<header className="mb-6"');
     const tablePos = content.indexOf('data-fav-filter="jobs"');
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(tablePos).toBeGreaterThan(-1);
+    expect(headerPos).toBeLessThan(tablePos);
+  });
+
+  it("Leads page.tsx has section header before the table section", () => {
+    const content = readFile("leads/page.tsx");
+    const headerPos = content.indexOf('<header className="mb-6"');
+    const tablePos = content.indexOf('data-fav-filter="leads"');
     expect(headerPos).toBeGreaterThan(-1);
     expect(tablePos).toBeGreaterThan(-1);
     expect(headerPos).toBeLessThan(tablePos);

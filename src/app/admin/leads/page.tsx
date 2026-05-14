@@ -14,6 +14,7 @@ import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
 import { relativeTime } from "@/lib/admin/format";
+import { computeLeadStats } from "@/lib/admin/leads-utils";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -30,6 +31,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const dateTo = typeof sp.dateTo === "string" ? sp.dateTo : undefined;
   const result = await listLeads(params, { stage: filterStage, sourceType, dateFrom, dateTo });
   const leads = result.data;
+
+  const { newCount, trackingCount, evaluatingCount } = computeLeadStats(leads);
 
   const filterParams: Record<string, string> = {};
   if (filterStage) filterParams.stage = filterStage;
@@ -51,38 +54,53 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.leads }]} t={t} lang={lang} />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
-            {t.leads.title}
-            <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{result.total}</span>
-          </h1>
-          <div className="flex items-center gap-2">
-            <FavoriteFilter entity="leads" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-            <div className="hidden lg:flex items-center gap-2">
-              <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
-            </div>
-            <OverflowMenu>
-              <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
-              <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
-            </OverflowMenu>
-          </div>
-        </div>
+      <main className="px-6 xl:px-10 py-10">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.nav.leads}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.leads.description}
+          </p>
+        </header>
 
-        <div data-fav-filter="leads" className="rounded-lg border border-line bg-surface">
-          <div className="hidden lg:flex flex-wrap items-center gap-2 px-5 py-2 border-b border-line bg-paper/30">
-            <FilterSelect paramKey="stage" label={t.filter.allStages} value={filterStage ?? ""} searchParams={filterParams} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
-            <FilterSelect paramKey="sourceType" label={t.filter.allSourceTypes} value={sourceType ?? ""} searchParams={filterParams} options={[{ value: "conference", label: t.sourceType.conference }, { value: "paper", label: t.sourceType.paper }, { value: "opensource", label: t.sourceType.opensource }]} />
-            <FilterDateRange fromKey="dateFrom" toKey="dateTo" fromValue={dateFrom ?? ""} toValue={dateTo ?? ""} fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo} searchParams={filterParams} />
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
+          {t.leads.overview}
+        </p>
+        <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
+            <Stat label={t.leads.totalLeads} value={result.total} sub={t.leads.totalSub} />
+            <Stat label={t.leads.newLeads} value={newCount} sub={t.leads.newSub} />
+            <Stat label={t.leads.trackingLeads} value={trackingCount} sub={t.leads.trackingSub} />
+            <Stat label={t.leads.evaluatingLeads} value={evaluatingCount} sub={t.leads.evaluatingSub} />
           </div>
-          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
+        </section>
+
+        <section data-fav-filter="leads" className="rounded-lg border border-line bg-surface overflow-hidden">
+          <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+            <div className="hidden lg:flex flex-wrap items-center gap-2">
+              <FilterSelect paramKey="stage" label={t.filter.allStages} value={filterStage ?? ""} searchParams={filterParams} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
+              <FilterSelect paramKey="sourceType" label={t.filter.allSourceTypes} value={sourceType ?? ""} searchParams={filterParams} options={[{ value: "conference", label: t.sourceType.conference }, { value: "paper", label: t.sourceType.paper }, { value: "opensource", label: t.sourceType.opensource }]} />
+              <FilterDateRange fromKey="dateFrom" toKey="dateTo" fromValue={dateFrom ?? ""} toValue={dateTo ?? ""} fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo} searchParams={filterParams} />
+            </div>
             <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
               <FilterSelect paramKey="stage" label={t.filter.allStages} value={filterStage ?? ""} searchParams={filterParams} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
               <FilterSelect paramKey="sourceType" label={t.filter.allSourceTypes} value={sourceType ?? ""} searchParams={filterParams} options={[{ value: "conference", label: t.sourceType.conference }, { value: "paper", label: t.sourceType.paper }, { value: "opensource", label: t.sourceType.opensource }]} />
               <FilterDateRange fromKey="dateFrom" toKey="dateTo" fromValue={dateFrom ?? ""} toValue={dateTo ?? ""} fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo} searchParams={filterParams} />
             </MobileFilterPanel>
-          </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <FavoriteFilter entity="leads" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="leads" format="csv" label={t.common.exportCSV} />
+                <ExportButton entity="leads" format="json" label={t.common.exportJSON} />
+              </OverflowMenu>
+            </div>
+          </header>
+
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 
           <div className="overflow-x-auto">
@@ -166,9 +184,21 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             searchParams={filterParams}
             labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
           />
-        </div>
+        </section>
       </main>
     </>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
+  return (
+    <div className="bg-surface p-6">
+      <p className="tracked-label">{label}</p>
+      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
+        {value}
+      </p>
+      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
+    </div>
   );
 }
 
