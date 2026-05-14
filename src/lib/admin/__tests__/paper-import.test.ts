@@ -118,12 +118,17 @@ describe("paper-import module", () => {
     let callIdx = 0;
     mockFetch(async () => {
       callIdx++;
-      if (callIdx === 2) throw new Error("ECONNRESET");
+      // cs.AI is 2nd category; with retry, calls 2 (first) and 3 (retry) both fail
+      if (callIdx === 2 || callIdx === 3) throw new Error("ECONNRESET");
       return { ok: true, text: () => Promise.resolve(SAMPLE_ARXIV) } as Response;
     });
 
     const promise = fetchAllNetworkPapers(2026);
-    for (let i = 0; i < 6; i++) await advanceTimers();
+    // Extra timer advances for retry delay (2s) on the failing category
+    for (let i = 0; i < 6; i++) {
+      await advanceTimers();
+      await vi.advanceTimersByTimeAsync(2000);
+    }
     const result = await promise;
 
     const arxivStats = result.categoryStats.filter((s) => s.category.startsWith("cs."));
@@ -162,7 +167,11 @@ describe("paper-import module", () => {
     mockFetch(async () => { throw new Error("timeout"); });
 
     const promise = fetchAllNetworkPapers(2026);
-    for (let i = 0; i < 6; i++) await advanceTimers();
+    // Each category: fetch fails → 2s retry delay → fetch fails again → 3s inter-category delay
+    for (let i = 0; i < 6; i++) {
+      await vi.advanceTimersByTimeAsync(2000);
+      await advanceTimers();
+    }
     const result = await promise;
 
     expect(result.papers).toHaveLength(0);
@@ -368,8 +377,8 @@ describe("fetchAllNetworkPapers - S2 degradation", () => {
     expect(urls.every((u) => u.includes("arxiv.org"))).toBe(true);
     const s2Stat = result.categoryStats.find((s) => s.category === "semantic-scholar");
     expect(s2Stat).toBeDefined();
-    expect(s2Stat!.status).toBe("error");
-    expect(s2Stat!.error).toBe("no API key");
+    expect(s2Stat!.status).toBe("skipped");
+    expect(s2Stat!.error).toBe("SEMANTIC_SCHOLAR_API_KEY not configured");
   });
 
   it("fetches from S2 when API key is present", async () => {

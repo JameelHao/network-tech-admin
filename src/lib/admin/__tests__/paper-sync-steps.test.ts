@@ -118,13 +118,13 @@ describe("fetchSingleS2Venue", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns error when no API key", async () => {
+  it("returns skipped when no API key", async () => {
     vi.stubGlobal("process", { ...process, env: {} });
 
     const result = await fetchSingleS2Venue("SIGCOMM", 2026);
     expect(result.papers).toHaveLength(0);
-    expect(result.categoryStats[0].status).toBe("error");
-    expect(result.categoryStats[0].error).toBe("no API key");
+    expect(result.categoryStats[0].status).toBe("skipped");
+    expect(result.categoryStats[0].error).toBe("SEMANTIC_SCHOLAR_API_KEY not configured");
     expect(result.categoryStats[0].category).toBe("SIGCOMM");
   });
 
