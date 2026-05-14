@@ -458,6 +458,8 @@ const en = {
     dailyNewsTrend: "Daily News Trend",
     topNewsSources: "Top News Sources",
     jobsByCompany: "Jobs by Company",
+    description: "Cross-domain analysis across papers, conferences, leads, talents and news.",
+    overview: "Overview",
   },
   command: {
     searchPlaceholder: "Search across all entities…",
@@ -1079,6 +1081,8 @@ const zh: typeof en = {
     dailyNewsTrend: "每日新闻趋势",
     topNewsSources: "热门新闻来源",
     jobsByCompany: "公司招聘分布",
+    description: "跨论文、会议、线索、人才和新闻的综合分析。",
+    overview: "概览",
   },
   command: {
     searchPlaceholder: "跨实体搜索…",
