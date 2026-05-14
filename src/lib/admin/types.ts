@@ -120,6 +120,9 @@ export type Product = {
   topics: string[];
   stage: ProductStage;
   notes: string | null;
+  source: string;
+  source_url: string | null;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 };
