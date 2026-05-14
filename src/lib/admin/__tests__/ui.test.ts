@@ -62,7 +62,7 @@ describe("ui utility functions", () => {
       expect(cls).toContain("inline-flex");
       expect(cls).toContain("rounded-full");
       expect(cls).toContain("border");
-      expect(cls).toContain("bg-surface");
+      expect(cls).toContain("bg-gradient-to-b");
       expect(cls).toContain("shadow-[inset_0_1px_0");
     });
 

@@ -169,7 +169,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
 
   return (
     <div className="rounded-lg border border-line bg-surface overflow-hidden">
-      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-surface-sunk">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
         <div className="hidden lg:flex items-center gap-2">
           <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
           <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
