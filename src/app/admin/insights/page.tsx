@@ -112,15 +112,25 @@ export default async function InsightsPage() {
         t={t}
         lang={lang}
       />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-8">
-        <h1 className="font-sans text-[20px] sm:text-[22px] font-bold tracking-[-0.02em] text-ink-900">{t.insights.title}</h1>
+      <main className="px-6 xl:px-10 py-10 space-y-8">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.insights.title}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.insights.description}
+          </p>
+        </header>
 
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        <StatCard label={t.insights.papers} value={paperTotal} />
-        <StatCard label={t.insights.conferences} value={confTotal} />
-        <StatCard label={t.insights.leads} value={leadTotal} />
-        <StatCard label={t.insights.talents} value={talentTotal} />
-        <StatCard label={t.insights.newsItems} value={newsTotal} sub={t.insights.last30days} />
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.insights.overview}</p>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-line rounded-lg overflow-hidden border border-line">
+          <StatCard label={t.insights.papers} value={paperTotal} />
+          <StatCard label={t.insights.conferences} value={confTotal} />
+          <StatCard label={t.insights.leads} value={leadTotal} />
+          <StatCard label={t.insights.talents} value={talentTotal} />
+          <StatCard label={t.insights.newsItems} value={newsTotal} sub={t.insights.last30days} />
+        </div>
       </div>
 
       {/* Papers */}
