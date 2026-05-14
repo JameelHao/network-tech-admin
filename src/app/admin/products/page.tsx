@@ -80,6 +80,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </header>
 
         <SyncStatusBar entity="products" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
+        <SyncStatusBar entity="cloud-products" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
 
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
           {t.product.overview}
