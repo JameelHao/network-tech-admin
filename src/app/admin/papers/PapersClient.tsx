@@ -168,13 +168,9 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
   }, [sorted, page]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">
-          {labels.title}
-          <span className="ml-2 font-mono text-[11px] tabular-nums text-ink-400">{filtered.length}</span>
-        </h1>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+    <div className="rounded-lg border border-line bg-surface overflow-hidden">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+        <div className="hidden lg:flex items-center gap-2">
           <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
           <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
           <div className={tabGroupClass()}>
@@ -191,6 +187,72 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               {labels.viewCluster}
             </button>
           </div>
+        </div>
+        <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, topic, sourceFilter, dateFrom, dateTo].filter(Boolean).length}>
+          <input
+            type="text"
+            key={keyword}
+            defaultValue={keyword}
+            placeholder={labels.searchPlaceholder}
+            onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
+            className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
+          />
+          {venues.length > 1 && (
+            <select
+              value={venue}
+              onChange={(e) => fp.set("venue", e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
+            >
+              <option value="">{labels.allSources}</option>
+              {venues.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
+          )}
+          {topics.length > 1 && (
+            <select
+              value={topic}
+              onChange={(e) => fp.set("topic", e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
+            >
+              <option value="">{labels.allCategories}</option>
+              {topics.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          )}
+          {sources.length > 1 && (
+            <select
+              value={sourceFilter}
+              onChange={(e) => fp.set("source", e.target.value)}
+              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
+            >
+              <option value="">{labels.source}</option>
+              {sources.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          )}
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => fp.set("dateFrom", e.target.value)}
+              aria-label={labels.dateFrom}
+              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+            />
+            <span className="text-ink-400 text-[10px]">–</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => fp.set("dateTo", e.target.value)}
+              aria-label={labels.dateTo}
+              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+            />
+          </div>
+        </MobileFilterPanel>
+        <div className="flex items-center gap-2 shrink-0">
           <div className="hidden lg:flex items-center gap-2">
             <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
             <ExportButton entity="papers" format="json" label={labels.exportJSON} />
@@ -199,75 +261,10 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
             <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
             <ExportButton entity="papers" format="json" label={labels.exportJSON} />
           </OverflowMenu>
-          <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, topic, sourceFilter, dateFrom, dateTo].filter(Boolean).length}>
-            <input
-              type="text"
-              key={keyword}
-              defaultValue={keyword}
-              placeholder={labels.searchPlaceholder}
-              onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
-              onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
-              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-            />
-            {venues.length > 1 && (
-              <select
-                value={venue}
-                onChange={(e) => fp.set("venue", e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-              >
-                <option value="">{labels.allSources}</option>
-                {venues.map((v) => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            )}
-            {topics.length > 1 && (
-              <select
-                value={topic}
-                onChange={(e) => fp.set("topic", e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-              >
-                <option value="">{labels.allCategories}</option>
-                {topics.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            )}
-            {sources.length > 1 && (
-              <select
-                value={sourceFilter}
-                onChange={(e) => fp.set("source", e.target.value)}
-                className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-              >
-                <option value="">{labels.source}</option>
-                {sources.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            )}
-            <div className="flex items-center gap-1">
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => fp.set("dateFrom", e.target.value)}
-                aria-label={labels.dateFrom}
-                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
-              />
-              <span className="text-ink-400 text-[10px]">–</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => fp.set("dateTo", e.target.value)}
-                aria-label={labels.dateTo}
-                className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
-              />
-            </div>
-          </MobileFilterPanel>
         </div>
-      </div>
+      </header>
 
-      <div className="rounded-lg border border-line bg-surface overflow-hidden">
-        <FilterSummary
+      <FilterSummary
           filters={[
             ...(keyword ? [{ label: labels.searchPlaceholder, value: keyword }] : []),
             ...(venue ? [{ label: labels.allSources, value: venue }] : []),
@@ -411,7 +408,6 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 }

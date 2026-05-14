@@ -93,6 +93,23 @@ function buildCluster(topic: string, papers: Paper[]): TopicCluster {
   };
 }
 
+export type PaperStats = {
+  total: number;
+  thisWeek: number;
+  arxivCount: number;
+  venueCount: number;
+};
+
+export function computePaperStats(papers: Paper[], now = Date.now()): PaperStats {
+  const weekAgo = new Date(now - 7 * 86_400_000).toISOString().slice(0, 10);
+  return {
+    total: papers.length,
+    thisWeek: papers.filter((p) => p.published_date && p.published_date >= weekAgo).length,
+    arxivCount: papers.filter((p) => p.source === "arxiv").length,
+    venueCount: papers.filter((p) => p.source === "semantic-scholar").length,
+  };
+}
+
 function computeDateRange(papers: Paper[]): string {
   const dates = papers
     .map((p) => p.published_date)

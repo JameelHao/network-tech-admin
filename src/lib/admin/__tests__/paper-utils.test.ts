@@ -3,6 +3,7 @@ import {
   jaccardSimilarity,
   findSimilarPapers,
   clusterByTopics,
+  computePaperStats,
 } from "../paper-utils";
 import type { Paper } from "../types";
 
@@ -16,6 +17,8 @@ function makePaper(overrides: Partial<Paper> = {}): Paper {
     published_date: "2026-01-15",
     abstract: null,
     topics: ["cs.NI"],
+    citation_count: null,
+    source: null,
     notes: null,
     created_at: "2026-01-01",
     ...overrides,
@@ -155,5 +158,79 @@ describe("clusterByTopics", () => {
     const clusters = clusterByTopics(papers);
     const c = clusters.find((cl) => cl.topic === "cs.NI");
     expect(c?.dateRange).toBe("2026-01 ~ 2026-03");
+  });
+});
+
+describe("computePaperStats", () => {
+  const NOW = new Date("2026-05-14T12:00:00Z").getTime();
+
+  it("returns total count", () => {
+    const papers = [makePaper({ id: "1" }), makePaper({ id: "2" }), makePaper({ id: "3" })];
+    expect(computePaperStats(papers, NOW).total).toBe(3);
+  });
+
+  it("returns 0 for empty array", () => {
+    const stats = computePaperStats([], NOW);
+    expect(stats.total).toBe(0);
+    expect(stats.thisWeek).toBe(0);
+    expect(stats.arxivCount).toBe(0);
+    expect(stats.venueCount).toBe(0);
+  });
+
+  it("counts papers published within last 7 days", () => {
+    const papers = [
+      makePaper({ id: "1", published_date: "2026-05-14" }),
+      makePaper({ id: "2", published_date: "2026-05-10" }),
+      makePaper({ id: "3", published_date: "2026-05-01" }),
+      makePaper({ id: "4", published_date: "2026-04-01" }),
+    ];
+    expect(computePaperStats(papers, NOW).thisWeek).toBe(2);
+  });
+
+  it("excludes papers with null published_date from thisWeek", () => {
+    const papers = [
+      makePaper({ id: "1", published_date: null }),
+      makePaper({ id: "2", published_date: "2026-05-14" }),
+    ];
+    expect(computePaperStats(papers, NOW).thisWeek).toBe(1);
+  });
+
+  it("counts arxiv source papers", () => {
+    const papers = [
+      makePaper({ id: "1", source: "arxiv" }),
+      makePaper({ id: "2", source: "arxiv" }),
+      makePaper({ id: "3", source: "semantic-scholar" }),
+      makePaper({ id: "4", source: null }),
+    ];
+    expect(computePaperStats(papers, NOW).arxivCount).toBe(2);
+  });
+
+  it("counts semantic-scholar source papers", () => {
+    const papers = [
+      makePaper({ id: "1", source: "arxiv" }),
+      makePaper({ id: "2", source: "semantic-scholar" }),
+      makePaper({ id: "3", source: "semantic-scholar" }),
+    ];
+    expect(computePaperStats(papers, NOW).venueCount).toBe(2);
+  });
+
+  it("handles papers with unknown source", () => {
+    const papers = [makePaper({ id: "1", source: "other" })];
+    const stats = computePaperStats(papers, NOW);
+    expect(stats.arxivCount).toBe(0);
+    expect(stats.venueCount).toBe(0);
+    expect(stats.total).toBe(1);
+  });
+
+  it("boundary: paper exactly 7 days ago is included in thisWeek", () => {
+    const weekAgo = new Date(NOW - 7 * 86_400_000).toISOString().slice(0, 10);
+    const papers = [makePaper({ id: "1", published_date: weekAgo })];
+    expect(computePaperStats(papers, NOW).thisWeek).toBe(1);
+  });
+
+  it("boundary: paper 8 days ago is excluded from thisWeek", () => {
+    const eightDaysAgo = new Date(NOW - 8 * 86_400_000).toISOString().slice(0, 10);
+    const papers = [makePaper({ id: "1", published_date: eightDaysAgo })];
+    expect(computePaperStats(papers, NOW).thisWeek).toBe(0);
   });
 });

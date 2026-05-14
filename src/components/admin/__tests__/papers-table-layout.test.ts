@@ -92,13 +92,13 @@ describe("title extraction — titles outside card containers", () => {
     expect(h1Pos).toBeLessThan(cardPos);
   });
 
-  it("PapersClient has <h1> before the card container", () => {
-    const content = readFile("papers/PapersClient.tsx");
-    const h1Pos = content.indexOf("<h1");
-    const cardPos = content.indexOf('className="rounded-lg border border-line bg-surface');
-    expect(h1Pos).toBeGreaterThan(-1);
-    expect(cardPos).toBeGreaterThan(-1);
-    expect(h1Pos).toBeLessThan(cardPos);
+  it("Papers page.tsx has section header before the PapersClient", () => {
+    const content = readFile("papers/page.tsx");
+    const headerPos = content.indexOf('<header className="mb-6"');
+    const clientPos = content.indexOf("<PapersClient");
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(clientPos).toBeGreaterThan(-1);
+    expect(headerPos).toBeLessThan(clientPos);
   });
 
   it("conferences overview title is outside the stats card", () => {
