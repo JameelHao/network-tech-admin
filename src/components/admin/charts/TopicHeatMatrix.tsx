@@ -1,9 +1,10 @@
 "use client";
 
 import type { TopicMatrixRow } from "@/lib/admin/ecosystem-stats";
-import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
+import { TOPIC_CATEGORIES, type TopicCategory, getTopicLabel } from "@/lib/admin/topics";
+import { HEATMAP_SCALE, getHeatColor } from "@/lib/admin/chart-theme";
 import { useRouter } from "next/navigation";
-import { Fragment } from "react";
+import { Fragment, useCallback } from "react";
 
 type Props = {
   data: TopicMatrixRow[];
@@ -29,20 +30,18 @@ const DIM_ROUTES: Record<Dim, string> = {
   vendors: "/admin/vendors",
 };
 
-function getCellColor(count: number, max: number): string {
-  if (count === 0) return "bg-surface";
-  const ratio = count / max;
-  if (ratio <= 0.2) return "bg-indigo-100 dark:bg-indigo-900/30";
-  if (ratio <= 0.4) return "bg-indigo-200 dark:bg-indigo-800/40";
-  if (ratio <= 0.6) return "bg-indigo-300 dark:bg-indigo-700/50";
-  if (ratio <= 0.8) return "bg-indigo-400 dark:bg-indigo-600/60 text-white";
-  return "bg-indigo-500 dark:bg-indigo-500/70 text-white";
-}
-
 const CAT_ORDER: TopicCategory[] = ["network-systems", "measurement", "security", "emerging", "infrastructure"];
+
+const CELL_H = 28;
+const CELL_W = 56;
 
 export function TopicHeatMatrix({ data, lang }: Props) {
   const router = useRouter();
+
+  const handleClick = useCallback(
+    (dim: Dim, slug: string) => router.push(`${DIM_ROUTES[dim]}?topic=${slug}`),
+    [router],
+  );
 
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
@@ -56,50 +55,69 @@ export function TopicHeatMatrix({ data, lang }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12px] border-collapse min-w-[500px]">
-        <thead>
-          <tr className="border-b border-line">
-            <th className="px-2 py-2 text-left font-mono text-[10px] uppercase tracking-wider text-ink-500 sticky left-0 bg-surface z-10 min-w-[120px]">Topic</th>
-            {DIMENSIONS.map((d) => (
-              <th key={d} className="px-2 py-2 text-center font-mono text-[10px] uppercase tracking-wider text-ink-500 w-16">{DIM_LABELS[d][lang]}</th>
-            ))}
-            <th className="px-2 py-2 text-center font-mono text-[10px] uppercase tracking-wider text-ink-500 w-14">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {grouped.map((g) => (
-            <Fragment key={g.category}>
-              <tr>
-                <td colSpan={DIMENSIONS.length + 2} className="px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-400 bg-paper/40 border-b border-line">
-                  {g.label}
-                </td>
-              </tr>
-              {g.rows.map((row) => (
-                <tr key={row.slug} className="border-b border-line/50 hover:bg-paper/30 transition-colors">
-                  <td className="px-2 py-1.5 text-ink-700 truncate sticky left-0 bg-surface z-10" title={row.slug}>{row.slug}</td>
-                  {DIMENSIONS.map((d) => (
-                    <td
-                      key={d}
-                      className={`px-1 py-1 text-center cursor-pointer transition-all hover:scale-105 ${getCellColor(row[d], maxCount)}`}
-                      onClick={() => router.push(`${DIM_ROUTES[d]}?topic=${row.slug}`)}
-                      title={`${row[d]} ${DIM_LABELS[d][lang]}`}
-                    >
-                      <span className="tabular-nums text-[11px]">{row[d] || ""}</span>
-                    </td>
-                  ))}
-                  <td className="px-1 py-1.5 text-center tabular-nums text-ink-600 font-medium">{row.total}</td>
-                </tr>
-              ))}
-            </Fragment>
+      <div className="min-w-[500px]">
+        {/* Header */}
+        <div className="flex border-b border-line pb-1.5 mb-1">
+          <div className="w-[140px] shrink-0 font-mono text-[10px] uppercase tracking-wider text-ink-500 px-2">Topic</div>
+          {DIMENSIONS.map((d) => (
+            <div key={d} className="font-mono text-[10px] uppercase tracking-wider text-ink-500 text-center" style={{ width: CELL_W }}>
+              {DIM_LABELS[d][lang]}
+            </div>
           ))}
-        </tbody>
-      </table>
-      <div className="flex items-center justify-end gap-1.5 mt-3 px-2">
-        <span className="font-mono text-[9px] text-ink-400">Less</span>
-        {["bg-indigo-100 dark:bg-indigo-900/30", "bg-indigo-200 dark:bg-indigo-800/40", "bg-indigo-300 dark:bg-indigo-700/50", "bg-indigo-400 dark:bg-indigo-600/60", "bg-indigo-500 dark:bg-indigo-500/70"].map((cls, i) => (
-          <div key={i} className={`w-4 h-4 rounded-sm ${cls}`} />
+          <div className="w-12 font-mono text-[10px] uppercase tracking-wider text-ink-500 text-center">Total</div>
+        </div>
+
+        {/* Rows */}
+        {grouped.map((g) => (
+          <Fragment key={g.category}>
+            <div className="px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-ink-400 bg-paper/40 border-b border-line">
+              {g.label}
+            </div>
+            {g.rows.map((row) => (
+              <div key={row.slug} className="flex items-center hover:bg-paper/30 transition-colors border-b border-line/50">
+                <div className="w-[140px] shrink-0 px-2 py-1 text-[12px] text-ink-700 truncate" title={getTopicLabel(row.slug, lang)}>
+                  {getTopicLabel(row.slug, lang)}
+                </div>
+                {DIMENSIONS.map((d) => {
+                  const count = row[d];
+                  const ratio = count / maxCount;
+                  return (
+                    <div
+                      key={d}
+                      className="flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+                      style={{ width: CELL_W, height: CELL_H }}
+                      onClick={() => handleClick(d, row.slug)}
+                      title={`${count} ${DIM_LABELS[d][lang]}`}
+                    >
+                      {count > 0 && (
+                        <div
+                          className="rounded-sm flex items-center justify-center"
+                          style={{
+                            width: 12 + ratio * 28,
+                            height: 12 + ratio * 14,
+                            backgroundColor: getHeatColor(ratio),
+                          }}
+                        >
+                          <span className="text-[10px] tabular-nums text-white/90 font-medium">{count}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="w-12 text-center tabular-nums text-[12px] text-ink-600 font-medium">{row.total}</div>
+              </div>
+            ))}
+          </Fragment>
         ))}
-        <span className="font-mono text-[9px] text-ink-400">More</span>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-end gap-1 mt-3 px-2">
+        <span className="font-mono text-[9px] text-ink-400 mr-0.5">Less</span>
+        {HEATMAP_SCALE.map((color, i) => (
+          <div key={i} className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: color }} />
+        ))}
+        <span className="font-mono text-[9px] text-ink-400 ml-0.5">More</span>
       </div>
     </div>
   );

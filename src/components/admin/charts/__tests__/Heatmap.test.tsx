@@ -30,11 +30,11 @@ describe("Heatmap", () => {
     expect(screen.getByText("More")).toBeDefined();
   });
 
-  it("applies 5-level indigo color classes", () => {
+  it("applies 10-level heatmap colors via inline style", () => {
     const { container } = render(
       <Heatmap data={data} xLabels={xLabels} yLabels={yLabels} />,
     );
-    const cells = container.querySelectorAll("[class*='bg-indigo']");
+    const cells = container.querySelectorAll("[style*='background-color']");
     expect(cells.length).toBeGreaterThan(0);
   });
 

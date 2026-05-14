@@ -20,6 +20,17 @@ export const PIE_COLORS = [
   CHART_COLORS.pink.start,
 ];
 
+export const HEATMAP_SCALE = [
+  "#e0e7ff", "#c7d2fe", "#a5b4fc", "#818cf8", "#6366f1",
+  "#4f46e5", "#4338ca", "#3730a3", "#312e81", "#1e1b4b",
+];
+
+export function getHeatColor(ratio: number): string {
+  if (ratio <= 0) return HEATMAP_SCALE[0];
+  const idx = Math.min(Math.floor(ratio * HEATMAP_SCALE.length), HEATMAP_SCALE.length - 1);
+  return HEATMAP_SCALE[idx];
+}
+
 export const STAGE_GRADIENTS: Record<string, { start: string; end: string }> = {
   new: { start: "#3b82f6", end: "#60a5fa" },
   tracking: { start: "#f59e0b", end: "#fbbf24" },

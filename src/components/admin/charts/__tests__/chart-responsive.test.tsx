@@ -28,7 +28,7 @@ describe("Chart responsive", () => {
         <Heatmap data={data} xLabels={["2025-01"]} yLabels={["A"]} />,
       );
       const grid = container.querySelector(".grid");
-      expect(grid?.getAttribute("style")).toContain("80px");
+      expect(grid?.getAttribute("style")).toContain("90px");
     });
   });
 

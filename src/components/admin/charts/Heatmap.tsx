@@ -1,32 +1,17 @@
 "use client";
 
 import type { HeatmapPoint } from "@/lib/admin/insights";
+import { HEATMAP_SCALE, getHeatColor } from "@/lib/admin/chart-theme";
+import { getTopicLabel } from "@/lib/admin/topics";
 
 type Props = {
   data: HeatmapPoint[];
   xLabels: string[];
   yLabels: string[];
+  lang?: "en" | "zh";
 };
 
-function getHeatColor(count: number, max: number): string {
-  if (count === 0) return "bg-surface";
-  const ratio = count / max;
-  if (ratio <= 0.2) return "bg-indigo-100 dark:bg-indigo-900/30";
-  if (ratio <= 0.4) return "bg-indigo-200 dark:bg-indigo-800/40";
-  if (ratio <= 0.6) return "bg-indigo-300 dark:bg-indigo-700/50";
-  if (ratio <= 0.8) return "bg-indigo-400 dark:bg-indigo-600/60 text-white";
-  return "bg-indigo-500 dark:bg-indigo-500/70 text-white";
-}
-
-const LEGEND_STEPS = [
-  "bg-indigo-100 dark:bg-indigo-900/30",
-  "bg-indigo-200 dark:bg-indigo-800/40",
-  "bg-indigo-300 dark:bg-indigo-700/50",
-  "bg-indigo-400 dark:bg-indigo-600/60",
-  "bg-indigo-500 dark:bg-indigo-500/70",
-];
-
-export function Heatmap({ data, xLabels, yLabels }: Props) {
+export function Heatmap({ data, xLabels, yLabels, lang }: Props) {
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
   const lookup = new Map<string, number>();
@@ -41,7 +26,7 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
       <div className="min-w-[320px]">
         <div
           className="grid gap-px"
-          style={{ gridTemplateColumns: `80px repeat(${xLabels.length}, 1fr)` }}
+          style={{ gridTemplateColumns: `90px repeat(${xLabels.length}, 1fr)` }}
         >
           <div />
           {xLabels.map((x) => (
@@ -57,19 +42,21 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
             <div key={y} className="contents">
               <div
                 className="text-right pr-2 font-mono text-[10px] text-ink-500 truncate leading-7"
-                title={y}
+                title={lang ? getTopicLabel(y, lang) : y}
               >
-                {y}
+                {lang ? getTopicLabel(y, lang) : y}
               </div>
               {xLabels.map((x) => {
                 const count = lookup.get(`${y}|${x}`) ?? 0;
+                const ratio = count / maxCount;
                 return (
                   <div
                     key={`${y}|${x}`}
-                    className={`h-7 rounded-sm ${getHeatColor(count, maxCount)} transition-all duration-150 hover:scale-110 hover:shadow-md hover:z-10 relative group cursor-default`}
+                    className="h-7 rounded-sm transition-all duration-150 hover:scale-110 hover:shadow-md hover:z-10 relative group cursor-default"
+                    style={{ backgroundColor: count > 0 ? getHeatColor(ratio) : undefined }}
                   >
                     {count > 0 && (
-                      <span className="absolute inset-0 flex items-center justify-center text-[9px] tabular-nums opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="absolute inset-0 flex items-center justify-center text-[9px] tabular-nums text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">
                         {count}
                       </span>
                     )}
@@ -81,12 +68,12 @@ export function Heatmap({ data, xLabels, yLabels }: Props) {
         </div>
 
         {/* Color scale legend */}
-        <div className="flex items-center justify-end gap-1.5 mt-3 px-2">
-          <span className="font-mono text-[9px] text-ink-400">Less</span>
-          {LEGEND_STEPS.map((cls, i) => (
-            <div key={i} className={`w-4 h-4 rounded-sm ${cls}`} />
+        <div className="flex items-center justify-end gap-1 mt-3 px-2">
+          <span className="font-mono text-[9px] text-ink-400 mr-0.5">Less</span>
+          {HEATMAP_SCALE.map((color, i) => (
+            <div key={i} className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: color }} />
           ))}
-          <span className="font-mono text-[9px] text-ink-400">More</span>
+          <span className="font-mono text-[9px] text-ink-400 ml-0.5">More</span>
         </div>
       </div>
     </div>

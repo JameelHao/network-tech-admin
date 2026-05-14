@@ -152,6 +152,7 @@ export default async function InsightsPage() {
               data={paperHeatmap}
               xLabels={[...new Set(paperHeatmap.map((p) => p.month))].sort()}
               yLabels={[...new Set(paperHeatmap.map((p) => p.topic))]}
+              lang={lang}
             />
           </ChartCard>
         )}
