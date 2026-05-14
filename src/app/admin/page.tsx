@@ -95,139 +95,133 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.upcomingConferences}</p>
+            <Link href="/admin/conferences" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+          </div>
+          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+            {upcoming.length === 0 && (
+              <EmptyState title={t.dashboard.noUpcoming} description={t.empty.conferencesDesc} compact />
+            )}
+            {upcoming.slice(0, 5).map((c) => (
+              <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-ink-800 truncate">{c.name}</p>
+                  <p className="text-[12px] text-ink-400 mt-0.5">{c.location} · {c.start_date}</p>
+                </div>
+                <div className="flex gap-1.5">
+                  {c.topics.slice(0, 2).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.latestPapers} <span className="text-ink-400">({t.time.recentDays})</span></p>
+            <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+          </div>
+          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+            {latestPapers.length === 0 && (
+              <EmptyState title={t.papers.noPapers} description={t.empty.papersDesc} compact />
+            )}
+            {latestPapers.map((p) => (
+              <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                <p className="text-[13px] font-medium text-ink-800 truncate">{p.title}</p>
+                <p className="text-[12px] text-ink-400 mt-0.5 truncate">
+                  {p.authors.slice(0, 3).join(", ")}{p.authors.length > 3 ? ` +${p.authors.length - 3}` : ""}
+                  {p.venue && <> · <span className="text-navy-500">{p.venue}</span></>}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.news.latestNews} <span className="text-ink-400">({t.time.recentDays})</span></p>
+            <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+          </div>
+          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+            {(!newsItems || newsItems.length === 0) && (
+              <EmptyState title={t.news.noNews} description={t.empty.newsDesc} compact />
+            )}
+            {(newsItems ?? []).map((item) => (
+              <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                <p className="text-[13px] font-medium text-ink-800 truncate">{item.title}</p>
+                <p className="text-[11px] text-ink-400 mt-0.5">{item.source}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {latestUpdatedProducts.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.upcomingConferences}</p>
-              <Link href="/admin/conferences" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestProductUpdates}</p>
+              <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {upcoming.length === 0 && (
-                <EmptyState title={t.dashboard.noUpcoming} description={t.empty.conferencesDesc} compact />
-              )}
-              {upcoming.slice(0, 5).map((c) => (
-                <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+              {latestUpdatedProducts.map((p) => (
+                <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-ink-800 truncate">{c.name}</p>
-                    <p className="text-[12px] text-ink-400 mt-0.5">{c.location} · {c.start_date}</p>
-                  </div>
-                  <div className="flex gap-1.5">
-                    {c.topics.slice(0, 2).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.latestPapers} <span className="text-ink-400">({t.time.recentDays})</span></p>
-              <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-            </div>
-            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {latestPapers.length === 0 && (
-                <EmptyState title={t.papers.noPapers} description={t.empty.papersDesc} compact />
-              )}
-              {latestPapers.map((p) => (
-                <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                  <p className="text-[13px] font-medium text-ink-800 truncate">{p.title}</p>
-                  <p className="text-[12px] text-ink-400 mt-0.5 truncate">
-                    {p.authors.slice(0, 3).join(", ")}{p.authors.length > 3 ? ` +${p.authors.length - 3}` : ""}
-                    {p.venue && <> · <span className="text-navy-500">{p.venue}</span></>}
-                  </p>
-                </a>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.news.latestNews} <span className="text-ink-400">({t.time.recentDays})</span></p>
-              <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-            </div>
-            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {(!newsItems || newsItems.length === 0) && (
-                <EmptyState title={t.news.noNews} description={t.empty.newsDesc} compact />
-              )}
-              {(newsItems ?? []).map((item) => (
-                <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                  <p className="text-[13px] font-medium text-ink-800 truncate">{item.title}</p>
-                  <p className="text-[11px] text-ink-400 mt-0.5">{item.source}</p>
-                </a>
-              ))}
-            </div>
-          </section>
-
-          {latestUpdatedProducts.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-2">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestProductUpdates}</p>
-                <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-              </div>
-              <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-                {latestUpdatedProducts.map((p) => (
-                  <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-ink-800 truncate">{p.name}</p>
-                      <p className="text-[12px] text-ink-400 mt-0.5 truncate">
-                        {p.vendor ?? "—"} · {p.release_date}
-                      </p>
-                    </div>
-                    {p.latest_version && (
-                      <span className="font-mono text-[11px] text-ink-400">{p.latest_version}</span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          {keyVendors.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between mb-2">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.keyVendors}</p>
-                <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-              </div>
-              <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-                {keyVendors.map((v) => (
-                  <Link key={v.id} href={`/admin/vendors/${v.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-ink-800 truncate">{v.name}</p>
-                      {v.key_products.length > 0 && (
-                        <p className="text-[12px] text-ink-400 mt-0.5 truncate">{v.key_products.slice(0, 3).join(", ")}</p>
-                      )}
-                    </div>
-                    <StatusPill label={t.vendor[TYPE_I18N_MAP[v.type] as keyof typeof t.vendor] as string} lang={lang} />
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestLeads}</p>
-              <Link href="/admin/leads" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-            </div>
-            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {leads.slice(0, 5).map((l) => (
-                <Link key={l.id} href={`/admin/leads/${l.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-ink-800 truncate">{l.title}</p>
-                    <p className="text-[12px] text-ink-400 mt-0.5">
-                      {t.leads.source}: {t.sourceType[l.source_type]} · {l.source_label}
+                    <p className="text-[13px] font-medium text-ink-800 truncate">{p.name}</p>
+                    <p className="text-[12px] text-ink-400 mt-0.5 truncate">
+                      {p.vendor ?? "—"} · {p.release_date}
                     </p>
                   </div>
-                  <StatusPill label={l.stage} lang={lang} />
+                  {p.latest_version && (
+                    <span className="font-mono text-[11px] text-ink-400">{p.latest_version}</span>
+                  )}
                 </Link>
               ))}
             </div>
           </section>
-        </div>
+        )}
+
+        {keyVendors.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.keyVendors}</p>
+              <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+            </div>
+            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+              {keyVendors.map((v) => (
+                <Link key={v.id} href={`/admin/vendors/${v.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium text-ink-800 truncate">{v.name}</p>
+                    {v.key_products.length > 0 && (
+                      <p className="text-[12px] text-ink-400 mt-0.5 truncate">{v.key_products.slice(0, 3).join(", ")}</p>
+                    )}
+                  </div>
+                  <StatusPill label={t.vendor[TYPE_I18N_MAP[v.type] as keyof typeof t.vendor] as string} lang={lang} />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestLeads}</p>
+            <Link href="/admin/leads" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
+          </div>
+          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
+            {leads.slice(0, 5).map((l) => (
+              <Link key={l.id} href={`/admin/leads/${l.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-ink-800 truncate">{l.title}</p>
+                  <p className="text-[12px] text-ink-400 mt-0.5">
+                    {t.leads.source}: {t.sourceType[l.source_type]} · {l.source_label}
+                  </p>
+                </div>
+                <StatusPill label={l.stage} lang={lang} />
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <Watchlist labels={{
           watchlist: t.favorite.watchlist,
