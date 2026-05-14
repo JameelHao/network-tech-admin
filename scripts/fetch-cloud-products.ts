@@ -125,7 +125,7 @@ export function extractTag(content: string, tag: string): string {
 
 export function cleanHTML(text: string): string {
   return text
-    .replace(/<!\[CDATA\[(.*?)\]\]>/gs, "$1")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/<[^>]+>/g, "")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -138,7 +138,7 @@ export function cleanHTML(text: string): string {
 
 export function parseItems(xml: string): FeedItem[] {
   const items: FeedItem[] = [];
-  const itemRegex = /<(?:item|entry)[\s>](.*?)<\/(?:item|entry)>/gs;
+  const itemRegex = /<(?:item|entry)[\s>]([\s\S]*?)<\/(?:item|entry)>/g;
 
   let match: RegExpExecArray | null;
   while ((match = itemRegex.exec(xml)) !== null) {
