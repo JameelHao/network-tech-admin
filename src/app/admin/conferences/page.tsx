@@ -241,7 +241,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                               {c.abbreviation ?? c.name}
                             </div>
                             {c.abbreviation && (
-                              <div className="font-mono text-[10.5px] text-ink-400 truncate max-w-[220px]">{c.name}</div>
+                              <div className="font-mono text-[10.5px] text-ink-400 truncate max-w-full sm:max-w-[220px]">{c.name}</div>
                             )}
                           </Link>
                         </Td>

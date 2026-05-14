@@ -27,7 +27,7 @@ export function VendorTopicGrid({ data, lang }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[320px]">
+      <div className="min-w-[280px]">
         <div
           className="grid gap-px"
           style={{ gridTemplateColumns: `120px repeat(${allTopics.length}, 1fr)` }}

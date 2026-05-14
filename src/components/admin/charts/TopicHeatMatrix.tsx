@@ -54,7 +54,7 @@ export function TopicHeatMatrix({ data, lang }: Props) {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[320px]">
+      <div className="min-w-[280px]">
         <div
           className="grid gap-px"
           style={{ gridTemplateColumns: `140px repeat(${colCount}, 1fr)` }}

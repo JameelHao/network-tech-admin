@@ -4,12 +4,12 @@ import { Heatmap } from "../Heatmap";
 
 describe("Chart responsive", () => {
   describe("Heatmap", () => {
-    it("uses min-w-[320px] for mobile compatibility", () => {
+    it("uses min-w-[280px] for mobile compatibility", () => {
       const data = [{ topic: "A", month: "2025-01", count: 5 }];
       const { container } = render(
         <Heatmap data={data} xLabels={["2025-01"]} yLabels={["A"]} />,
       );
-      const inner = container.querySelector(".min-w-\\[320px\\]");
+      const inner = container.querySelector(".min-w-\\[280px\\]");
       expect(inner).not.toBeNull();
     });
 

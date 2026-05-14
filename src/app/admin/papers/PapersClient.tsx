@@ -240,7 +240,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               value={dateFrom}
               onChange={(e) => fp.set("dateFrom", e.target.value)}
               aria-label={labels.dateFrom}
-              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
             />
             <span className="text-ink-400 text-[10px]">–</span>
             <input
@@ -248,7 +248,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
               value={dateTo}
               onChange={(e) => fp.set("dateTo", e.target.value)}
               aria-label={labels.dateTo}
-              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-[130px]"
+              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
             />
           </div>
         </MobileFilterPanel>
@@ -322,7 +322,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang }: { papers
                               href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`text-[13px] font-normal line-clamp-2 max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                              className={`text-[13px] font-normal line-clamp-2 max-w-full sm:max-w-[300px] block hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
                             >
                               {p.title}
                             </a>
