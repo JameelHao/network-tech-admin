@@ -100,10 +100,10 @@ export type PaperStats = {
   venueCount: number;
 };
 
-export function computePaperStats(papers: Paper[], now = Date.now()): PaperStats {
+export function computePaperStats(papers: Paper[], now = Date.now(), totalOverride?: number): PaperStats {
   const weekAgo = new Date(now - 7 * 86_400_000).toISOString().slice(0, 10);
   return {
-    total: papers.length,
+    total: totalOverride ?? papers.length,
     thisWeek: papers.filter((p) => p.published_date && p.published_date >= weekAgo).length,
     arxivCount: papers.filter((p) => p.source === "arxiv").length,
     venueCount: papers.filter((p) => p.source === "semantic-scholar").length,

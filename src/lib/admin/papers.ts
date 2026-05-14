@@ -20,20 +20,26 @@ export async function listPapers(params?: PaginationParams): Promise<PaginatedRe
   return buildResult((data as Paper[]) ?? [], count ?? 0, { page, pageSize });
 }
 
-export async function fetchAndSyncPapers(): Promise<Paper[]> {
+export async function getPaperCount(): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("papers")
+    .select("*", { count: "exact", head: true });
+  return count ?? 0;
+}
+
+export async function fetchAndSyncPapers(): Promise<{ papers: Paper[]; total: number }> {
   const supabase = await createClient();
 
-  // If DB has papers, return them directly
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from("papers")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(300);
 
   if (error) throw error;
-  if (data && data.length > 0) return data as Paper[];
+  if (data && data.length > 0) return { papers: data as Paper[], total: count ?? data.length };
 
-  // DB empty — fetch from arXiv and populate
   const { papers: fetched } = await fetchAllNetworkPapers(2026);
 
   if (fetched.length > 0) {
@@ -51,13 +57,13 @@ export async function fetchAndSyncPapers(): Promise<Paper[]> {
     }
   }
 
-  const { data: all } = await supabase
+  const { data: all, count: allCount } = await supabase
     .from("papers")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(300);
 
-  return (all as Paper[]) ?? [];
+  return { papers: (all as Paper[]) ?? [], total: allCount ?? (all?.length ?? 0) };
 }
 
 export async function listAllPapersLight(): Promise<Paper[]> {
@@ -65,8 +71,7 @@ export async function listAllPapersLight(): Promise<Paper[]> {
   const { data, error } = await supabase
     .from("papers")
     .select("id, title, topics, published_date, authors, venue, url, abstract, notes, created_at")
-    .order("created_at", { ascending: false })
-    .limit(500);
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   return (data as Paper[]) ?? [];
