@@ -15,7 +15,7 @@ export function ExportButton({ entity, format, filters = {}, label }: Props) {
     <a
       href={href}
       download
-      className="rounded-md border border-line-strong px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-600 hover:bg-paper/60 transition-colors dark:border-line"
+      className="rounded-md border border-line px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-600 hover:bg-paper/60 transition-colors"
     >
       ↓ {label}
     </a>
