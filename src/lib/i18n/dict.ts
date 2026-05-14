@@ -428,6 +428,8 @@ const en = {
     techTrend: "Tech Trend (Papers by Quarter)",
     openSourceBubble: "Open Source Ecosystem",
     opensource: "Open Source",
+    description: "Cross-analysis of products, vendors, open source projects and technology trends.",
+    overview: "Overview",
   },
   insights: {
     title: "Insights",
@@ -1051,6 +1053,8 @@ const zh: typeof en = {
     techTrend: "技术趋势（按季度论文量）",
     openSourceBubble: "开源生态图",
     opensource: "开源项目",
+    description: "产品、厂商、开源项目的交叉关联分析与技术趋势全景。",
+    overview: "概览",
   },
   insights: {
     title: "数据洞察",

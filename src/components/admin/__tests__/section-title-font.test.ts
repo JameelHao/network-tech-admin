@@ -38,6 +38,28 @@ describe("section titles use font-sans instead of font-display", () => {
     });
   });
 
+  describe("Ecosystem section titles", () => {
+    it("uses mono section titles", () => {
+      const content = read("ecosystem/page.tsx");
+      expect(content).toContain('font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500');
+    });
+
+    it("has mono header with tracking-[0.22em]", () => {
+      const content = read("ecosystem/page.tsx");
+      expect(content).toContain('font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500');
+    });
+
+    it("does not use font-sans text-[13px] font-semibold for section titles", () => {
+      const content = read("ecosystem/page.tsx");
+      expect(content).not.toContain("font-sans text-[13px] font-semibold tracking-tight");
+    });
+
+    it("does not use font-sans text-[15px] font-semibold for page title", () => {
+      const content = read("ecosystem/page.tsx");
+      expect(content).not.toContain("font-sans text-[15px] font-semibold tracking-tight");
+    });
+  });
+
   describe("Type 2: List page card titles", () => {
     it.each(listPages)("%s uses font-sans text-[15px] font-semibold", (file) => {
       const content = read(file);
