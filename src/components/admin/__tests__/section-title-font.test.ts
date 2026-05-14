@@ -11,7 +11,6 @@ function read(file: string) {
 describe("section titles use font-sans instead of font-display", () => {
   const dashboardFile = "page.tsx";
   const listPages = [
-    "talents/page.tsx",
     "news/NewsContent.tsx",
     "jobs/JobsContent.tsx",
   ];

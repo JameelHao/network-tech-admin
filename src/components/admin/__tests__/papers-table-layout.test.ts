@@ -75,18 +75,7 @@ describe("PapersClient table layout", () => {
 });
 
 describe("title extraction — titles outside card containers", () => {
-  const listPages = [
-    "talents/page.tsx",
-  ];
-
-  it.each(listPages)("%s has <h1> before the card container", (file) => {
-    const content = readFile(file);
-    const h1Pos = content.indexOf("<h1");
-    const cardPos = content.indexOf('className="rounded-lg border border-line bg-surface');
-    expect(h1Pos).toBeGreaterThan(-1);
-    expect(cardPos).toBeGreaterThan(-1);
-    expect(h1Pos).toBeLessThan(cardPos);
-  });
+  const listPages: string[] = [];
 
   it("Papers page.tsx has section header before the PapersClient", () => {
     const content = readFile("papers/page.tsx");
@@ -128,6 +117,15 @@ describe("title extraction — titles outside card containers", () => {
     const content = readFile("leads/page.tsx");
     const headerPos = content.indexOf('<header className="mb-6"');
     const tablePos = content.indexOf('data-fav-filter="leads"');
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(tablePos).toBeGreaterThan(-1);
+    expect(headerPos).toBeLessThan(tablePos);
+  });
+
+  it("Talents page.tsx has section header before the table section", () => {
+    const content = readFile("talents/page.tsx");
+    const headerPos = content.indexOf('<header className="mb-6"');
+    const tablePos = content.indexOf('data-fav-filter="talents"');
     expect(headerPos).toBeGreaterThan(-1);
     expect(tablePos).toBeGreaterThan(-1);
     expect(headerPos).toBeLessThan(tablePos);
