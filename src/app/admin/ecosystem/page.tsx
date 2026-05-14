@@ -127,10 +127,19 @@ export default async function EcosystemPage() {
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.ecosystem }]} t={t} lang={lang} />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-6 sm:space-y-8">
-        <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.ecosystem.title}</h1>
+      <main className="px-6 xl:px-10 py-10 space-y-6 sm:space-y-8">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.ecosystem.title}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.ecosystem.description}
+          </p>
+        </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.overview}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
           <StatCard label={t.ecosystem.conferences} value={confResult.total} sub={t.dashboard.recorded} />
           <StatCard label={t.ecosystem.papers} value={paperResult.total} sub={t.dashboard.recorded} />
           <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
@@ -139,11 +148,12 @@ export default async function EcosystemPage() {
           <StatCard label={t.ecosystem.talents} value={talentCount.count ?? 0} sub={t.dashboard.recorded} />
           <StatCard label={t.ecosystem.leads} value={leadResult.total} sub={t.dashboard.tracking} />
           <StatCard label={t.ecosystem.news} value={newsCount.count ?? 0} sub={t.dashboard.recorded} />
+          </div>
         </div>
 
         {/* Topic Heat Matrix */}
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.topicHeatMatrix}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.topicHeatMatrix}</p>
           <div className="rounded-lg border border-line bg-surface p-4">
             {topicMatrix.length > 0 ? (
               <TopicHeatMatrix data={topicMatrix} lang={lang} />
@@ -155,7 +165,7 @@ export default async function EcosystemPage() {
 
         {/* Vendor-Topic Layout */}
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.vendorTopicLayout}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.vendorTopicLayout}</p>
           <div className="rounded-lg border border-line bg-surface p-4">
             {vendorTopicMap.length > 0 ? (
               <VendorTopicGrid data={vendorTopicMap} lang={lang} />
@@ -167,7 +177,7 @@ export default async function EcosystemPage() {
 
         {/* Tech Trend Chart */}
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.techTrend}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.techTrend}</p>
           <div className="rounded-lg border border-line bg-surface p-4">
             {trendData.length > 0 ? (
               <TechTrendChart data={trendData} topicKeys={trendTopicKeys} lang={lang} />
@@ -179,7 +189,7 @@ export default async function EcosystemPage() {
 
         {/* Open Source Bubble Chart */}
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.openSourceBubble}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.openSourceBubble}</p>
           <div className="rounded-lg border border-line bg-surface p-4">
             {bubbleData.length > 0 ? (
               <OpenSourceBubble data={bubbleData} lang={lang} />
@@ -190,7 +200,7 @@ export default async function EcosystemPage() {
         </section>
 
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.timeline}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.timeline}</p>
           <div className="rounded-lg border border-line bg-surface divide-y divide-line">
             {timeline.length === 0 && (
               <EmptyState title={t.ecosystem.noEvents} description={t.ecosystem.noEventsDesc} compact />
@@ -212,7 +222,7 @@ export default async function EcosystemPage() {
         <div className="grid lg:grid-cols-2 gap-6">
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.ecosystem.recentUpdates} — {t.ecosystem.products}</h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.ecosystem.recentUpdates} — {t.ecosystem.products}</p>
               <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -235,7 +245,7 @@ export default async function EcosystemPage() {
 
           <section>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800">{t.ecosystem.recentUpdates} — {t.ecosystem.vendors}</h2>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.ecosystem.recentUpdates} — {t.ecosystem.vendors}</p>
               <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
             </div>
             <div className="rounded-lg border border-line bg-surface divide-y divide-line">
@@ -256,7 +266,7 @@ export default async function EcosystemPage() {
         </div>
 
         <section>
-          <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.topicCoverage}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.topicCoverage}</p>
           <div className="rounded-lg border border-line bg-surface overflow-x-auto">
             <table className="w-full text-[13px]">
               <thead>
@@ -288,7 +298,7 @@ export default async function EcosystemPage() {
 
         {vendorMatrix.length > 0 && (
           <section>
-            <h2 className="font-sans text-[13px] font-semibold tracking-tight text-ink-800 mb-2">{t.ecosystem.vendorProductMatrix}</h2>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.ecosystem.vendorProductMatrix}</p>
             <div className="space-y-3">
               {vendorMatrix.map((g) => (
                 <div key={g.vendor.id} className="rounded-lg border border-line bg-surface">

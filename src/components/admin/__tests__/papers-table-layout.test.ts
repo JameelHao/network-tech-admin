@@ -158,6 +158,15 @@ describe("title extraction — titles outside card containers", () => {
     expect(headerPos).toBeLessThan(sectionPos);
   });
 
+  it("Ecosystem page.tsx has section header before the stat cards", () => {
+    const content = readFile("ecosystem/page.tsx");
+    const headerPos = content.indexOf('<header className="mb-6"');
+    const statGridPos = content.indexOf("grid grid-cols-2 lg:grid-cols-4 gap-px");
+    expect(headerPos).toBeGreaterThan(-1);
+    expect(statGridPos).toBeGreaterThan(-1);
+    expect(headerPos).toBeLessThan(statGridPos);
+  });
+
   it("Insights page.tsx has section header before the first SectionCard", () => {
     const content = readFile("insights/page.tsx");
     const headerPos = content.indexOf('<header className="mb-6"');
