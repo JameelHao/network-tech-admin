@@ -14,6 +14,7 @@ import { FilterInput, FilterSelect } from "@/components/admin/FilterControls";
 import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
+import { computeTalentStats } from "@/lib/admin/talents-utils";
 import { LEAD_STAGES } from "@/lib/admin/types";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -28,6 +29,8 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
   const topicFilter = typeof sp.topic === "string" ? sp.topic : undefined;
   const result = await listTalentLeads(params, { stage: filterStage, company: companyFilter, topic: topicFilter });
   const talents = result.data;
+
+  const { newCount, trackingCount, companyCount } = computeTalentStats(talents);
 
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
@@ -52,50 +55,49 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard, href: "/admin" }, { label: t.nav.talents }]} t={t} lang={lang} />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-sans text-[15px] font-semibold tracking-tight text-ink-800">{t.nav.talents}</h1>
-          <div className="flex items-center gap-2">
-            <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
-            <div className="hidden lg:flex items-center gap-2">
-              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
-              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+      <main className="px-6 xl:px-10 py-10">
+        <header className="mb-6">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
+            {t.nav.talents}
+          </p>
+          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
+            {t.talent.description}
+          </p>
+        </header>
+
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
+          {t.talent.overview}
+        </p>
+        <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
+            <Stat label={t.talent.totalTalents} value={result.total} sub={t.talent.totalSub} />
+            <Stat label={t.talent.newTalents} value={newCount} sub={t.talent.newSub} />
+            <Stat label={t.talent.trackingTalents} value={trackingCount} sub={t.talent.trackingSub} />
+            <Stat label={t.talent.companyCount} value={companyCount} sub={t.talent.companySub} />
+          </div>
+        </section>
+
+        <section data-fav-filter="talents" className="rounded-lg border border-line bg-surface overflow-hidden">
+          <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
+            <div className="hidden lg:flex flex-wrap items-center gap-1">
+              {[undefined, ...LEAD_STAGES].map((s) => {
+                const isActive = filterStage === s;
+                const p = new URLSearchParams(filterParams);
+                p.delete("stage"); p.delete("page");
+                if (s) p.set("stage", s);
+                const href = p.toString() ? `/admin/talents?${p.toString()}` : "/admin/talents";
+                return (
+                  <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>
+                    {s ?? t.common.all}
+                  </Link>
+                );
+              })}
+              <span className="text-ink-300 text-[10px]">|</span>
+              <FilterInput paramKey="company" value={companyFilter ?? ""} placeholder={t.filter.companyPlaceholder} searchParams={filterParams} />
+              {allTopics.length > 1 && (
+                <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
+              )}
             </div>
-            <OverflowMenu>
-              <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
-              <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
-            </OverflowMenu>
-            <Link
-              href="/admin/talents/new"
-              className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
-            >
-              + {t.common.new}
-            </Link>
-          </div>
-        </div>
-
-        <div data-fav-filter="talents" className="rounded-lg border border-line bg-surface">
-
-          <div className="hidden lg:flex flex-wrap items-center gap-1 px-5 py-2 border-b border-line bg-paper/30">
-            {[undefined, ...LEAD_STAGES].map((s) => {
-              const isActive = filterStage === s;
-              const p = new URLSearchParams(filterParams);
-              p.delete("stage"); p.delete("page");
-              if (s) p.set("stage", s);
-              const href = p.toString() ? `/admin/talents?${p.toString()}` : "/admin/talents";
-              return (
-                <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>
-                  {s ?? t.common.all}
-                </Link>
-              );
-            })}
-            <span className="text-ink-300 text-[10px]">|</span>
-            <FilterInput paramKey="company" value={companyFilter ?? ""} placeholder={t.filter.companyPlaceholder} searchParams={filterParams} />
-            {allTopics.length > 1 && (
-              <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
-            )}
-          </div>
-          <div className="lg:hidden px-5 py-2 border-b border-line bg-paper/30">
             <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
               <div className="flex flex-wrap gap-1">
                 {[undefined, ...LEAD_STAGES].map((s) => {
@@ -112,7 +114,25 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                 <FilterSelect paramKey="topic" label={t.filter.allTopics} value={topicFilter ?? ""} searchParams={filterParams} options={allTopics.map((tp) => ({ value: tp, label: tp }))} />
               )}
             </MobileFilterPanel>
-          </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <FavoriteFilter entity="talents" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+              <div className="hidden lg:flex items-center gap-2">
+                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              </div>
+              <OverflowMenu>
+                <ExportButton entity="talents" format="csv" filters={filterParams} label={t.common.exportCSV} />
+                <ExportButton entity="talents" format="json" filters={filterParams} label={t.common.exportJSON} />
+              </OverflowMenu>
+              <Link
+                href="/admin/talents/new"
+                className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
+              >
+                + {t.common.new}
+              </Link>
+            </div>
+          </header>
+
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 
           <div className="overflow-x-auto">
@@ -179,8 +199,20 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
             searchParams={filterParams}
             labels={{ rows: t.common.rows, page: t.common.page, of: t.common.of }}
           />
-        </div>
+        </section>
       </main>
     </>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
+  return (
+    <div className="bg-surface p-6">
+      <p className="tracked-label">{label}</p>
+      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
+        {value}
+      </p>
+      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
+    </div>
   );
 }
