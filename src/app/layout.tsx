@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { AppBootstrap } from "@/components/admin/AppBootstrap";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,12 +35,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
-        <script
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem("nt-theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})();if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js")` }}
-        />
       </head>
-      <body className={`min-h-full flex flex-col ${inter.variable} ${jetbrainsMono.variable}`}>{children}</body>
+      <body className={`min-h-full flex flex-col ${inter.variable} ${jetbrainsMono.variable}`}>
+        <AppBootstrap />
+        {children}
+      </body>
     </html>
   );
 }

@@ -57,7 +57,12 @@ async function listConferencesByProximity(
     p_page_num: page,
   });
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === "PGRST202") {
+      return listConferencesByProximityFallback(supabase, page, pageSize, filter);
+    }
+    throw error;
+  }
 
   const result = data as unknown as { data: Record<string, unknown>[]; total: number } | null;
   return buildResult(
@@ -65,6 +70,48 @@ async function listConferencesByProximity(
     result?.total ?? 0,
     { page, pageSize },
   );
+}
+
+async function listConferencesByProximityFallback(
+  supabase: SupabaseClient,
+  page: number,
+  pageSize: number,
+  filter?: { category?: string; status?: string; dateFrom?: string; dateTo?: string },
+): Promise<PaginatedResult<Conference>> {
+  let query = supabase
+    .from("conferences")
+    .select("*", { count: "exact" });
+
+  if (filter?.category && filter.category !== "all") {
+    query = query.eq("category", filter.category);
+  }
+  if (filter?.status) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (filter.status === "upcoming") query = query.gte("end_date", today);
+    else if (filter.status === "past") query = query.lt("end_date", today);
+  }
+  if (filter?.dateFrom) query = query.gte("start_date", filter.dateFrom);
+  if (filter?.dateTo) query = query.lte("start_date", filter.dateTo);
+
+  const { data, error, count } = await query;
+
+  if (error) throw error;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const sorted = ([...(data as Conference[] | null ?? [])]).sort((a, b) => {
+    const aEnd = a.end_date ?? a.start_date;
+    const bEnd = b.end_date ?? b.start_date;
+    const aGroup = a.start_date <= today && aEnd >= today ? 0 : a.start_date > today ? 1 : 2;
+    const bGroup = b.start_date <= today && bEnd >= today ? 0 : b.start_date > today ? 1 : 2;
+
+    if (aGroup !== bGroup) return aGroup - bGroup;
+    if (aGroup === 1) return a.start_date.localeCompare(b.start_date);
+    if (aGroup === 2) return bEnd.localeCompare(aEnd);
+    return a.start_date.localeCompare(b.start_date);
+  });
+
+  const from = (page - 1) * pageSize;
+  return buildResult(sorted.slice(from, from + pageSize), count ?? sorted.length, { page, pageSize });
 }
 
 export async function listConferencesByMonth(year: number, month: number): Promise<Conference[]> {
