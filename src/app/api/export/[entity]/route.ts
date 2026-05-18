@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
 import { listLeads } from "@/lib/admin/leads";
@@ -25,6 +26,12 @@ export async function GET(
   { params }: { params: Promise<{ entity: string }> },
 ) {
   const { entity } = await params;
+
+  if (entity === "talents") {
+    const unauth = await requireAdminAuth();
+    if (unauth) return unauth;
+  }
+
   const sp = request.nextUrl.searchParams;
   const format = sp.get("format") === "json" ? "json" : "csv";
 
