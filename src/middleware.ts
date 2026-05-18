@@ -32,9 +32,13 @@ export async function middleware(request: NextRequest) {
     },
   );
 
+  const expectedBypass =
+    process.env.ADMIN_DEV_PASSWORD ||
+    (process.env.NODE_ENV !== "production" ? "admin" : null);
+  const bypassCookie = request.cookies.get("dev-bypass")?.value;
   if (
-    process.env.NODE_ENV !== "production" &&
-    request.cookies.get("dev-bypass")?.value === "1" &&
+    expectedBypass &&
+    bypassCookie === expectedBypass &&
     pathname.startsWith("/admin")
   ) {
     return supabaseResponse;
