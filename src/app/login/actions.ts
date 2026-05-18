@@ -7,11 +7,13 @@ export async function login(_prev: unknown, formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // Dev bypass
-  if (email === "admin" && password === "admin") {
+  const adminPassword =
+    process.env.ADMIN_DEV_PASSWORD ||
+    (process.env.NODE_ENV !== "production" ? "admin" : null);
+  if (email === "admin" && adminPassword && password === adminPassword) {
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
-    cookieStore.set("dev-bypass", "1", { path: "/", httpOnly: true });
+    cookieStore.set("dev-bypass", adminPassword, { path: "/", httpOnly: true });
     redirect("/admin");
   }
 
