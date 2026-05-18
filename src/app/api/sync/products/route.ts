@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { fetchRSSItems } from "@/lib/admin/rss";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ async function checkGitHubRelease(owner: string, repo: string): Promise<{ versio
 }
 
 export async function POST() {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const supabase = await createClient();
   const { data: products, error: fetchError } = await supabase
     .from("products")

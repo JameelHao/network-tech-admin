@@ -32,8 +32,11 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // Dev bypass
-  if (request.cookies.get("dev-bypass")?.value === "1" && pathname.startsWith("/admin")) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    request.cookies.get("dev-bypass")?.value === "1" &&
+    pathname.startsWith("/admin")
+  ) {
     return supabaseResponse;
   }
 

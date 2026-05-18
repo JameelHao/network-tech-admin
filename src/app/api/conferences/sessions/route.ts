@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 
 export async function POST(request: Request) {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const body = await request.json();
   const { conference_id, sessions } = body as {
     conference_id: string;

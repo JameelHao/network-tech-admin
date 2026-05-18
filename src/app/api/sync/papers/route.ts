@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import {
   fetchSingleArxivCategory,
   fetchSingleS2Venue,
@@ -64,6 +65,9 @@ async function upsertPapers(fetched: ImportedPaper[]) {
 }
 
 export async function POST(request: Request) {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const { searchParams } = new URL(request.url);
   const source = searchParams.get("source");
   const category = searchParams.get("category");

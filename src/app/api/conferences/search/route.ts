@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { searchWeb, extractDates, extractLocation } from "@/lib/admin/search";
 
 export async function POST(request: Request) {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const { query } = await request.json();
 
   if (!query) {
