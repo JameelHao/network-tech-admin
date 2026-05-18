@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { searchWeb, extractDates, extractLocation } from "@/lib/admin/search";
 
 export async function POST() {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const supabase = await createClient();
 
   const { data: conferences, error } = await supabase

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { upsertCloudProducts, type CloudProductInput } from "@/lib/admin/products";
 import {
   FEEDS,
@@ -53,6 +54,9 @@ async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]
 }
 
 export async function POST() {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const results: ProviderResult[] = [];
   const allItems: CloudProductInput[] = [];
 

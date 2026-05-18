@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { fetchRSSItemsWithStats, getNewsFeeds, getJobsFeeds } from "@/lib/admin/rss";
 import type { FeedStat } from "@/lib/admin/rss";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
+  const unauth = await requireAdminAuth();
+  if (unauth) return unauth;
+
   const supabase = await createClient();
 
   const [newsResult, jobsResult] = await Promise.all([
