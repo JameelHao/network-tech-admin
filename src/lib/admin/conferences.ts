@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { buildResult, validateSort, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Conference, ConferenceSession } from "./types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const CONF_SORTABLE = ["name", "start_date", "tier", "category"] as const;
+export const CONF_SORTABLE = ["name", "start_date", "tier", "category", "proximity"] as const;
 
 export async function listConferences(
   params?: PaginationParams,
@@ -13,7 +14,11 @@ export async function listConferences(
   const pageSize = params?.pageSize ?? 50;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { column, ascending } = validateSort(params?.sort, params?.dir, CONF_SORTABLE, "start_date", "desc");
+  const { column, ascending } = validateSort(params?.sort, params?.dir, CONF_SORTABLE, "proximity", "asc");
+
+  if (column === "proximity") {
+    return listConferencesByProximity(supabase, page, pageSize, filter);
+  }
 
   let query = supabase
     .from("conferences")
@@ -35,6 +40,31 @@ export async function listConferences(
 
   if (error) throw error;
   return buildResult((data as Conference[]) ?? [], count ?? 0, { page, pageSize });
+}
+
+async function listConferencesByProximity(
+  supabase: SupabaseClient,
+  page: number,
+  pageSize: number,
+  filter?: { category?: string; status?: string; dateFrom?: string; dateTo?: string },
+): Promise<PaginatedResult<Conference>> {
+  const { data, error } = await supabase.rpc("get_conferences_by_proximity", {
+    p_cat: filter?.category && filter.category !== "all" ? filter.category : null,
+    p_status: filter?.status ?? null,
+    p_date_from: filter?.dateFrom ?? null,
+    p_date_to: filter?.dateTo ?? null,
+    p_page_size: pageSize,
+    p_page_num: page,
+  });
+
+  if (error) throw error;
+
+  const result = data as unknown as { data: Record<string, unknown>[]; total: number } | null;
+  return buildResult(
+    (result?.data as Conference[]) ?? [],
+    result?.total ?? 0,
+    { page, pageSize },
+  );
 }
 
 export async function listConferencesByMonth(year: number, month: number): Promise<Conference[]> {

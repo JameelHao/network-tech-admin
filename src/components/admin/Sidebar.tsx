@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo, useCallback } from "react";
 import type { Dict } from "@/lib/i18n/dict";
 
 type Item = { href: string; label: string };
@@ -10,7 +11,7 @@ type Section = { label: string; items: Item[] };
 export function Sidebar({ t }: { t: Dict }) {
   const pathname = usePathname();
 
-  const sections: Section[] = [
+  const sections: Section[] = useMemo(() => [
     {
       label: t.nav.overview,
       items: [
@@ -39,14 +40,19 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/vendors", label: t.nav.vendors },
       ],
     },
-  ];
+  ], [t]);
 
-  const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+  const isActive = useCallback((href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname === href || pathname.startsWith(href + "/");
+  }, [pathname]);
 
-  const sectionHasActive = (items: Item[]) => items.some((i) => isActive(i.href));
+  const sectionHasActive = useCallback((items: Item[]) =>
+    items.some((i) => isActive(i.href)),
+    [isActive],
+  );
 
-  const renderItems = (items: Item[]) => (
+  const renderItems = useCallback((items: Item[]) => (
     <nav className="flex flex-col gap-0.5">
       {items.map((item) => {
         const active = isActive(item.href);
@@ -56,18 +62,26 @@ export function Sidebar({ t }: { t: Dict }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={`group relative flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none ${
-              active ? "bg-navy-500/40 text-navy-50" : "text-navy-200 hover:text-navy-50 hover:bg-navy-500/20"
+              active
+                ? "bg-navy-500/60 text-navy-50 font-medium"
+                : "text-navy-200 hover:text-navy-50 hover:bg-navy-500/20"
             }`}
           >
-            {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r bg-gold-400" />}
-            <span className="flex-1 min-w-0 truncate text-[15px] font-medium">{item.label}</span>
+            {active && <span className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r bg-gold-400 shadow-[0_0_6px_rgba(250,204,21,0.4)]" />}
+            <span className="flex-1 min-w-0 truncate text-[15px]">{item.label}</span>
           </Link>
         );
       })}
     </nav>
-  );
+  ), [isActive]);
 
-  const Chevron = () => (
+  return (
+    <SidebarNav pathname={pathname} sections={sections} sectionHasActive={sectionHasActive} renderItems={renderItems} t={t} />
+  );
+}
+
+function Chevron() {
+  return (
     <svg
       viewBox="0 0 12 12"
       className="h-3 w-3 shrink-0 text-gold-300/70 transition-transform group-open:rotate-180"
@@ -79,14 +93,28 @@ export function Sidebar({ t }: { t: Dict }) {
       <path d="M3 4.5 L6 7.5 L9 4.5" />
     </svg>
   );
+}
 
-  const Eyebrow = ({ children }: { children: React.ReactNode }) => (
-    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70">{children}</span>
-  );
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70">{children}</span>;
+}
 
-  const summaryClass =
-    "flex items-center justify-between rounded-md px-3 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-navy-500/20 select-none";
+const summaryClass =
+  "flex items-center justify-between rounded-md px-3 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-navy-500/20 select-none";
 
+function SidebarNav({
+  pathname,
+  sections,
+  sectionHasActive,
+  renderItems,
+  t,
+}: {
+  pathname: string;
+  sections: Section[];
+  sectionHasActive: (items: Item[]) => boolean;
+  renderItems: (items: Item[]) => React.ReactNode;
+  t: Dict;
+}) {
   const navContent = (variant: "desktop" | "mobile") => {
     const isMobile = variant === "mobile";
     return (

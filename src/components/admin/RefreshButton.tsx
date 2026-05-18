@@ -8,6 +8,11 @@ export function RefreshButton({ conferenceId, label }: { conferenceId: string; l
   const [result, setResult] = useState<string | null>(null);
   const router = useRouter();
 
+  function refreshPage() {
+    router.refresh();
+    window.location.reload();
+  }
+
   async function handleRefresh() {
     setLoading(true);
     setResult(null);
@@ -23,7 +28,7 @@ export function RefreshButton({ conferenceId, label }: { conferenceId: string; l
       } else {
         const keys = Object.keys(data.updates || {});
         setResult(keys.length > 0 ? `Updated: ${keys.join(", ")}` : "No new info found");
-        router.refresh();
+        refreshPage();
       }
     } catch {
       setResult("Network error");

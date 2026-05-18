@@ -56,14 +56,29 @@ create table leads (
   updated_at timestamptz not null default now()
 );
 
+-- admin topic definitions
+create table admin_topics (
+  slug text primary key,
+  category text not null check (category in ('network-systems', 'measurement', 'security', 'emerging', 'infrastructure')),
+  en text not null,
+  zh text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 -- RLS
 alter table conferences enable row level security;
 alter table papers enable row level security;
 alter table opensource enable row level security;
 alter table leads enable row level security;
+alter table admin_topics enable row level security;
 
 -- anon read access
 create policy "anon read conferences" on conferences for select using (true);
 create policy "anon read papers" on papers for select using (true);
 create policy "anon read opensource" on opensource for select using (true);
 create policy "anon read leads" on leads for select using (true);
+create policy "anon read admin_topics" on admin_topics for select using (true);
+create policy "anon insert admin_topics" on admin_topics for insert to anon with check (true);
+create policy "anon update admin_topics" on admin_topics for update to anon using (true);
+create policy "anon delete admin_topics" on admin_topics for delete to anon using (true);

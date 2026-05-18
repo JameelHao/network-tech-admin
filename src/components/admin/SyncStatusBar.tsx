@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { getFreshness, freshnessLabel } from "@/lib/admin/freshness";
 import { relativeTime } from "@/lib/admin/format";
 import type { Lang } from "@/lib/i18n/dict";
@@ -53,6 +54,12 @@ export function SyncStatusBar({
   const [syncResult, setSyncResult] = useState<SyncResultInfo | null>(null);
   const [progress, setProgress] = useState<{ current: number; total: number; label: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const router = useRouter();
+
+  const refreshPage = useCallback(() => {
+    router.refresh();
+    window.location.reload();
+  }, [router]);
 
   const fetchStatus = useCallback(() => {
     fetch("/api/sync-status")
@@ -118,6 +125,7 @@ export function SyncStatusBar({
         }).catch(() => {});
         setSyncResult({ imported: totalImported, updated: totalUpdated, categoryStats });
         fetchStatus();
+        refreshPage();
       }
     } finally {
       setRefreshing(false);
@@ -134,6 +142,7 @@ export function SyncStatusBar({
       const json = await res.json();
       if (json.feedStats || json.categoryStats || json.stats) setSyncResult(json);
       fetchStatus();
+      refreshPage();
     } finally {
       setRefreshing(false);
     }

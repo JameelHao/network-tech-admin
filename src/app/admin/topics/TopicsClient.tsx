@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import type { TopicStat } from "@/lib/admin/topic-aggregator";
 import { TopicHeatmap } from "@/components/admin/TopicHeatmap";
@@ -12,6 +12,7 @@ import { TOPIC_CATEGORIES, getTopicLabel, type TopicCategory } from "@/lib/admin
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
 import { tabClass, tabGroupClass } from "@/lib/admin/ui";
+import { createTopicAction, deleteTopicAction, updateTopicAction, type TopicFormState } from "./actions";
 
 type TopicsLabels = {
   title: string;
@@ -36,6 +37,19 @@ type TopicsLabels = {
   ofTopics: string;
   rows: string;
   page: string;
+  newTopic: string;
+  editTopic: string;
+  slug: string;
+  category: string;
+  englishLabel: string;
+  chineseLabel: string;
+  addTopic: string;
+  updateTopic: string;
+  deleteTopic: string;
+  createHint: string;
+  deleteBlocked: string;
+  actions: string;
+  clear: string;
 };
 
 type SortKey = "slug" | "total" | "papers" | "conferences" | "talents" | "opensource";
@@ -58,6 +72,10 @@ const DRILL_LIMIT = 5;
 
 const CATEGORY_KEYS = Object.keys(TOPIC_CATEGORIES) as TopicCategory[];
 
+function labelFor(stat: TopicStat, lang: Lang) {
+  return stat[lang] ?? getTopicLabel(stat.slug, lang);
+}
+
 export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labels: TopicsLabels; lang: Lang }) {
   const [view, setView] = useState<"table" | "heatmap">("table");
   const [search, setSearch] = useState("");
@@ -65,8 +83,10 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<TopicCategory>(CATEGORY_KEYS[0]);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
+  const editingTopic = editingSlug ? stats.find((s) => s.slug === editingSlug) : null;
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -95,7 +115,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((s) =>
-        s.slug.toLowerCase().includes(q) || getTopicLabel(s.slug, lang).toLowerCase().includes(q),
+        s.slug.toLowerCase().includes(q) || labelFor(s, lang).toLowerCase().includes(q),
       );
     }
     return list;
@@ -184,6 +204,16 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
         </div>
       </header>
 
+      <div className="border-b border-line bg-paper/20 px-5 py-4">
+        <TopicEditor
+          key={editingTopic?.slug ?? "new"}
+          topic={editingTopic ?? undefined}
+          labels={labels}
+          lang={lang}
+          onClear={() => setEditingSlug(null)}
+        />
+      </div>
+
       {/* Category tabs */}
       <div className="overflow-x-auto scrollbar-none px-5 py-2 border-b border-line bg-paper/30">
         <div className={tabGroupClass()} role="tablist">
@@ -245,12 +275,15 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                   <th className="px-5 py-3">
                     <SortableHeaderClient column="total" label={labels.total} currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
+                  <th className="px-5 py-3 text-right font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">
+                    {labels.actions}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {paginated.length === 0 && (
                   <tr>
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <EmptyState title={labels.noTopics} description={labels.noTopicsDesc} compact />
                     </td>
                   </tr>
@@ -266,7 +299,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                       className={`group cursor-pointer hover:bg-paper/40 transition-colors ${isDup ? "bg-amber-50/40" : ""}`}
                       onClick={() => toggleExpand(s.slug)}
                     >
-                      <td className="px-5 py-3" colSpan={isExpanded ? 6 : 1}>
+                      <td className="px-5 py-3" colSpan={isExpanded ? 7 : 1}>
                         {isExpanded ? (
                           <DrillDown
                             stat={s}
@@ -278,7 +311,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                           />
                         ) : (
                           <div className="flex items-center gap-2">
-                            <TopicTag label={s.slug} lang={lang} />
+                            <TopicTag label={s.slug} lang={lang} displayLabel={labelFor(s, lang)} category={s.category} />
                             {isDup && (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[9px] text-amber-700" title={`${labels.similarTo}: ${dupSiblings.join(", ")}`}>
                                 {labels.duplicateWarning}
@@ -295,6 +328,18 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                             </td>
                           ))}
                           <td className="px-5 py-3 text-[13px] font-semibold tabular-nums text-ink-800">{s.total}</td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                onClick={() => setEditingSlug(s.slug)}
+                                className="font-mono text-[10px] uppercase tracking-[0.14em] text-navy-600 hover:text-navy-800"
+                              >
+                                {labels.editTopic}
+                              </button>
+                              <DeleteTopicForm topic={s} labels={labels} />
+                            </div>
+                          </td>
                         </>
                       )}
                     </tr>
@@ -314,6 +359,96 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
         </div>
       )}
     </div>
+  );
+}
+
+function TopicEditor({
+  topic,
+  labels,
+  lang,
+  onClear,
+}: {
+  topic?: TopicStat;
+  labels: TopicsLabels;
+  lang: Lang;
+  onClear: () => void;
+}) {
+  const action = topic ? updateTopicAction : createTopicAction;
+  const [state, formAction, pending] = useActionState<TopicFormState, FormData>(action, undefined);
+  const inputCls = "w-full rounded-md border border-line bg-surface px-3 py-2 text-[13px] text-ink-800 placeholder:text-ink-400 focus:outline-none focus:ring-1 focus:ring-navy-300";
+
+  return (
+    <form action={formAction} className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto] lg:items-end">
+      <input type="hidden" name="originalSlug" value={topic?.slug ?? ""} />
+      <div>
+        <p className="tracked-label mb-2">{topic ? labels.editTopic : labels.newTopic}</p>
+        <input
+          name="slug"
+          required
+          defaultValue={topic?.slug ?? ""}
+          placeholder="network-topic"
+          className={inputCls}
+          readOnly={!!topic && topic.total > 0}
+          title={topic && topic.total > 0 ? labels.deleteBlocked : labels.slug}
+        />
+      </div>
+      <label>
+        <span className="tracked-label">{labels.category}</span>
+        <select name="category" defaultValue={!topic || topic.category === "other" ? "network-systems" : topic.category} className={`${inputCls} mt-2`}>
+          {CATEGORY_KEYS.map((key) => (
+            <option key={key} value={key}>{TOPIC_CATEGORIES[key][lang]}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span className="tracked-label">{labels.englishLabel}</span>
+        <input name="en" required defaultValue={topic?.en ?? topic?.slug ?? ""} className={`${inputCls} mt-2`} />
+      </label>
+      <label>
+        <span className="tracked-label">{labels.chineseLabel}</span>
+        <input name="zh" required defaultValue={topic?.zh ?? topic?.slug ?? ""} className={`${inputCls} mt-2`} />
+      </label>
+      <div className="flex items-center gap-2">
+        {topic && (
+          <button type="button" onClick={onClear} className="rounded-md border border-line px-3 py-2 text-[12px] text-ink-600 hover:bg-paper">
+            {labels.clear}
+          </button>
+        )}
+        <button type="submit" disabled={pending} className="rounded-md bg-navy-700 px-4 py-2 text-[12px] text-navy-50 hover:bg-navy-600 disabled:opacity-60">
+          {pending ? "..." : topic ? labels.updateTopic : labels.addTopic}
+        </button>
+      </div>
+      <div className="lg:col-span-5">
+        {state?.error ? (
+          <p className="text-[12px] text-rust-700">{state.error}</p>
+        ) : (
+          <p className="text-[12px] text-ink-400">{labels.createHint}</p>
+        )}
+      </div>
+    </form>
+  );
+}
+
+function DeleteTopicForm({ topic, labels }: { topic: TopicStat; labels: TopicsLabels }) {
+  const [state, formAction, pending] = useActionState<TopicFormState, FormData>(deleteTopicAction, undefined);
+  const disabled = pending || topic.total > 0;
+
+  return (
+    <form action={formAction} className="inline-flex items-center gap-2">
+      <input type="hidden" name="slug" value={topic.slug} />
+      <button
+        type="submit"
+        disabled={disabled}
+        title={topic.total > 0 ? labels.deleteBlocked : labels.deleteTopic}
+        onClick={(e) => {
+          if (!confirm(labels.deleteTopic)) e.preventDefault();
+        }}
+        className="font-mono text-[10px] uppercase tracking-[0.14em] text-rust-600 hover:text-rust-800 disabled:cursor-not-allowed disabled:text-ink-300"
+      >
+        {labels.deleteTopic}
+      </button>
+      {state?.error && <span className="max-w-40 truncate text-[11px] text-rust-700">{state.error}</span>}
+    </form>
   );
 }
 
@@ -338,13 +473,13 @@ function DrillDown({
     <div className="space-y-3 py-1">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TopicTag label={stat.slug} lang={lang} />
+          <TopicTag label={stat.slug} lang={lang} displayLabel={labelFor(stat, lang)} category={stat.category} />
           <span className="font-mono text-[11px] text-ink-400 tabular-nums">
             {stat.total} {labels.items}
           </span>
           {isDup && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[9px] text-amber-700">
-              {labels.similarTo}: {dupSiblings.map((s) => getTopicLabel(s, lang)).join(", ")}
+              {labels.similarTo}: {dupSiblings.join(", ")}
             </span>
           )}
         </div>

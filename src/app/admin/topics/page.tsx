@@ -7,22 +7,25 @@ import { aggregateTopics, detectDuplicates } from "@/lib/admin/topic-aggregator"
 import { getDict } from "@/lib/i18n/server";
 import { computeTopicPageStats } from "@/lib/admin/topics-utils";
 import { getTopicLabel } from "@/lib/admin/topics";
+import { listTopicDefinitions } from "@/lib/admin/topic-definitions";
 import { TopicsClient } from "./TopicsClient";
 
 export default async function TopicsPage() {
   const { lang, t } = await getDict();
 
-  const [papers, conferences, opensource, talents] = await Promise.all([
+  const [papers, conferences, opensource, talents, topics] = await Promise.all([
     listAllPapersLight(),
     listAllConferencesLight(),
     listAllOpenSourceLight(),
     listAllTalentsLight(),
+    listTopicDefinitions(),
   ]);
 
-  const raw = aggregateTopics(papers, conferences, talents, opensource);
+  const raw = aggregateTopics(papers, conferences, talents, opensource, { definitions: topics, includeDefinitions: true });
   const stats = detectDuplicates(raw);
   const pageStats = computeTopicPageStats(stats);
-  const hottestLabel = pageStats.hottestTopic === "—" ? "—" : getTopicLabel(pageStats.hottestTopic, lang);
+  const hottest = stats.find((s) => s.slug === pageStats.hottestTopic);
+  const hottestLabel = pageStats.hottestTopic === "—" ? "—" : (hottest?.[lang] ?? getTopicLabel(pageStats.hottestTopic, lang));
 
   return (
     <>
@@ -80,6 +83,19 @@ export default async function TopicsPage() {
             conferences: t.nav.conferences,
             talents: t.nav.talents,
             opensource: t.nav.opensource,
+            newTopic: t.topics.newTopic,
+            editTopic: t.topics.editTopic,
+            slug: t.topics.slug,
+            category: t.conf.category,
+            englishLabel: t.topics.englishLabel,
+            chineseLabel: t.topics.chineseLabel,
+            addTopic: t.topics.addTopic,
+            updateTopic: t.topics.updateTopic,
+            deleteTopic: t.topics.deleteTopic,
+            createHint: t.topics.createHint,
+            deleteBlocked: t.topics.deleteBlocked,
+            actions: t.topics.actions,
+            clear: t.topics.clear,
           }} />
         </section>
       </main>

@@ -8,6 +8,11 @@ export function RefreshAllButton({ label }: { label: string }) {
   const [result, setResult] = useState<string | null>(null);
   const router = useRouter();
 
+  function refreshPage() {
+    router.refresh();
+    window.location.reload();
+  }
+
   async function handleRefresh() {
     setLoading(true);
     setResult(null);
@@ -19,7 +24,7 @@ export function RefreshAllButton({ label }: { label: string }) {
       } else {
         const updated = data.results?.filter((r: { updates: Record<string, string> }) => Object.keys(r.updates).length > 0).length ?? 0;
         setResult(`${updated}/${data.results?.length ?? 0} updated`);
-        router.refresh();
+        refreshPage();
       }
     } catch {
       setResult("Network error");

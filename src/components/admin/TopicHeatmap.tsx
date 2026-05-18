@@ -7,6 +7,10 @@ import type { Lang } from "@/lib/i18n/dict";
 
 const ENTITIES = ["papers", "conferences", "talents", "opensource"] as const;
 
+function topicLabel(stat: TopicStat, lang: Lang) {
+  return stat[lang] ?? getTopicLabel(stat.slug, lang);
+}
+
 export function TopicHeatmap({
   stats,
   lang,
@@ -39,9 +43,9 @@ export function TopicHeatmap({
             <div key={s.slug} className="contents">
               <div
                 className="text-right pr-2 font-mono text-[10px] text-ink-500 truncate leading-7"
-                title={getTopicLabel(s.slug, lang)}
+                title={topicLabel(s, lang)}
               >
-                {getTopicLabel(s.slug, lang)}
+                {topicLabel(s, lang)}
               </div>
               {ENTITIES.map((e) => {
                 const count = s.counts[e];

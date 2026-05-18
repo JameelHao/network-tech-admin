@@ -1,4 +1,4 @@
-import { TOPIC_MAP, type TopicCategory } from "./topics";
+import { TOPICS, TOPIC_MAP, type TopicCategory, type TopicDef } from "./topics";
 import type { Paper, Conference, OpenSource, TalentLead } from "./types";
 
 type EntityCounts = {
@@ -18,6 +18,8 @@ type EntityItems = {
 export type TopicStat = {
   slug: string;
   category: TopicCategory | "other";
+  en?: string;
+  zh?: string;
   counts: EntityCounts;
   total: number;
   items: EntityItems;
@@ -33,16 +35,21 @@ export function aggregateTopics(
   conferences: Pick<Conference, "id" | "name" | "topics">[],
   talents: Pick<TalentLead, "id" | "name" | "topics">[],
   opensource: Pick<OpenSource, "id" | "name" | "topics">[],
+  options: { definitions?: TopicDef[]; includeDefinitions?: boolean } = {},
 ): TopicStat[] {
   const map = new Map<string, TopicStat>();
+  const definitions = options.definitions ?? TOPICS;
+  const topicMap = Object.fromEntries(definitions.map((t) => [t.slug, t])) as Record<string, TopicDef | undefined>;
 
   function ensure(slug: string): TopicStat {
     let stat = map.get(slug);
     if (!stat) {
-      const def = TOPIC_MAP[slug];
+      const def = topicMap[slug] ?? TOPIC_MAP[slug];
       stat = {
         slug,
         category: def?.category ?? "other",
+        en: def?.en,
+        zh: def?.zh,
         counts: { papers: 0, conferences: 0, talents: 0, opensource: 0 },
         total: 0,
         items: { papers: [], conferences: [], talents: [], opensource: [] },
@@ -50,6 +57,10 @@ export function aggregateTopics(
       map.set(slug, stat);
     }
     return stat;
+  }
+
+  if (options.includeDefinitions) {
+    for (const topic of definitions) ensure(topic.slug);
   }
 
   for (const p of papers) {
