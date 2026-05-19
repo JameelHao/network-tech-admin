@@ -18,6 +18,7 @@ const en = {
     products: "Products",
     vendors: "Vendors",
     ecosystem: "Ecosystem",
+    favorites: "Favorites",
   },
   topbar: {
     signOut: "Sign out",
@@ -660,6 +661,7 @@ const zh: typeof en = {
     products: "产品",
     vendors: "厂商",
     ecosystem: "生态",
+    favorites: "收藏",
   },
   topbar: {
     signOut: "退出",

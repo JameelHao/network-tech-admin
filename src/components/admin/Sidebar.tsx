@@ -19,6 +19,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/insights", label: t.nav.insights },
         { href: "/admin/ecosystem", label: t.nav.ecosystem },
         { href: "/admin/topics", label: t.nav.topics },
+        { href: "/admin/favorites", label: t.nav.favorites },
       ],
     },
     {

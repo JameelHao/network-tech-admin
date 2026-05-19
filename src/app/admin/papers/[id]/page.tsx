@@ -36,7 +36,7 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
         basePath="/admin/papers"
         labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
       />
-      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 max-w-3xl w-full space-y-6">
+      <main className="flex-1 px-4 sm:px-6 xl:px-10 py-6 sm:py-10 w-full space-y-6">
         <div className="rounded-lg border border-line bg-surface p-5 sm:p-7 space-y-5">
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-sans text-[20px] sm:text-[22px] font-bold tracking-[-0.02em] text-ink-900">{paper.title}</h1>

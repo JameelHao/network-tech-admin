@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { PapersDetailModal } from "@/components/admin/PapersDetailModal";
+import Link from "next/link";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { NewBadge } from "@/components/admin/NewBadge";
 import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
@@ -87,7 +87,6 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
   const [showOnlyFavs, setShowOnlyFavs] = useState(false);
   const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<Paper | null>(null);
   // Topic filter: React state + server-side, not URL-driven
   const [selectedTopics, setSelectedTopics] = useState<string[]>(() => fp.getAll("topics"));
   const [topicFilteredIds, setTopicFilteredIds] = useState<Set<string> | null>(null);
@@ -199,7 +198,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
   }, [sorted, page]);
 
   return (
-    <><div className="rounded-lg border border-line bg-surface overflow-hidden">
+    <div className="rounded-lg border border-line bg-surface overflow-hidden">
       <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
         <div className="hidden lg:flex items-center gap-2">
           <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
@@ -361,13 +360,12 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
                       <tr key={p.id} className={`group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}>
                         <Td>
                           <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelected(p)}
-                              className={`text-left w-full font-normal line-clamp-2 max-w-full sm:max-w-[300px] hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
+                            <Link
+                              href={`/admin/papers/${p.id}`}
+                              className={`line-clamp-2 max-w-full sm:max-w-[300px] hover:text-navy-700 ${stale ? "text-ink-500" : "text-ink-800"}`}
                             >
                               {p.title}
-                            </button>
+                            </Link>
                             {isNew(p.published_date, now) && <NewBadge label={labels.newLabel} />}
                           </div>
                         </Td>
@@ -451,16 +449,6 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
           </div>
         )}
     </div>
-      {selected && (
-        <PapersDetailModal
-          paper={selected}
-          t={t}
-          lang={lang}
-          now={now}
-          onClose={() => setSelected(null)}
-        />
-      )}
-    </>
   );
 }
 

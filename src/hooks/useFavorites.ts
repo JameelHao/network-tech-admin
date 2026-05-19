@@ -1,78 +1,77 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export type EntityType = "conferences" | "papers" | "leads" | "talents" | "opensource" | "news" | "jobs" | "products" | "vendors";
 
 type FavoriteEntry = { id: string; ts: number; label: string };
 type FavoritesData = Record<EntityType, FavoriteEntry[]>;
 
-const STORAGE_KEY = "nta-favorites";
-
 function empty(): FavoritesData {
   return { conferences: [], papers: [], leads: [], talents: [], opensource: [], news: [], jobs: [], products: [], vendors: [] };
 }
 
-function readAll(): FavoritesData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...empty(), ...JSON.parse(raw) } : empty();
-  } catch {
-    return empty();
+const FAV_CHANGED = "nta-fav-changed";
+
+async function fetchAll(): Promise<FavoritesData> {
+  const supabase = createClient();
+  const { data: rows } = await supabase
+    .from("user_favorites")
+    .select("entity_type, entity_id, label, created_at")
+    .order("created_at", { ascending: false });
+
+  const result = empty();
+  for (const r of rows ?? []) {
+    const et = r.entity_type as EntityType;
+    if (result[et]) {
+      result[et].push({ id: r.entity_id, ts: new Date(r.created_at).getTime(), label: r.label });
+    }
   }
+  return result;
 }
 
-function writeAll(data: FavoritesData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  window.dispatchEvent(new Event("nta-favorites-changed"));
-}
+async function fetchForEntity(entity: EntityType): Promise<FavoriteEntry[]> {
+  const supabase = createClient();
+  const { data: rows } = await supabase
+    .from("user_favorites")
+    .select("entity_id, label, created_at")
+    .eq("entity_type", entity)
+    .order("created_at", { ascending: false });
 
-function subscribe(cb: () => void) {
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === STORAGE_KEY) cb();
-  };
-  const onCustom = () => cb();
-  window.addEventListener("storage", onStorage);
-  window.addEventListener("nta-favorites-changed", onCustom);
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener("nta-favorites-changed", onCustom);
-  };
-}
-
-function getSnapshot() {
-  return localStorage.getItem(STORAGE_KEY) ?? "";
-}
-
-function getServerSnapshot() {
-  return "";
+  return (rows ?? []).map((r) => ({
+    id: r.entity_id,
+    ts: new Date(r.created_at).getTime(),
+    label: r.label,
+  }));
 }
 
 export function useFavorites(entity: EntityType) {
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [entries, setEntries] = useState<FavoriteEntry[]>([]);
+  const entriesRef = useRef(entries);
+  entriesRef.current = entries;
 
-  const entries: FavoriteEntry[] = useMemo(() => {
-    try {
-      const data = raw ? JSON.parse(raw) : {};
-      return Array.isArray(data[entity]) ? data[entity] : [];
-    } catch {
-      return [];
-    }
-  }, [raw, entity]);
+  const refresh = useCallback(() => {
+    fetchForEntity(entity).then(setEntries);
+  }, [entity]);
+
+  useEffect(() => {
+    refresh();
+    window.addEventListener(FAV_CHANGED, refresh);
+    return () => window.removeEventListener(FAV_CHANGED, refresh);
+  }, [refresh]);
 
   const favIds = useMemo(() => new Set(entries.map((e) => e.id)), [entries]);
 
   const toggle = useCallback(
-    (id: string, label?: string) => {
-      const d = readAll();
-      const list = d[entity];
-      const idx = list.findIndex((e) => e.id === id);
-      if (idx >= 0) {
-        list.splice(idx, 1);
-      } else {
-        list.push({ id, ts: Date.now(), label: label ?? id });
-      }
-      writeAll(d);
+    async (id: string, label?: string) => {
+      const supabase = createClient();
+      const isFav = entriesRef.current.some((e) => e.id === id);
+      const { error } = isFav
+        ? await supabase.from("user_favorites").delete().eq("entity_type", entity).eq("entity_id", id)
+        : await supabase.from("user_favorites").insert({ entity_type: entity, entity_id: id, label: label ?? id });
+      if (error) return;
+      window.dispatchEvent(new Event(FAV_CHANGED));
     },
     [entity],
   );
@@ -83,24 +82,31 @@ export function useFavorites(entity: EntityType) {
 }
 
 export function useFavoritesAll() {
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [data, setData] = useState<FavoritesData>(empty());
 
-  return useMemo(() => {
-    let data: FavoritesData;
-    try {
-      data = raw ? { ...empty(), ...JSON.parse(raw) } : empty();
-    } catch {
-      data = empty();
-    }
+  const refresh = useCallback(() => {
+    fetchAll().then(setData);
+  }, []);
 
-    const all: { entity: EntityType; id: string; ts: number; label: string }[] = [];
+  useEffect(() => {
+    refresh();
+    window.addEventListener(FAV_CHANGED, refresh);
+    return () => window.removeEventListener(FAV_CHANGED, refresh);
+  }, [refresh]);
+
+  const all = useMemo(() => {
+    const result: { entity: EntityType; id: string; ts: number; label: string }[] = [];
     for (const [entity, entries] of Object.entries(data) as [EntityType, FavoriteEntry[]][]) {
       for (const e of entries) {
-        all.push({ entity, id: e.id, ts: e.ts, label: e.label });
+        result.push({ entity, id: e.id, ts: e.ts, label: e.label });
       }
     }
-    const recent = all.sort((a, b) => b.ts - a.ts).slice(0, 5);
-    const totalCount = all.length;
-    return { recent, totalCount };
-  }, [raw]);
+    result.sort((a, b) => b.ts - a.ts);
+    return result;
+  }, [data]);
+
+  const totalCount = all.length;
+  const recent = all.slice(0, 5);
+
+  return { all, recent, totalCount };
 }
