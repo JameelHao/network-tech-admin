@@ -62,6 +62,7 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
       const res = await fetch("/api/sync/patents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ company: slug }),
       });
       const data = await res.json();
