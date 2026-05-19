@@ -1,11 +1,9 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
-import { StatusPill } from "@/components/admin/StatusPill";
-import { TopicTag } from "@/components/admin/TopicTag";
+import { TalentsTableWithModal } from "@/components/admin/TalentsTableWithModal";
 import { listTalentLeads } from "@/lib/admin/talents";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
@@ -149,45 +147,15 @@ export default async function TalentsPage({ searchParams }: { searchParams: Prom
                 <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
-              {talents.length === 0 ? (
+            {talents.length === 0 ? (
+              <tbody className="divide-y divide-line">
                 <tr><td colSpan={8}>
                   <EmptyState title={t.empty.talents} description={t.empty.talentsDesc} />
                 </td></tr>
-              ) : (
-                talents.map((tl) => (
-                  <tr key={tl.id} className="hover:bg-paper/40 transition-colors">
-                    <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/talents/${tl.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
-                        {tl.name}
-                      </Link>
-                    </td>
-                    <td className="px-3 sm:px-5 py-3 text-ink-600">{tl.role ?? "—"}</td>
-                    <td className="px-3 sm:px-5 py-3 text-ink-600">{tl.company ?? "—"}</td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 text-[12px]">{tl.source ?? "—"}</td>
-                    <td className="px-3 sm:px-5 py-3 whitespace-nowrap">
-                      <StatusPill label={tl.stage} lang={lang} />
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {tl.topics.length > 0
-                          ? tl.topics.map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)
-                          : <span className="text-[11px] text-ink-400">—</span>
-                        }
-                      </div>
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3">
-                      {tl.linkedin_url ? (
-                        <a href={tl.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-navy-500 hover:text-navy-700">
-                          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor"><path d="M13.6 1H2.4C1.6 1 1 1.6 1 2.4v11.2c0 .8.6 1.4 1.4 1.4h11.2c.8 0 1.4-.6 1.4-1.4V2.4c0-.8-.6-1.4-1.4-1.4ZM5.4 13H3.2V6.4h2.2V13ZM4.3 5.5c-.7 0-1.3-.6-1.3-1.3s.6-1.3 1.3-1.3 1.3.6 1.3 1.3-.6 1.3-1.3 1.3ZM13 13h-2.2V9.8c0-.8 0-1.8-1.1-1.8s-1.3.8-1.3 1.7V13H6.2V6.4h2.1v.9c.3-.6 1-1.1 2.1-1.1 2.2 0 2.6 1.5 2.6 3.4V13Z"/></svg>
-                        </a>
-                      ) : <span className="text-ink-300">—</span>}
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3"><FavoriteButton entity="talents" id={tl.id} label={tl.name} /></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+              </tbody>
+            ) : (
+              <TalentsTableWithModal talents={talents} t={t} lang={lang} />
+            )}
           </table>
           </div>
           <Pagination

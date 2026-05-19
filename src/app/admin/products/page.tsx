@@ -1,11 +1,9 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
-import { StatusPill } from "@/components/admin/StatusPill";
-import { TopicTag } from "@/components/admin/TopicTag";
+import { ProductsTableWithModal } from "@/components/admin/ProductsTableWithModal";
 import { listProducts } from "@/lib/admin/products";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
@@ -164,42 +162,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
-              {products.length === 0 ? (
+            {products.length === 0 ? (
+              <tbody className="divide-y divide-line">
                 <tr><td colSpan={8}>
                   <EmptyState title={t.empty.products} description={t.empty.productsDesc} />
                 </td></tr>
-              ) : (
-                products.map((p) => (
-                  <tr key={p.id} className="hover:bg-paper/40 transition-colors">
-                    <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/products/${p.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
-                        {p.name}
-                      </Link>
-                      {p.description && (
-                        <p className="text-[11px] text-ink-400 mt-0.5 truncate max-w-[150px] sm:max-w-xs">{p.description}</p>
-                      )}
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600">{p.vendor ?? "—"}</td>
-                    <td className="px-3 sm:px-5 py-3 text-ink-600 whitespace-nowrap">{t.product[p.category as keyof typeof t.product] as string}</td>
-                    <td className="px-3 sm:px-5 py-3 whitespace-nowrap">
-                      <StatusPill label={p.stage} lang={lang} />
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 whitespace-nowrap">{t.product[p.pricing === "open-source" ? "openSource" : p.pricing as keyof typeof t.product] as string}</td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 font-mono text-[12px]">{p.latest_version ?? "—"}</td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {p.topics.length > 0
-                          ? p.topics.slice(0, 3).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)
-                          : <span className="text-[11px] text-ink-400">—</span>
-                        }
-                      </div>
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3"><FavoriteButton entity="products" id={p.id} label={p.name} /></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+              </tbody>
+            ) : (
+              <ProductsTableWithModal products={products} t={t} lang={lang} />
+            )}
           </table>
           </div>
           <Pagination

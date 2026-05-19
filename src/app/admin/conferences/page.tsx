@@ -7,6 +7,7 @@ import { ExportButton } from "@/components/admin/ExportButton";
 import { RefreshAllButton } from "@/components/admin/RefreshAllButton";
 import { ViewToggle } from "@/components/admin/ViewToggle";
 import { CalendarView } from "@/components/admin/calendar/CalendarView";
+import { ConferenceCreateModal } from "@/components/admin/ConferenceCreateModal";
 import { listConferences, listConferencesByMonth, listConferencesByYear } from "@/lib/admin/conferences";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { parseMonthKey } from "@/lib/admin/calendar-utils";
@@ -18,7 +19,6 @@ import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
 import { FilterDateRange } from "@/components/admin/FilterControls";
-import { CONF_SORTABLE } from "@/lib/admin/conferences";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
@@ -40,20 +40,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
   const statusFilter = typeof sp.status === "string" ? sp.status : undefined;
   const dateFrom = typeof sp.dateFrom === "string" ? sp.dateFrom : undefined;
   const dateTo = typeof sp.dateTo === "string" ? sp.dateTo : undefined;
-  const result = await listConferences(params, { category: activeCategory, status: statusFilter, dateFrom, dateTo });
-  const conferences = result.data;
-
-  const supabase = await createClient();
-  const { count: totalCount } = await supabase.from("conferences").select("*", { count: "exact", head: true });
-  const total = totalCount ?? 0;
-
   const today = new Date().toISOString().slice(0, 10);
-  const { count: upcomingCount } = await supabase.from("conferences").select("*", { count: "exact", head: true }).gte("end_date", today);
-  const upcoming = upcomingCount ?? 0;
-  const past = total - upcoming;
-
-  const { count: topCount } = await supabase.from("conferences").select("*", { count: "exact", head: true }).eq("tier", "top");
-
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
 
@@ -86,9 +73,28 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
     }
   }
 
-  const [calConferences, yearConferences] = view === "calendar"
-    ? await Promise.all([listConferencesByMonth(calYear, calMonth), listConferencesByYear(calYear)])
-    : [[], []];
+  const supabase = await createClient();
+  const [
+    result,
+    totalResult,
+    upcomingResult,
+    topResult,
+    calConferences,
+    yearConferences,
+  ] = await Promise.all([
+    listConferences(params, { category: activeCategory, status: statusFilter, dateFrom, dateTo }),
+    supabase.from("conferences").select("id", { count: "exact", head: true }),
+    supabase.from("conferences").select("id", { count: "exact", head: true }).gte("end_date", today),
+    supabase.from("conferences").select("id", { count: "exact", head: true }).eq("tier", "top"),
+    view === "calendar" ? listConferencesByMonth(calYear, calMonth) : Promise.resolve([]),
+    view === "calendar" ? listConferencesByYear(calYear) : Promise.resolve([]),
+  ]);
+
+  const conferences = result.data;
+  const total = totalResult.count ?? 0;
+  const upcoming = upcomingResult.count ?? 0;
+  const past = total - upcoming;
+  const topCount = topResult.count ?? 0;
 
   return (
     <>
@@ -111,7 +117,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
             <Stat label={t.conf.total} value={total} sub={t.conf.tracked} />
             <Stat label={t.conf.upcoming} value={upcoming} sub={t.conf.scheduledAhead} />
             <Stat label={t.conf.past} value={past} sub={t.conf.completed} />
-            <Stat label={t.conf.topTier} value={topCount ?? 0} sub={t.conf.highestTier} />
+            <Stat label={t.conf.topTier} value={topCount} sub={t.conf.highestTier} />
           </div>
         </section>
 
@@ -204,12 +210,7 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                   <ExportButton entity="conferences" format="json" filters={filterParams} label={t.common.exportJSON} />
                 </OverflowMenu>
                 <RefreshAllButton label={t.conf.refresh} />
-                <Link
-                  href="/admin/conferences/new"
-                  className="rounded-md bg-navy-700 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-navy-50 hover:bg-navy-600 transition-colors"
-                >
-                  + {t.conf.addNew}
-                </Link>
+                <ConferenceCreateModal t={t} lang={lang} />
               </div>
             </header>
 

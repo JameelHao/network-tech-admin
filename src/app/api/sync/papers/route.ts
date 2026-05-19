@@ -53,12 +53,19 @@ async function upsertPapers(fetched: ImportedPaper[]) {
       url: p.url,
       published_date: p.published_date,
       abstract: p.abstract,
-      topics: p.topics,
       citation_count: p.citation_count ?? null,
       source: p.source,
     }));
-    const { error } = await supabase.from("papers").insert(batch);
-    if (!error) imported += batch.length;
+    const { data: inserted, error } = await supabase.from("papers").insert(batch).select("id");
+    if (!error && inserted) {
+      imported += inserted.length;
+      const topicRows = newPapers.slice(i, i + 50).flatMap((p, j) =>
+        (p.topics ?? []).map((t) => ({ paper_id: inserted[j]?.id, topic_slug: t }))
+      ).filter((r) => r.paper_id);
+      if (topicRows.length > 0) {
+        await supabase.from("paper_topics").insert(topicRows);
+      }
+    }
   }
 
   return { imported, updated: updateTasks.length };
@@ -77,7 +84,7 @@ export async function POST(request: Request) {
     if (!ARXIV_CATEGORIES.includes(category as (typeof ARXIV_CATEGORIES)[number])) {
       return NextResponse.json({ error: `Invalid category: ${category}` }, { status: 400 });
     }
-    const result = await fetchSingleArxivCategory(category, CURRENT_YEAR);
+    const result = await fetchSingleArxivCategory(category, CURRENT_YEAR, 5);
     const { imported, updated } = await upsertPapers(result.papers);
     return NextResponse.json({
       imported,
@@ -91,7 +98,7 @@ export async function POST(request: Request) {
     if (!S2_VENUES.includes(venue as (typeof S2_VENUES)[number])) {
       return NextResponse.json({ error: `Invalid venue: ${venue}` }, { status: 400 });
     }
-    const result = await fetchSingleS2Venue(venue, CURRENT_YEAR);
+    const result = await fetchSingleS2Venue(venue, CURRENT_YEAR, 5);
     const { imported, updated } = await upsertPapers(result.papers);
     return NextResponse.json({
       imported,

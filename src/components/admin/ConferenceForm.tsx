@@ -20,7 +20,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; conference?: Conference }) {
+export function ConferenceForm({ t, lang, conference, compact = false }: { t: Dict; lang: Lang; conference?: Conference; compact?: boolean }) {
   const action = conference ? updateConference : createConference;
   const [state, formAction, pending] = useActionState<ConferenceFormState, FormData>(action, undefined);
   const [category, setCategory] = useState<TopicCategory>(conference?.category ?? "network-systems");
@@ -37,7 +37,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
   const inputCls = "w-full rounded-md border border-line bg-surface px-3 py-2 text-[14px] focus:outline-none focus:border-navy-400 focus:ring-2 focus:ring-navy-100";
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className={compact ? "space-y-4" : "space-y-6"}>
       {conference && <input type="hidden" name="id" value={conference.id} />}
       <input type="hidden" name="category" value={category} />
       <input type="hidden" name="tier" value={tier} />
@@ -51,7 +51,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${compact ? "gap-x-4 gap-y-4" : "gap-x-6 gap-y-5"}`}>
         <Field label={t.conf.name}>
           <input name="name" defaultValue={conference?.name ?? ""} placeholder={t.conf.namePlaceholder} className={inputCls} />
         </Field>
@@ -129,7 +129,7 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
           {showPicker ? "▲ " : "▼ "}{t.common.selectTopics}
         </button>
         {showPicker && (
-          <div className="mt-2 rounded-md border border-line bg-surface p-4 space-y-4 max-h-[280px] overflow-y-auto">
+          <div className={`mt-2 rounded-md border border-line bg-surface p-4 space-y-4 overflow-y-auto ${compact ? "max-h-[180px]" : "max-h-[280px]"}`}>
             {CATEGORY_KEYS.map((cat) => (
               <div key={cat}>
                 <p className="tracked-label mb-1.5">{TOPIC_CATEGORIES[cat][lang]}</p>
@@ -156,11 +156,11 @@ export function ConferenceForm({ t, lang, conference }: { t: Dict; lang: Lang; c
       </Field>
 
       <Field label={t.conf.notes}>
-        <textarea name="notes" rows={3} defaultValue={conference?.notes ?? ""} placeholder={t.conf.notesPlaceholder}
+        <textarea name="notes" rows={compact ? 2 : 3} defaultValue={conference?.notes ?? ""} placeholder={t.conf.notesPlaceholder}
           className={`${inputCls} leading-relaxed resize-y`} />
       </Field>
 
-      <div className="flex items-center justify-between gap-3 border-t border-line pt-5">
+      <div className={`flex items-center justify-between gap-3 border-t border-line ${compact ? "pt-4" : "pt-5"}`}>
         <div className="font-mono text-[10.5px] uppercase tracking-[0.16em]">
           {conference ? (
             <span className="text-ink-400">ID · {conference.id.slice(0, 8)}</span>

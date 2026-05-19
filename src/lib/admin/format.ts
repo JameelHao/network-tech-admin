@@ -4,8 +4,8 @@ const MINUTE = 60_000;
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
-export function relativeTime(dateStr: string, lang: Lang = "en"): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+export function relativeTime(dateStr: string, lang: Lang = "en", now = Date.now()): string {
+  const diff = now - new Date(dateStr).getTime();
   if (diff < 0) return lang === "zh" ? "刚刚" : "just now";
 
   if (diff < MINUTE) return lang === "zh" ? "刚刚" : "just now";
@@ -64,9 +64,9 @@ export function formatDateRange(startDate: string, endDate: string | null): stri
   return `${MONTH_EN[s.getUTCMonth()]} ${s.getUTCDate()} – ${MONTH_EN[e.getUTCMonth()]} ${e.getUTCDate()}`;
 }
 
-export function isExpired(dateStr: string | undefined | null, thresholdDays = 30): boolean {
+export function isExpired(dateStr: string | undefined | null, thresholdDays = 30, now = Date.now()): boolean {
   if (!dateStr) return false;
-  return Date.now() - new Date(dateStr).getTime() > thresholdDays * DAY;
+  return now - new Date(dateStr).getTime() > thresholdDays * DAY;
 }
 
 export type TimeGroup = "today" | "week" | "month" | "older";
@@ -80,12 +80,12 @@ export function getTimeGroup(dateStr: string | null | undefined): TimeGroup {
   return "older";
 }
 
-export function isNew(dateStr: string | null | undefined): boolean {
+export function isNew(dateStr: string | null | undefined, now = Date.now()): boolean {
   if (!dateStr) return false;
-  return Date.now() - new Date(dateStr).getTime() < DAY;
+  return now - new Date(dateStr).getTime() < DAY;
 }
 
-export function isCurrentYear(dateStr: string | null | undefined): boolean {
+export function isCurrentYear(dateStr: string | null | undefined, now = Date.now()): boolean {
   if (!dateStr) return false;
-  return new Date(dateStr).getFullYear() === new Date().getFullYear();
+  return new Date(dateStr).getFullYear() === new Date(now).getFullYear();
 }

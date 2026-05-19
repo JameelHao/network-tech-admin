@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
 
-export type TopicFormState = { error?: string; success?: boolean } | undefined;
+export type TopicFormState = { error?: string; success?: boolean; category?: TopicCategory } | undefined;
 
 const CATEGORY_KEYS = Object.keys(TOPIC_CATEGORIES) as TopicCategory[];
 
@@ -39,7 +39,7 @@ function validateTopic(input: ReturnType<typeof readTopicForm>) {
 async function topicIsReferenced(slug: string) {
   const supabase = await createClient();
   const checks = await Promise.all([
-    supabase.from("papers").select("id", { count: "exact", head: true }).contains("topics", [slug]),
+    supabase.from("paper_topics").select("paper_id", { count: "exact", head: true }).eq("topic_slug", slug),
     supabase.from("conferences").select("id", { count: "exact", head: true }).contains("topics", [slug]),
     supabase.from("talent_leads").select("id", { count: "exact", head: true }).contains("topics", [slug]),
     supabase.from("opensource").select("id", { count: "exact", head: true }).contains("topics", [slug]),
@@ -66,7 +66,7 @@ export async function createTopicAction(_prev: TopicFormState, formData: FormDat
   if (error) return { error: error.message };
 
   revalidatePath("/admin/topics");
-  return { success: true };
+  return { success: true, category: input.category };
 }
 
 export async function updateTopicAction(_prev: TopicFormState, formData: FormData): Promise<TopicFormState> {
@@ -93,7 +93,7 @@ export async function updateTopicAction(_prev: TopicFormState, formData: FormDat
   if (error) return { error: error.message };
 
   revalidatePath("/admin/topics");
-  return { success: true };
+  return { success: true, category: input.category };
 }
 
 export async function deleteTopicAction(_prev: TopicFormState, formData: FormData): Promise<TopicFormState> {

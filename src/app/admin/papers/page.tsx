@@ -3,13 +3,13 @@ import { Topbar } from "@/components/admin/Topbar";
 import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { getDict } from "@/lib/i18n/server";
 import { PapersClient } from "./PapersClient";
-import { fetchAndSyncPapers } from "@/lib/admin/papers";
+import { listPapersForList } from "@/lib/admin/papers";
 import { findDuplicateGroups } from "@/lib/admin/paper-dedup";
 import { computePaperStats } from "@/lib/admin/paper-utils";
 
 export default async function PapersPage() {
   const { lang, t } = await getDict();
-  const { papers, total: dbTotal } = await fetchAndSyncPapers();
+  const { papers, total: dbTotal } = await listPapersForList();
   const duplicateGroups = findDuplicateGroups(papers);
   const { total, thisWeek, arxivCount, venueCount } = computePaperStats(papers, Date.now(), dbTotal);
 
@@ -41,7 +41,7 @@ export default async function PapersPage() {
         </section>
 
         <Suspense>
-          <PapersClient papers={papers} duplicateGroups={duplicateGroups} lang={lang} labels={{
+          <PapersClient papers={papers} duplicateGroups={duplicateGroups} lang={lang} t={t} now={Date.now()} labels={{
             title: t.papers.title,
             searchPlaceholder: t.papers.searchPlaceholder,
             allSources: t.papers.allSources,

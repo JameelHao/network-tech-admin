@@ -1,10 +1,9 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
-import { StatusPill } from "@/components/admin/StatusPill";
+import { LeadsTableWithModal } from "@/components/admin/LeadsTableWithModal";
 import { listLeads } from "@/lib/admin/leads";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
@@ -13,10 +12,8 @@ import { FilterSelect, FilterDateRange } from "@/components/admin/FilterControls
 import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { getDict } from "@/lib/i18n/server";
-import { relativeTime } from "@/lib/admin/format";
 import { computeLeadStats } from "@/lib/admin/leads-utils";
 import { LEAD_STAGES } from "@/lib/admin/types";
-import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -118,60 +115,15 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   <Th>★</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line">
-                {leads.length === 0 && (
+              {leads.length === 0 ? (
+                <tbody className="divide-y divide-line">
                   <tr><td colSpan={9}>
                     <EmptyState title={t.empty.leads} description={t.empty.leadsDesc} />
                   </td></tr>
-                )}
-                {leads.map((l) => (
-                  <tr key={l.id} data-fav={true} className="hover:bg-paper/40 transition-colors">
-                    <Td>
-                      <Link href={`/admin/leads/${l.id}`} className="text-[13px] font-normal text-ink-800 hover:text-navy-600 transition-colors line-clamp-1 max-w-full sm:max-w-[240px] block">
-                        {l.title}
-                      </Link>
-                    </Td>
-                    <Td className="hidden lg:table-cell">
-                      {l.summary ? (
-                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={l.summary}>
-                          {l.summary}
-                        </span>
-                      ) : <span className="text-ink-400">—</span>}
-                    </Td>
-                    <Td>
-                      <span className="rounded-full bg-ink-100 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-600">
-                        {t.sourceType[l.source_type]}
-                      </span>
-                    </Td>
-                    <Td className="hidden lg:table-cell">
-                      {l.source_label ? (
-                        <span className="text-[12px] text-ink-600">{l.source_label}</span>
-                      ) : <span className="text-ink-400">—</span>}
-                    </Td>
-                    <Td>
-                      <StatusPill label={l.stage} lang={lang} />
-                    </Td>
-                    <Td className="hidden lg:table-cell">
-                      {l.notes ? (
-                        <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={l.notes}>
-                          {l.notes}
-                        </span>
-                      ) : <span className="text-ink-400">—</span>}
-                    </Td>
-                    <Td className="whitespace-nowrap">
-                      <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.created_at}>
-                        {relativeTime(l.created_at, lang)}
-                      </span>
-                    </Td>
-                    <Td className="hidden lg:table-cell whitespace-nowrap">
-                      <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.updated_at}>
-                        {relativeTime(l.updated_at, lang)}
-                      </span>
-                    </Td>
-                    <Td><FavoriteButton entity="leads" id={l.id} label={l.title} /></Td>
-                  </tr>
-                ))}
-              </tbody>
+                </tbody>
+              ) : (
+                <LeadsTableWithModal leads={leads} t={t} lang={lang} />
+              )}
             </table>
           </div>
 
@@ -206,6 +158,3 @@ function Th({ children, className }: { children: React.ReactNode; className?: st
   return <th className={`px-3 sm:px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 text-left ${className ?? ""}`}>{children}</th>;
 }
 
-function Td({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={`px-3 sm:px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
-}

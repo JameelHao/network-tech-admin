@@ -21,13 +21,13 @@ export async function GET(request: Request) {
   const categoryStats: CategoryStat[] = [];
 
   for (const cat of ARXIV_CATEGORIES) {
-    const result = await fetchSingleArxivCategory(cat, 2026);
+    const result = await fetchSingleArxivCategory(cat, 2026, 5);
     allPapers.push(...result.papers);
     categoryStats.push(...result.categoryStats);
   }
 
   for (const venue of S2_VENUES) {
-    const result = await fetchSingleS2Venue(venue, 2026);
+    const result = await fetchSingleS2Venue(venue, 2026, 5);
     allPapers.push(...result.papers);
     categoryStats.push(...result.categoryStats);
   }
@@ -54,10 +54,17 @@ export async function GET(request: Request) {
       url: p.url,
       published_date: p.published_date,
       abstract: p.abstract,
-      topics: p.topics,
     }));
-    const { error } = await supabase.from("papers").insert(batch);
-    if (!error) imported += batch.length;
+    const { data: inserted, error } = await supabase.from("papers").insert(batch).select("id");
+    if (!error && inserted) {
+      imported += inserted.length;
+      const topicRows = newPapers.slice(i, i + 50).flatMap((p, j) =>
+        (p.topics ?? []).map((t) => ({ paper_id: inserted[j]?.id, topic_slug: t }))
+      ).filter((r) => r.paper_id);
+      if (topicRows.length > 0) {
+        await supabase.from("paper_topics").insert(topicRows);
+      }
+    }
   }
 
   return NextResponse.json({

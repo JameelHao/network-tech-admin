@@ -1,3 +1,5 @@
+import { inferPaperTopics, getValidTopicSlugs } from "./paper-topics";
+
 export type ImportedPaper = {
   title: string;
   authors: string[];
@@ -22,7 +24,7 @@ export type PaperFetchResult = {
   categoryStats: CategoryStat[];
 };
 
-export function parseArxivXml(xml: string): ImportedPaper[] {
+export function parseArxivXml(xml: string, validSlugs?: string[], topicLimit?: number): ImportedPaper[] {
   const papers: ImportedPaper[] = [];
   const entries = xml.split("<entry>").slice(1);
 
@@ -53,7 +55,7 @@ export function parseArxivXml(xml: string): ImportedPaper[] {
       url,
       published_date: published ? published.slice(0, 10) : null,
       abstract,
-      topics: categories.filter((c) => c.startsWith("cs.")),
+      topics: inferPaperTopics(categories.filter((c) => c.startsWith("cs.")), title, abstract, validSlugs, topicLimit),
       source: "arxiv",
     });
   }
@@ -63,40 +65,41 @@ export function parseArxivXml(xml: string): ImportedPaper[] {
 
 export const ARXIV_CATEGORIES = ["cs.NI", "cs.AI", "cs.DC", "cs.PF", "cs.LG", "cs.CR"] as const;
 
-async function fetchArxivOnce(url: string, category: string): Promise<PaperFetchResult> {
+async function fetchArxivOnce(url: string, category: string, validSlugs?: string[], topicLimit?: number): Promise<PaperFetchResult> {
   const res = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(10000) });
   if (!res.ok) {
     return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: `HTTP ${res.status}` }] };
   }
   const xml = await res.text();
-  const papers = parseArxivXml(xml);
+  const papers = parseArxivXml(xml, validSlugs, topicLimit);
   return { papers, categoryStats: [{ category, status: "ok", count: papers.length }] };
 }
 
-export async function fetchSingleArxivCategory(category: string, year: number): Promise<PaperFetchResult> {
+export async function fetchSingleArxivCategory(category: string, year: number, topicLimit?: number): Promise<PaperFetchResult> {
+  const validSlugs = await getValidTopicSlugs();
   const query = `cat:${category}+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
   const url = `https://export.arxiv.org/api/query?search_query=${query}&start=0&max_results=200&sortBy=submittedDate&sortOrder=descending`;
 
   try {
-    return await fetchArxivOnce(url, category);
+    return await fetchArxivOnce(url, category, validSlugs, topicLimit);
   } catch {
     // Retry once after 2s
     await new Promise((r) => setTimeout(r, 2000));
     try {
-      return await fetchArxivOnce(url, category);
+      return await fetchArxivOnce(url, category, undefined, topicLimit);
     } catch (err) {
       return { papers: [], categoryStats: [{ category, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
     }
   }
 }
 
-async function fetchFromArxiv(year: number): Promise<PaperFetchResult> {
+async function fetchFromArxiv(year: number, topicLimit?: number): Promise<PaperFetchResult> {
   const allPapers: ImportedPaper[] = [];
   const categoryStats: CategoryStat[] = [];
   const seen = new Set<string>();
 
   for (const cat of ARXIV_CATEGORIES) {
-    const result = await fetchSingleArxivCategory(cat, year);
+    const result = await fetchSingleArxivCategory(cat, year, topicLimit);
     categoryStats.push(...result.categoryStats);
     for (const p of result.papers) {
       const key = p.title.toLowerCase();
@@ -126,7 +129,7 @@ type S2Paper = {
 };
 type S2Response = { data: S2Paper[] };
 
-export function parseS2Papers(data: S2Paper[], venue: string): ImportedPaper[] {
+export function parseS2Papers(data: S2Paper[], venue: string, validSlugs?: string[], topicLimit?: number): ImportedPaper[] {
   return data.map((p) => {
     const arxivId = p.externalIds?.ArXiv;
     const paperUrl = arxivId
@@ -139,14 +142,15 @@ export function parseS2Papers(data: S2Paper[], venue: string): ImportedPaper[] {
       url: paperUrl,
       published_date: p.year ? `${p.year}-01-01` : null,
       abstract: p.abstract?.slice(0, 2000) ?? null,
-      topics: [],
+      topics: inferPaperTopics([], p.title, p.abstract ?? null, validSlugs, topicLimit),
       citation_count: p.citationCount ?? undefined,
       source: "semantic-scholar" as const,
     };
   });
 }
 
-export async function fetchSingleS2Venue(venue: string, year: number): Promise<PaperFetchResult> {
+export async function fetchSingleS2Venue(venue: string, year: number, topicLimit?: number): Promise<PaperFetchResult> {
+  const validSlugs = await getValidTopicSlugs();
   const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
   if (!apiKey) {
     return { papers: [], categoryStats: [{ category: venue, status: "skipped", count: 0, error: "SEMANTIC_SCHOLAR_API_KEY not configured" }] };
@@ -169,14 +173,14 @@ export async function fetchSingleS2Venue(venue: string, year: number): Promise<P
       return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: `HTTP ${res.status}` }] };
     }
     const json: S2Response = await res.json();
-    const papers = parseS2Papers(json.data ?? [], venue);
+    const papers = parseS2Papers(json.data ?? [], venue, validSlugs, topicLimit);
     return { papers, categoryStats: [{ category: venue, status: "ok", count: papers.length }] };
   } catch (err) {
     return { papers: [], categoryStats: [{ category: venue, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }] };
   }
 }
 
-async function fetchFromSemanticScholar(year: number): Promise<PaperFetchResult> {
+async function fetchFromSemanticScholar(year: number, topicLimit?: number): Promise<PaperFetchResult> {
   const apiKey = process.env.SEMANTIC_SCHOLAR_API_KEY;
   if (!apiKey) {
     return { papers: [], categoryStats: [{ category: "semantic-scholar", status: "skipped", count: 0, error: "SEMANTIC_SCHOLAR_API_KEY not configured" }] };
@@ -186,7 +190,7 @@ async function fetchFromSemanticScholar(year: number): Promise<PaperFetchResult>
   const categoryStats: CategoryStat[] = [];
 
   for (const venue of S2_VENUES) {
-    const result = await fetchSingleS2Venue(venue, year);
+    const result = await fetchSingleS2Venue(venue, year, topicLimit);
     categoryStats.push(...result.categoryStats);
     allPapers.push(...result.papers);
     await new Promise((r) => setTimeout(r, 3000));
@@ -232,10 +236,10 @@ export function mergeResults(arxiv: PaperFetchResult, s2: PaperFetchResult): Pap
 
 const EMPTY_RESULT: PaperFetchResult = { papers: [], categoryStats: [] };
 
-export async function fetchAllNetworkPapers(year: number): Promise<PaperFetchResult> {
+export async function fetchAllNetworkPapers(year: number, topicLimit?: number): Promise<PaperFetchResult> {
   const [arxivSettled, s2Settled] = await Promise.allSettled([
-    fetchFromArxiv(year),
-    fetchFromSemanticScholar(year),
+    fetchFromArxiv(year, topicLimit),
+    fetchFromSemanticScholar(year, topicLimit),
   ]);
   const arxiv = arxivSettled.status === "fulfilled" ? arxivSettled.value : EMPTY_RESULT;
   const s2 = s2Settled.status === "fulfilled" ? s2Settled.value : EMPTY_RESULT;

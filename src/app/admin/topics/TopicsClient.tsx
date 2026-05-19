@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { DetailModal } from "@/components/admin/DetailModal";
 import type { TopicStat } from "@/lib/admin/topic-aggregator";
 import { TopicHeatmap } from "@/components/admin/TopicHeatmap";
 import { TopicTag } from "@/components/admin/TopicTag";
@@ -83,10 +85,21 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<TopicCategory>(CATEGORY_KEYS[0]);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
   const editingTopic = editingSlug ? stats.find((s) => s.slug === editingSlug) : null;
+
+  function openNewTopic() {
+    setEditingSlug(null);
+    setEditorOpen(true);
+  }
+
+  function openEditTopic(slug: string) {
+    setEditingSlug(slug);
+    setEditorOpen(true);
+  }
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -95,19 +108,6 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
       if (counts[s.category] !== undefined) counts[s.category]++;
     }
     return counts;
-  }, [stats]);
-
-  const summary = useMemo(() => {
-    let totalPapers = 0, totalConf = 0, totalTalents = 0, totalOs = 0;
-    let hottest: TopicStat | null = null;
-    for (const s of stats) {
-      totalPapers += s.counts.papers;
-      totalConf += s.counts.conferences;
-      totalTalents += s.counts.talents;
-      totalOs += s.counts.opensource;
-      if (!hottest || s.total > hottest.total) hottest = s;
-    }
-    return { totalPapers, totalConf, totalTalents, totalOs, hottest };
   }, [stats]);
 
   const filtered = useMemo(() => {
@@ -196,23 +196,33 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             </button>
           </div>
         </div>
-        <div className="flex flex-wrap gap-3 sm:gap-5 text-[13px] text-ink-600">
-          <span>{labels.papers}: <span className="font-semibold text-ink-800">{summary.totalPapers}</span></span>
-          <span>{labels.conferences}: <span className="font-semibold text-ink-800">{summary.totalConf}</span></span>
-          <span>{labels.talents}: <span className="font-semibold text-ink-800">{summary.totalTalents}</span></span>
-          <span>{labels.opensource}: <span className="font-semibold text-ink-800">{summary.totalOs}</span></span>
+        <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-5 text-[13px] text-ink-600">
+          <button
+            type="button"
+            onClick={openNewTopic}
+            className="rounded-md bg-navy-700 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-navy-50 hover:bg-navy-600 transition-colors"
+          >
+            + {labels.newTopic}
+          </button>
         </div>
       </header>
 
-      <div className="border-b border-line bg-paper/20 px-5 py-4">
-        <TopicEditor
+      {editorOpen && (
+        <TopicEditorModal
           key={editingTopic?.slug ?? "new"}
           topic={editingTopic ?? undefined}
           labels={labels}
           lang={lang}
-          onClear={() => setEditingSlug(null)}
+          onClose={() => {
+            setEditorOpen(false);
+            setEditingSlug(null);
+          }}
+          onSaved={(category) => {
+            setActiveTab(category);
+            setPage(1);
+          }}
         />
-      </div>
+      )}
 
       {/* Category tabs */}
       <div className="overflow-x-auto scrollbar-none px-5 py-2 border-b border-line bg-paper/30">
@@ -308,6 +318,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                             isDup={isDup}
                             dupSiblings={dupSiblings}
                             onCollapse={() => toggleExpand(s.slug)}
+                            onEdit={() => openEditTopic(s.slug)}
                           />
                         ) : (
                           <div className="flex items-center gap-2">
@@ -332,7 +343,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                             <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
                               <button
                                 type="button"
-                                onClick={() => setEditingSlug(s.slug)}
+                                onClick={() => openEditTopic(s.slug)}
                                 className="font-mono text-[10px] uppercase tracking-[0.14em] text-navy-600 hover:text-navy-800"
                               >
                                 {labels.editTopic}
@@ -362,70 +373,88 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
   );
 }
 
-function TopicEditor({
+function TopicEditorModal({
   topic,
   labels,
   lang,
-  onClear,
+  onClose,
+  onSaved,
 }: {
   topic?: TopicStat;
   labels: TopicsLabels;
   lang: Lang;
-  onClear: () => void;
+  onClose: () => void;
+  onSaved: (category: TopicCategory) => void;
 }) {
+  const router = useRouter();
   const action = topic ? updateTopicAction : createTopicAction;
   const [state, formAction, pending] = useActionState<TopicFormState, FormData>(action, undefined);
-  const inputCls = "w-full rounded-md border border-line bg-surface px-3 py-2 text-[13px] text-ink-800 placeholder:text-ink-400 focus:outline-none focus:ring-1 focus:ring-navy-300";
+  const firstInputRef = useRef<HTMLInputElement | null>(null);
+  const inputCls = "w-full rounded-md border border-line bg-surface px-2.5 py-1 text-[12px] text-ink-800 placeholder:text-ink-400 focus:outline-none focus:ring-1 focus:ring-navy-300";
+
+  useEffect(() => {
+    window.requestAnimationFrame(() => firstInputRef.current?.focus({ preventScroll: true }));
+  }, []);
+
+  useEffect(() => {
+    if (!state?.success) return;
+    if (state.category) onSaved(state.category);
+    router.refresh();
+    onClose();
+  }, [state?.success, state?.category, router, onClose, onSaved]);
 
   return (
-    <form action={formAction} className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto] lg:items-end">
-      <input type="hidden" name="originalSlug" value={topic?.slug ?? ""} />
-      <div>
-        <p className="tracked-label mb-2">{topic ? labels.editTopic : labels.newTopic}</p>
-        <input
-          name="slug"
-          required
-          defaultValue={topic?.slug ?? ""}
-          placeholder="network-topic"
-          className={inputCls}
-          readOnly={!!topic && topic.total > 0}
-          title={topic && topic.total > 0 ? labels.deleteBlocked : labels.slug}
-        />
-      </div>
-      <label>
-        <span className="tracked-label">{labels.category}</span>
-        <select name="category" defaultValue={!topic || topic.category === "other" ? "network-systems" : topic.category} className={`${inputCls} mt-2`}>
-          {CATEGORY_KEYS.map((key) => (
-            <option key={key} value={key}>{TOPIC_CATEGORIES[key][lang]}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        <span className="tracked-label">{labels.englishLabel}</span>
-        <input name="en" required defaultValue={topic?.en ?? topic?.slug ?? ""} className={`${inputCls} mt-2`} />
-      </label>
-      <label>
-        <span className="tracked-label">{labels.chineseLabel}</span>
-        <input name="zh" required defaultValue={topic?.zh ?? topic?.slug ?? ""} className={`${inputCls} mt-2`} />
-      </label>
-      <div className="flex items-center gap-2">
-        {topic && (
-          <button type="button" onClick={onClear} className="rounded-md border border-line px-3 py-2 text-[12px] text-ink-600 hover:bg-paper">
+    <DetailModal title={topic ? labelFor(topic, lang) : labels.addTopic} label={topic ? labels.editTopic : labels.newTopic} onClose={onClose}>
+      <form action={formAction}>
+        <input type="hidden" name="originalSlug" value={topic?.slug ?? ""} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label>
+            <span className="tracked-label text-[9px]">{labels.slug}</span>
+            <input
+              ref={firstInputRef}
+              name="slug"
+              required
+              defaultValue={topic?.slug ?? ""}
+              placeholder="network-topic"
+              className={`${inputCls} mt-1`}
+              readOnly={!!topic && topic.total > 0}
+              title={topic && topic.total > 0 ? labels.deleteBlocked : labels.slug}
+            />
+          </label>
+          <label>
+            <span className="tracked-label text-[9px]">{labels.category}</span>
+            <select name="category" defaultValue={!topic || topic.category === "other" ? "network-systems" : topic.category} className={`${inputCls} mt-1`}>
+              {CATEGORY_KEYS.map((key) => (
+                <option key={key} value={key}>{TOPIC_CATEGORIES[key][lang]}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="tracked-label text-[9px]">{labels.englishLabel}</span>
+            <input name="en" required defaultValue={topic?.en ?? topic?.slug ?? ""} className={`${inputCls} mt-1`} />
+          </label>
+          <label>
+            <span className="tracked-label text-[9px]">{labels.chineseLabel}</span>
+            <input name="zh" required defaultValue={topic?.zh ?? topic?.slug ?? ""} className={`${inputCls} mt-1`} />
+          </label>
+          <div className="sm:col-span-2 min-h-4">
+            {state?.error ? (
+              <p className="text-[12px] text-rust-700">{state.error}</p>
+            ) : (
+              <p className="text-[11.5px] text-ink-400">{labels.createHint}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 border-t border-line pt-4 mt-4">
+          <button type="button" onClick={onClose} className="rounded-md border border-line px-3 py-1.5 text-[12px] text-ink-600 hover:bg-paper">
             {labels.clear}
           </button>
-        )}
-        <button type="submit" disabled={pending} className="rounded-md bg-navy-700 px-4 py-2 text-[12px] text-navy-50 hover:bg-navy-600 disabled:opacity-60">
-          {pending ? "..." : topic ? labels.updateTopic : labels.addTopic}
-        </button>
-      </div>
-      <div className="lg:col-span-5">
-        {state?.error ? (
-          <p className="text-[12px] text-rust-700">{state.error}</p>
-        ) : (
-          <p className="text-[12px] text-ink-400">{labels.createHint}</p>
-        )}
-      </div>
-    </form>
+          <button type="submit" disabled={pending} className="rounded-md bg-navy-700 px-4 py-1.5 text-[12px] text-navy-50 hover:bg-navy-600 disabled:opacity-60">
+            {pending ? "..." : topic ? labels.updateTopic : labels.addTopic}
+          </button>
+        </div>
+      </form>
+    </DetailModal>
   );
 }
 
@@ -459,6 +488,7 @@ function DrillDown({
   isDup,
   dupSiblings,
   onCollapse,
+  onEdit,
 }: {
   stat: TopicStat;
   lang: Lang;
@@ -466,6 +496,7 @@ function DrillDown({
   isDup: boolean;
   dupSiblings: string[];
   onCollapse: () => void;
+  onEdit: () => void;
 }) {
   const entities = ["papers", "conferences", "talents", "opensource"] as const;
 
@@ -483,18 +514,30 @@ function DrillDown({
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCollapse();
-          }}
-          className="text-ink-400 hover:text-ink-700 transition-colors"
-        >
-          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M4 10l4-4 4 4" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="font-mono text-[10px] uppercase tracking-[0.14em] text-navy-600 hover:text-navy-800"
+          >
+            {labels.editTopic}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollapse();
+            }}
+            className="text-ink-400 hover:text-ink-700 transition-colors"
+          >
+            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M4 10l4-4 4 4" />
+            </svg>
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {entities.map((entity) => {

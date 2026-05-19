@@ -4,6 +4,7 @@ import type { Conference, ConferenceSession } from "./types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const CONF_SORTABLE = ["name", "start_date", "tier", "category", "proximity"] as const;
+let proximityRpcUnavailable = false;
 
 export async function listConferences(
   params?: PaginationParams,
@@ -17,6 +18,9 @@ export async function listConferences(
   const { column, ascending } = validateSort(params?.sort, params?.dir, CONF_SORTABLE, "proximity", "asc");
 
   if (column === "proximity") {
+    if (proximityRpcUnavailable) {
+      return listConferencesByProximityFallback(supabase, page, pageSize, filter);
+    }
     return listConferencesByProximity(supabase, page, pageSize, filter);
   }
 
@@ -59,6 +63,7 @@ async function listConferencesByProximity(
 
   if (error) {
     if (error.code === "PGRST202") {
+      proximityRpcUnavailable = true;
       return listConferencesByProximityFallback(supabase, page, pageSize, filter);
     }
     throw error;

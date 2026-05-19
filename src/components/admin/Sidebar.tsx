@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import type { Dict } from "@/lib/i18n/dict";
 
 type Item = { href: string; label: string };
@@ -61,14 +61,15 @@ export function Sidebar({ t }: { t: Dict }) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`group relative flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none ${
+            style={{ fontWeight: 400 }}
+            className={`group relative flex items-center gap-3 rounded-md px-3 py-2 text-navy-50 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none ${
               active
-                ? "bg-navy-500/60 text-navy-50 font-medium"
-                : "text-navy-200 hover:text-navy-50 hover:bg-navy-500/20"
+                ? "bg-navy-500/60"
+                : "hover:bg-navy-500/20"
             }`}
           >
             {active && <span className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r bg-gold-400 shadow-[0_0_6px_rgba(250,204,21,0.4)]" />}
-            <span className="flex-1 min-w-0 truncate text-[15px]">{item.label}</span>
+            <span className="flex-1 min-w-0 truncate text-[15px] font-normal" style={{ fontWeight: 400 }}>{item.label}</span>
           </Link>
         );
       })}
@@ -76,7 +77,7 @@ export function Sidebar({ t }: { t: Dict }) {
   ), [isActive]);
 
   return (
-    <SidebarNav pathname={pathname} sections={sections} sectionHasActive={sectionHasActive} renderItems={renderItems} t={t} />
+    <SidebarNav sections={sections} sectionHasActive={sectionHasActive} renderItems={renderItems} t={t} />
   );
 }
 
@@ -96,20 +97,18 @@ function Chevron() {
 }
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70">{children}</span>;
+  return <span className="font-mono text-[10px] font-normal uppercase tracking-[0.22em] text-gold-300/70" style={{ fontWeight: 400 }}>{children}</span>;
 }
 
 const summaryClass =
-  "flex items-center justify-between rounded-md px-3 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-navy-500/20 select-none";
+  "flex items-center justify-between rounded-md px-3 py-2 cursor-pointer list-none font-normal text-navy-50 [&::-webkit-details-marker]:hidden hover:bg-navy-500/20 hover:text-navy-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 select-none";
 
 function SidebarNav({
-  pathname,
   sections,
   sectionHasActive,
   renderItems,
   t,
 }: {
-  pathname: string;
   sections: Section[];
   sectionHasActive: (items: Item[]) => boolean;
   renderItems: (items: Item[]) => React.ReactNode;
@@ -122,13 +121,9 @@ function SidebarNav({
         {sections.map((section) => {
           const sectionOpen = sectionHasActive(section.items);
           return isMobile ? (
-            <details key={section.label} open={sectionOpen} className="mb-1 group">
-              <summary className={summaryClass}>
-                <Eyebrow>{section.label}</Eyebrow>
-                <Chevron />
-              </summary>
+            <MobileNavSection key={section.label} label={section.label} defaultOpen={sectionOpen}>
               <div className="mt-1 pb-2">{renderItems(section.items)}</div>
-            </details>
+            </MobileNavSection>
           ) : (
             <div key={section.label} className="mb-7">
               <div className="px-3 pb-2.5"><Eyebrow>{section.label}</Eyebrow></div>
@@ -144,7 +139,7 @@ function SidebarNav({
     <>
       <aside aria-label={t.a11y.navigation} className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
         <div className="px-6 pt-7 pb-9">
-          <span className="font-sans text-[17px] font-semibold tracking-tight">Tech Radar</span>
+          <span className="font-sans text-[17px] font-semibold tracking-tight text-navy-50">Tech Radar</span>
         </div>
         {navContent("desktop")}
       </aside>
@@ -160,13 +155,33 @@ function SidebarNav({
         role="dialog"
         aria-modal="true"
         aria-hidden="true"
+        tabIndex={-1}
         className="lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-50 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50 border-b border-navy-500/30 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
       >
         <div className="px-5 pt-5 pb-3">
-          <span className="font-sans text-[15px] font-semibold tracking-tight">Tech Radar</span>
+          <span className="font-sans text-[15px] font-semibold tracking-tight text-navy-50">Tech Radar</span>
         </div>
         {navContent("mobile")}
       </div>
     </>
+  );
+}
+
+function MobileNavSection({ label, defaultOpen, children }: { label: string; defaultOpen: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="mb-1 group">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={`${summaryClass} w-full`}
+      >
+        <Eyebrow>{label}</Eyebrow>
+        <Chevron />
+      </button>
+      {open && children}
+    </div>
   );
 }

@@ -1,11 +1,9 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
-import { StatusPill } from "@/components/admin/StatusPill";
-import { TopicTag } from "@/components/admin/TopicTag";
+import { VendorsTableWithModal } from "@/components/admin/VendorsTableWithModal";
 import { listVendors } from "@/lib/admin/vendors";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
@@ -165,41 +163,15 @@ export default async function VendorsPage({ searchParams }: { searchParams: Prom
                 <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
-              {vendors.length === 0 ? (
+            {vendors.length === 0 ? (
+              <tbody className="divide-y divide-line">
                 <tr><td colSpan={7}>
                   <EmptyState title={t.empty.vendors} description={t.empty.vendorsDesc} />
                 </td></tr>
-              ) : (
-                vendors.map((v) => (
-                  <tr key={v.id} className="hover:bg-paper/40 transition-colors">
-                    <td className="px-3 sm:px-5 py-3">
-                      <Link href={`/admin/vendors/${v.id}`} className="font-normal text-ink-800 hover:text-navy-600 transition-colors">
-                        {v.name}
-                      </Link>
-                      {v.description && (
-                        <p className="text-[11px] text-ink-400 mt-0.5 truncate max-w-[150px] sm:max-w-xs">{v.description}</p>
-                      )}
-                    </td>
-                    <td className="px-3 sm:px-5 py-3 text-ink-600 whitespace-nowrap">{t.vendor[TYPE_I18N_MAP[v.type] as keyof typeof t.vendor] as string}</td>
-                    <td className="px-3 sm:px-5 py-3 whitespace-nowrap">
-                      <StatusPill label={v.stage} lang={lang} />
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 tabular-nums">{v.founded_year ?? "—"}</td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600">{v.hq_location ?? "—"}</td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {v.topics.length > 0
-                          ? v.topics.slice(0, 3).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)
-                          : <span className="text-[11px] text-ink-400">—</span>
-                        }
-                      </div>
-                    </td>
-                    <td className="hidden lg:table-cell px-3 sm:px-5 py-3"><FavoriteButton entity="vendors" id={v.id} label={v.name} /></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+              </tbody>
+            ) : (
+              <VendorsTableWithModal vendors={vendors} t={t} lang={lang} />
+            )}
           </table>
           </div>
           <Pagination

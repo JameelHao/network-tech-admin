@@ -84,8 +84,9 @@ export async function getPaperMonthlyTrend(months = 12): Promise<ChartPoint[]> {
 
 export async function getPaperTopTopics(limit = 10): Promise<ChartPoint[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("papers").select("topics").limit(5000);
-  return countArrayField(data ?? [], "topics", limit);
+  const { data } = await supabase.from("papers").select("paper_topics(topic_slug)").limit(5000);
+  const mapped = (data ?? []).map((row: any) => ({ topics: (row.paper_topics ?? []).map((pt: any) => pt.topic_slug) }));
+  return countArrayField(mapped, "topics", limit);
 }
 
 export type HeatmapPoint = { topic: string; month: string; count: number };
@@ -94,11 +95,16 @@ export async function getPaperTopicHeatmap(months = 12): Promise<HeatmapPoint[]>
   const supabase = await createClient();
   const { data } = await supabase
     .from("papers")
-    .select("topics, published_date")
+    .select("published_date, paper_topics(topic_slug)")
     .not("published_date", "is", null)
     .limit(5000);
 
-  const topTopics = countArrayField(data ?? [], "topics", 10).map((p) => p.name);
+  const mapped = (data ?? []).map((row: any) => ({
+    published_date: row.published_date,
+    topics: (row.paper_topics ?? []).map((pt: any) => pt.topic_slug),
+  }));
+
+  const topTopics = countArrayField(mapped, "topics", 10).map((p) => p.name);
 
   const now = new Date();
   const monthKeys: string[] = [];
@@ -114,12 +120,11 @@ export async function getPaperTopicHeatmap(months = 12): Promise<HeatmapPoint[]>
     }
   }
 
-  for (const row of data ?? []) {
-    const m = monthKey((row as { published_date: string }).published_date);
+  for (const row of mapped) {
+    const m = monthKey(row.published_date);
     if (!monthKeys.includes(m)) continue;
-    const topics = (row as { topics: string[] }).topics;
-    if (!Array.isArray(topics)) continue;
-    for (const t of topics) {
+    if (!Array.isArray(row.topics)) continue;
+    for (const t of row.topics) {
       if (!topTopics.includes(t)) continue;
       const key = `${t}|${m}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);

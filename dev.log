@@ -1,0 +1,389 @@
+
+> network-tech-admin@0.1.0 dev:restart
+> sh scripts/restart-dev.sh
+
+Stopping dev server on port 3000...
+Removing Next.js cache...
+Starting dev server...
+
+> network-tech-admin@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://11.245.137.147:3000
+- Environments: .env.local
+✓ Ready in 271ms
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/pluto/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/pluto/Desktop/network/network-tech-admin/package-lock.json
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET /admin/topics 200 in 2.8s (next.js: 1242ms, proxy.ts: 54ms, application-code: 1538ms)
+[browser] Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerScrollAndFocusHandlerOld focusAndScrollRef={{scrollRef:null, ...}} cacheNode={{rsc:{...}, ...}}>
+      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+        <LoadingBoundary name="/" loading={null}>
+          <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+            <HTTPAccessFallbackErrorBoundary pathname="/admin/topics" notFound={{...}} forbidden={undefined} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <InnerLayoutRouter url="/admin/topics" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                    <SegmentViewNode type="layout" pagePath="admin/layo...">
+                      <SegmentTrieNode>
+                      <script>
+                      <script>
+                      <script>
+                      <AdminLayout>
+                        <div className="min-h-dvh ...">
+                          <a>
+                          <Sidebar t={{brand:{...}, ...}}>
+                            <SidebarNav pathname="/admin/topics" sections={[...]} ...>
+                              <aside aria-label="导航" className="hidden lg:...">
+                                <div className="px-6 pt-7 ...">
+                                  <span
++                                   className="font-sans text-[17px] font-semibold tracking-tight"
+-                                   className="font-sans text-[17px] font-semibold tracking-tight text-navy-50"
+                                  >
++                                   Tech Radar
+                                <div className="px-3 flex-...">
+                                  <div className="mb-7">
+                                    <div className="px-3 pb-2.5">
+                                      <Eyebrow>
+                                        <span
++                                         className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70"
+-                                         className="font-mono text-[10px] font-normal uppercase tracking-[0.22em] tex..."
+-                                         style={{font-weight:"400"}}
+                                        >
++                                         概览
+                                    <nav className="flex flex-...">
+                                      <LinkComponent href="/admin" aria-current={undefined} className="group rela...">
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           仪表盘
+                                      <LinkComponent href="/admin/ins..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/insights"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           洞察
+                                      <LinkComponent href="/admin/eco..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/ecosystem"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           生态
+                                      <LinkComponent href="/admin/topics" aria-current="page" className="group rela...">
+                                        <a
+                                          aria-current="page"
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/topics"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span>
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           主题
+                                  <div className="mb-7">
+                                    <div className="px-3 pb-2.5">
+                                      <Eyebrow>
+                                        <span
++                                         className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70"
+-                                         className="font-mono text-[10px] font-normal uppercase tracking-[0.22em] tex..."
+-                                         style={{font-weight:"400"}}
+                                        >
++                                         洞察
+                                    <nav className="flex flex-...">
+                                      <LinkComponent href="/admin/con..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/conferences"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           会议
+                                      <LinkComponent href="/admin/papers" aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/papers"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           论文
+                                      <LinkComponent href="/admin/ope..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/opensource"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           开源项目
+                                      <LinkComponent href="/admin/pro..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/products"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           产品
+                                      <LinkComponent href="/admin/news" aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/news"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           新闻
+                                      <LinkComponent href="/admin/jobs" aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/jobs"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           岗位
+                                  <div className="mb-7">
+                                    <div className="px-3 pb-2.5">
+                                      <Eyebrow>
+                                        <span
++                                         className="font-mono text-[10px] uppercase tracking-[0.22em] text-gold-300/70"
+-                                         className="font-mono text-[10px] font-normal uppercase tracking-[0.22em] tex..."
+-                                         style={{font-weight:"400"}}
+                                        >
++                                         跟进
+                                    <nav className="flex flex-...">
+                                      <LinkComponent href="/admin/leads" aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/leads"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           技术线索
+                                      <LinkComponent href="/admin/tal..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/talents"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           人才线索
+                                      <LinkComponent href="/admin/ven..." aria-current={undefined} ...>
+                                        <a
+                                          aria-current={undefined}
++                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
+-                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
+                                          ref={function}
+                                          onClick={function onClick}
+                                          onMouseEnter={function onMouseEnter}
+                                          onTouchStart={function onTouchStart}
+                                          href="/admin/vendors"
+-                                         style={{font-weight:"400"}}
+                                        >
+                                          <span
++                                           className="flex-1 min-w-0 truncate text-[15px]"
+-                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
+-                                           style={{font-weight:"400"}}
+                                          >
++                                           厂商
+                              <div>
+                              <div
+                                id="admin-mobile-nav"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-hidden="true"
+                                className={"lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-..."}
+-                               tabindex="-1"
+                              >
+                                <div className="px-5 pt-5 ...">
+                                  <span
++                                   className="font-sans text-[15px] font-semibold tracking-tight"
+-                                   className="font-sans text-[15px] font-semibold tracking-tight text-navy-50"
+                                  >
++                                   Tech Radar
+                                <div className="px-3 pb-6 ...">
++                                 <details open={true} className="mb-1 group">
+-                                 <div className="mb-1 group">
+                                  ...
+                          ...
+                  ...
+      ...
+
+    at <unknown> (https://react.dev/link/hydration-mismatch)
+    at details (<anonymous>)
+    at AdminLayout (src/app/admin/layout.tsx:14:7)
+  12 |     <div className="min-h-dvh flex bg-paper text-ink-800">
+  13 |       <SkipToMain label={t.a11y.skipToMain} />
+> 14 |       <Sidebar t={t} />
+     |       ^
+  15 |       <CommandPalette items={searchIndex} labels={t.command} />
+  16 |       <div id="main-content" className="flex-1 min-w-0 flex flex-col">{children}</div>
+  17 |       <MobileNavController />
+ GET /admin/ecosystem 200 in 1187ms (next.js: 623ms, proxy.ts: 14ms, application-code: 550ms)
+ GET /admin/insights 200 in 911ms (next.js: 343ms, proxy.ts: 9ms, application-code: 559ms)
+ GET /admin 200 in 665ms (next.js: 205ms, proxy.ts: 5ms, application-code: 454ms)
+ GET /admin/topics 200 in 1849ms (next.js: 5ms, proxy.ts: 8ms, application-code: 1836ms)
+ GET /admin/conferences 200 in 614ms (next.js: 208ms, proxy.ts: 8ms, application-code: 398ms)
+ GET /admin/conferences?cat=network-systems 200 in 317ms (next.js: 6ms, proxy.ts: 10ms, application-code: 301ms)
+ GET /admin/conferences?cat=measurement 200 in 272ms (next.js: 4ms, proxy.ts: 8ms, application-code: 259ms)
+ GET /admin/conferences?cat=security 200 in 519ms (next.js: 4ms, proxy.ts: 8ms, application-code: 507ms)
+ GET /admin/conferences?cat=emerging 200 in 263ms (next.js: 4ms, proxy.ts: 6ms, application-code: 252ms)
+ GET /admin/conferences?cat=infrastructure 200 in 558ms (next.js: 5ms, proxy.ts: 8ms, application-code: 545ms)
+ GET /admin/conferences 200 in 307ms (next.js: 4ms, proxy.ts: 8ms, application-code: 295ms)
+ GET /admin/papers 200 in 1567ms (next.js: 227ms, proxy.ts: 11ms, application-code: 1328ms)
+ GET /api/sync-status 200 in 1066ms (next.js: 216ms, application-code: 849ms)
+ GET /api/sync-status 200 in 1154ms (next.js: 3ms, application-code: 1151ms)
+ GET /admin/opensource 200 in 485ms (next.js: 201ms, proxy.ts: 5ms, application-code: 279ms)
+ GET /api/sync-status 200 in 633ms (next.js: 1365µs, application-code: 632ms)
+ GET /api/sync-status 200 in 336ms (next.js: 1941µs, application-code: 334ms)
+ GET /admin/products 200 in 466ms (next.js: 175ms, proxy.ts: 8ms, application-code: 283ms)
+ GET /api/sync-status 200 in 402ms (next.js: 1493µs, application-code: 400ms)
+ GET /api/sync-status 200 in 501ms (next.js: 7ms, application-code: 494ms)
+ GET /api/sync-status 200 in 343ms (next.js: 3ms, application-code: 340ms)
+ GET /api/sync-status 200 in 293ms (next.js: 3ms, application-code: 290ms)
+ GET /admin/news 200 in 509ms (next.js: 184ms, proxy.ts: 3ms, application-code: 323ms)
+ GET /api/sync-status 200 in 294ms (next.js: 1449µs, application-code: 293ms)
+ GET /api/sync-status 200 in 486ms (next.js: 1973µs, application-code: 485ms)
+✓ Compiled in 38ms

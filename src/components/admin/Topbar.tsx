@@ -55,7 +55,7 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur supports-[backdrop-filter]:bg-paper/70">
       <div className="flex h-14 items-center gap-3 lg:gap-6 px-4 sm:px-6 xl:px-10">
-        {/* Hamburger - uses inline script from layout */}
+        {/* Hamburger */}
         <button
           type="button"
           aria-label="Menu"

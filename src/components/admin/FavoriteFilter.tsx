@@ -41,7 +41,11 @@ export function FavoriteFilter({
         </button>
       </div>
       {active && (
-        <style>{`[data-fav-filter="${entity}"] tr[data-fav="false"] { display: none; }`}</style>
+        <style>{`
+          [data-fav-filter="${entity}"] tr[data-fav="false"] { display: none; }
+          [data-fav-pagination="${entity}"] { display: none; }
+          ${count === 0 ? `[data-fav-empty="${entity}"] { display: block; }` : ""}
+        `}</style>
       )}
     </>
   );
