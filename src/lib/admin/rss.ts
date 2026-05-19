@@ -1,9 +1,12 @@
+import { inferCompanies } from "./companies";
+
 export type RSSItem = {
   title: string;
   link: string;
   snippet: string;
   source: string;
   pubDate: string | null;
+  companies: string[];
 };
 
 export type FeedStat = {
@@ -27,6 +30,27 @@ const NEWS_FEEDS = [
   { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
   { url: "https://www.theregister.com/networks/headlines.rss", source: "The Register" },
   { url: "https://engineering.fb.com/category/networking-traffic/feed/", source: "Meta Engineering" },
+  { url: "https://cloud.google.com/feeds/", source: "Google Cloud" },
+  { url: "https://azure.microsoft.com/blog/feed/", source: "Azure Networking" },
+  { url: "https://blogs.cisco.com/feed/", source: "Cisco Blogs" },
+  { url: "https://netflixtechblog.com/feed", source: "Netflix TechBlog" },
+  { url: "https://developer.nvidia.com/blog/feed", source: "NVIDIA Developer" },
+  { url: "https://news.google.com/rss/search?q=%22Ericsson%22+network+OR+5G+OR+6G+OR+RAN+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Ericsson" },
+  { url: "https://news.google.com/rss/search?q=%22Nokia%22+network+OR+5G+OR+6G+OR+IP+optical+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Nokia" },
+  { url: "https://news.google.com/rss/search?q=OpenAI+network+OR+infrastructure+OR+distributed+OR+training+when:7d&hl=en-US&gl=US&ceid=US:en", source: "OpenAI" },
+  { url: "https://news.google.com/rss/search?q=Anthropic+network+OR+infrastructure+OR+distributed+OR+training+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Anthropic" },
+  { url: "https://news.google.com/rss/search?q=%22Micron%22+network+OR+memory+OR+DDR5+OR+datacenter+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Micron" },
+  { url: "https://news.google.com/rss/search?q=%22Broadcom%22+network+OR+switch+OR+router+OR+silicon+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Broadcom" },
+  // Company-specific Google News feeds
+  { url: "https://news.google.com/rss/search?q=%22Intel%22+network+OR+Ethernet+OR+datacenter+OR+IPU+OR+silicon+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Intel" },
+  { url: "https://news.google.com/rss/search?q=%22Apple%22+network+OR+infrastructure+OR+edge+OR+protocol+OR+wifi+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Apple" },
+  { url: "https://news.google.com/rss/search?q=%22AMD%22+network+OR+datacenter+OR+Pensando+OR+smart+nic+OR+DPU+when:7d&hl=en-US&gl=US&ceid=US:en", source: "AMD" },
+  { url: "https://news.google.com/rss/search?q=%22IBM%22+network+OR+cloud+OR+telecom+OR+red+hat+OR+infrastructure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "IBM" },
+  { url: "https://news.google.com/rss/search?q=%22Huawei%22+network+OR+5G+OR+6G+OR+router+OR+datacenter+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Huawei" },
+  { url: "https://news.google.com/rss/search?q=%22Tencent%22+network+OR+cloud+OR+datacenter+OR+infrastructure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Tencent" },
+  { url: "https://news.google.com/rss/search?q=%22Alibaba%22+network+OR+cloud+OR+datacenter+OR+infrastructure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Alibaba" },
+  { url: "https://news.google.com/rss/search?q=%22Baidu%22+network+OR+cloud+OR+infrastructure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Baidu" },
+  { url: "https://news.google.com/rss/search?q=%22ByteDance%22+network+OR+cloud+OR+infrastructure+OR+streaming+when:7d&hl=en-US&gl=US&ceid=US:en", source: "ByteDance" },
   // Chinese tech feeds
   { url: "https://www.infoq.cn/feed", source: "InfoQ 中文" },
   { url: "https://www.oschina.net/news/rss", source: "开源中国" },
@@ -121,6 +145,7 @@ function parseRSSXml(xml: string, source: string): RSSItem[] {
         snippet: decodeEntities(stripHtml(description || "")).slice(0, 200),
         source,
         pubDate: pubDate || null,
+        companies: inferCompanies(`${title} ${description ?? ""}`),
       });
     }
   }

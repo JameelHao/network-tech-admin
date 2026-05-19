@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         snippet: d.snippet,
         source: d.source,
         pubDate: d.pub_date,
+        companies: d.companies ?? [],
       }));
       return NextResponse.json({
         items,

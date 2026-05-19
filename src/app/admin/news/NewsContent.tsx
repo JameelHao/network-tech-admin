@@ -15,10 +15,11 @@ import { relativeTime, getTimeGroup, isNew, isExpired } from "@/lib/admin/format
 import type { TimeGroup } from "@/lib/admin/format";
 import { useFilterParams } from "@/hooks/useFilterParams";
 import { useSortable } from "@/hooks/useSortable";
+import { COMPANY_COLORS, COMPANY_NAMES } from "@/lib/admin/companies";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
 
-type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string };
+type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string; companies?: string[] };
 
 function extractDomain(url: string): string {
   try { return new URL(url).hostname.replace("www.", ""); }
@@ -249,6 +250,15 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
                       </div>
                       {item.snippet && (
                         <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
+                      )}
+                      {item.companies && item.companies.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {item.companies.map((c) => (
+                            <span key={c} className={`rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${COMPANY_COLORS[c] ?? "bg-zinc-100 text-zinc-600 border border-zinc-200"}`}>
+                              {COMPANY_NAMES[c] ?? c}
+                            </span>
+                          ))}
+                        </div>
                       )}
                       <p className="text-[11px] text-ink-300 mt-1.5 font-mono">
                         {item.source && <span className="text-navy-500">{item.source}</span>}

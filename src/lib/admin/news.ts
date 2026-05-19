@@ -10,6 +10,7 @@ export type NewsItem = {
   pub_date: string | null;
   category: string;
   created_at: string;
+  companies: string[];
 };
 
 export const NEWS_SORTABLE = ["title", "source", "pub_date"] as const;

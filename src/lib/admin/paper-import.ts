@@ -1,5 +1,5 @@
 import { inferPaperTopics, getValidTopicSlugs } from "./paper-topics";
-import { COMPANY_KEYWORDS } from "./companies";
+import { inferCompanies } from "./companies";
 
 export type ImportedPaper = {
   title: string;
@@ -27,10 +27,7 @@ export type PaperFetchResult = {
 };
 
 export function inferPaperCompanies(title: string, abstract: string | null): string[] {
-  const text = `${title} ${abstract ?? ""}`.toLowerCase();
-  return COMPANY_KEYWORDS.filter((c) => c.keywords.some((k) => text.includes(k)))
-    .map((c) => c.slug)
-    .sort();
+  return inferCompanies(`${title} ${abstract ?? ""}`);
 }
 
 export function parseArxivXml(xml: string, validSlugs?: string[], topicLimit?: number): ImportedPaper[] {

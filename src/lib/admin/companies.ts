@@ -50,6 +50,13 @@ export const COMPANY_NAMES: Record<string, string> = {
   bytedance: "ByteDance",
 };
 
+export function inferCompanies(text: string): string[] {
+  const lower = text.toLowerCase();
+  return COMPANY_KEYWORDS.filter((c) => c.keywords.some((k) => lower.includes(k)))
+    .map((c) => c.slug)
+    .sort();
+}
+
 export const COMPANY_KEYWORDS: { slug: string; keywords: string[] }[] = [
   { slug: "cisco", keywords: ["cisco"] },
   { slug: "google", keywords: ["google", "alphabet", "gcp"] },

@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     source: item.source,
     pub_date: item.pubDate || null,
     category: "news" as const,
+    companies: item.companies,
   }));
 
   const jobRows = jobItems.map((item) => ({
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
     source: item.source,
     pub_date: item.pubDate || null,
     category: "job" as const,
+    companies: item.companies,
   }));
 
   const allRows = [...newsRows, ...jobRows];

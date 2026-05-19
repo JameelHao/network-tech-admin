@@ -25,6 +25,7 @@ export async function POST() {
       source: item.source,
       pub_date: item.pubDate || null,
       category: "news" as const,
+      companies: item.companies,
     })),
     ...jobsResult.items.map((item) => ({
       title: item.title,
@@ -33,6 +34,7 @@ export async function POST() {
       source: item.source,
       pub_date: item.pubDate || null,
       category: "job" as const,
+      companies: item.companies,
     })),
   ];
 

@@ -20,6 +20,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/ecosystem", label: t.nav.ecosystem },
         { href: "/admin/topics", label: t.nav.topics },
         { href: "/admin/favorites", label: t.nav.favorites },
+        { href: "/admin/companies", label: t.nav.companies },
       ],
     },
     {
