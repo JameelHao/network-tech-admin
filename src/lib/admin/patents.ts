@@ -32,7 +32,8 @@ export async function fetchAndStorePatents(
   const name = COMPANY_NAMES[slug];
   if (!name) return { inserted: 0, total: 0, error: `Unknown company: ${slug}` };
 
-  const url = `https://patents.google.com/xhr/query?url=assignee%3D${encodeURIComponent(name)}%26sort%3Dnew`;
+  const searchPath = `/?q=assignee:${name}&sort=new`;
+  const url = `https://patents.google.com/xhr/query?url=${encodeURIComponent(searchPath)}`;
   const res = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0" },
     signal: AbortSignal.timeout(15000),
@@ -40,14 +41,26 @@ export async function fetchAndStorePatents(
   if (!res.ok) return { inserted: 0, total: 0, error: `HTTP ${res.status}` };
 
   const text = await res.text();
-  let json: any;
-  try { json = JSON.parse(text); } catch {
-    return { inserted: 0, total: 0, error: "parse error" };
+
+  // Detect HTML response (block page)
+  if (text.trim().startsWith("<") || text.includes("<!DOCTYPE")) {
+    return { inserted: 0, total: 0, error: `HTML response (likely blocked) — ${text.slice(0, 100)}` };
   }
 
-  const results = json?.results?.[0]?.cluster?.[0]?.result ?? [];
+  let json: any;
+  try { json = JSON.parse(text); } catch {
+    return { inserted: 0, total: 0, error: `parse error: ${text.slice(0, 200)}` };
+  }
+
+  // Try multiple result paths (XHR API response structure varies)
+  const results =
+    json?.results?.[0]?.cluster?.[0]?.result ??
+    json?.results?.[0]?.result ??
+    json?.data?.results?.[0]?.cluster?.[0]?.result ??
+    json?.data ?? [];
+
   if (!Array.isArray(results) || results.length === 0)
-    return { inserted: 0, total: 0, error: "no results" };
+    return { inserted: 0, total: 0, error: `no results — top keys: ${Object.keys(json).slice(0, 8).join(",")}` };
 
   const supabase = await createClient();
 
