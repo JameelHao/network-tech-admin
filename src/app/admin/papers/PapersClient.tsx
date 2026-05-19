@@ -376,9 +376,16 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
                           </span>
                         </Td>
                         <Td>
-                          {p.venue ? (
-                            <span className="rounded-full bg-navy-50 border border-navy-200 px-2 py-0.5 font-mono text-[10px] text-navy-700">{p.venue}</span>
-                          ) : <span className="text-ink-400">—</span>}
+                          <div className="flex flex-wrap items-center gap-1">
+                            {p.venue ? (
+                              <span className="rounded-full bg-navy-50 border border-navy-200 px-2 py-0.5 font-mono text-[10px] text-navy-700">{p.venue}</span>
+                            ) : <span className="text-ink-400">—</span>}
+                            {p.companies?.map((c) => (
+                              <span key={c} className={`rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${COMPANY_COLORS[c] ?? "bg-zinc-100 text-zinc-600 border border-zinc-200"}`}>
+                                {c}
+                              </span>
+                            ))}
+                          </div>
                         </Td>
                         <Td className="hidden lg:table-cell">
                           {p.citation_count != null ? (
@@ -492,6 +499,8 @@ function Th({ children, className }: { children: React.ReactNode; className?: st
 function Td({ children, className }: { children: React.ReactNode; className?: string }) {
   return <td className={`px-3 sm:px-4 py-3 align-middle ${className ?? ""}`}>{children}</td>;
 }
+
+import { COMPANY_COLORS } from "@/lib/admin/companies";
 
 function TopicMultiSelect({
   topics,

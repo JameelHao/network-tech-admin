@@ -8,6 +8,7 @@ import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { COMPANY_COLORS, COMPANY_NAMES } from "@/lib/admin/companies";
 
 export default async function PaperDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -49,6 +50,13 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.link}</dt><dd className="mt-1">{paper.url ? <a href={paper.url} target="_blank" rel="noreferrer" className="text-navy-500 hover:text-navy-700 transition-colors truncate block">{paper.url}</a> : "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.papers.citations}</dt><dd className="mt-1 text-ink-800 tabular-nums">{paper.citation_count != null ? paper.citation_count.toLocaleString() : "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.papers.source}</dt><dd className="mt-1 text-ink-800">{paper.source ?? "—"}</dd></div>
+            {paper.companies && paper.companies.length > 0 && (
+              <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">Companies</dt><dd className="mt-1 flex flex-wrap gap-1">{[...new Set(paper.companies)].map((c) => (
+                <span key={c} className={`rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${COMPANY_COLORS[c] ?? "bg-zinc-100 text-zinc-600 border border-zinc-200"}`}>
+                  {COMPANY_NAMES[c] ?? c}
+                </span>
+              ))}</dd></div>
+            )}
           </dl>
           {paper.abstract && (
             <div>

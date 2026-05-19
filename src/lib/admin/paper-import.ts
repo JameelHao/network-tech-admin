@@ -1,4 +1,5 @@
 import { inferPaperTopics, getValidTopicSlugs } from "./paper-topics";
+import { COMPANY_KEYWORDS } from "./companies";
 
 export type ImportedPaper = {
   title: string;
@@ -8,6 +9,7 @@ export type ImportedPaper = {
   published_date: string | null;
   abstract: string | null;
   topics: string[];
+  companies: string[];
   citation_count?: number;
   source: "arxiv" | "semantic-scholar";
 };
@@ -23,6 +25,13 @@ export type PaperFetchResult = {
   papers: ImportedPaper[];
   categoryStats: CategoryStat[];
 };
+
+export function inferPaperCompanies(title: string, abstract: string | null): string[] {
+  const text = `${title} ${abstract ?? ""}`.toLowerCase();
+  return COMPANY_KEYWORDS.filter((c) => c.keywords.some((k) => text.includes(k)))
+    .map((c) => c.slug)
+    .sort();
+}
 
 export function parseArxivXml(xml: string, validSlugs?: string[], topicLimit?: number): ImportedPaper[] {
   const papers: ImportedPaper[] = [];
@@ -56,6 +65,7 @@ export function parseArxivXml(xml: string, validSlugs?: string[], topicLimit?: n
       published_date: published ? published.slice(0, 10) : null,
       abstract,
       topics: inferPaperTopics(categories.filter((c) => c.startsWith("cs.")), title, abstract, validSlugs, topicLimit),
+      companies: inferPaperCompanies(title, abstract),
       source: "arxiv",
     });
   }
@@ -143,6 +153,7 @@ export function parseS2Papers(data: S2Paper[], venue: string, validSlugs?: strin
       published_date: p.year ? `${p.year}-01-01` : null,
       abstract: p.abstract?.slice(0, 2000) ?? null,
       topics: inferPaperTopics([], p.title, p.abstract ?? null, validSlugs, topicLimit),
+      companies: inferPaperCompanies(p.title, p.abstract ?? null),
       citation_count: p.citationCount ?? undefined,
       source: "semantic-scholar" as const,
     };
@@ -237,11 +248,89 @@ export function mergeResults(arxiv: PaperFetchResult, s2: PaperFetchResult): Pap
 const EMPTY_RESULT: PaperFetchResult = { papers: [], categoryStats: [] };
 
 export async function fetchAllNetworkPapers(year: number, topicLimit?: number): Promise<PaperFetchResult> {
-  const [arxivSettled, s2Settled] = await Promise.allSettled([
+  const [arxivSettled, s2Settled, companySettled] = await Promise.allSettled([
     fetchFromArxiv(year, topicLimit),
     fetchFromSemanticScholar(year, topicLimit),
+    fetchAllCompanyPapers(year, topicLimit),
   ]);
   const arxiv = arxivSettled.status === "fulfilled" ? arxivSettled.value : EMPTY_RESULT;
   const s2 = s2Settled.status === "fulfilled" ? s2Settled.value : EMPTY_RESULT;
-  return mergeResults(arxiv, s2);
+  const company = companySettled.status === "fulfilled" ? companySettled.value : EMPTY_RESULT;
+  const merged = mergeResults(arxiv, s2);
+  return mergeResults(merged, company);
+}
+
+// ── Company-specific arXiv keyword search ──
+
+const COMPANY_ARXIV_QUERIES: Record<string, string> = {
+  cisco: "all:cisco+AND+all:(network+OR+datacenter+OR+sdn+OR+segment+routing+OR+bgp+OR+ios+xe)",
+  google: 'all:"google"+AND+all:(network+OR+datacenter+OR+sdn+OR+cloud+OR+infrastructure+OR+mgcp+OR+boria)',
+  ericsson: "all:ericsson+AND+all:(network+OR+5g+OR+6g+OR+radio+OR+ran+OR+oranic+OR+bgp+OR+sdn)",
+  nokia: "all:nokia+AND+all:(network+OR+5g+OR+6g+OR+radio+OR+ran+OR+sdn+OR+ip+optical)",
+  aws: 'all:"aws"+AND+all:(network+OR+vpc+OR+cloud+OR+datacenter+OR+sdn+OR+route+53+OR+direct+connect)',
+  azure: 'all:azure+AND+all:(network+OR+cloud+OR+datacenter+OR+sdn+OR+virtual+network+OR+express+route)',
+  microsoft: "all:microsoft+AND+all:(network+OR+datacenter+OR+sdn+OR+cloud+OR+rdma+OR+sonic)",
+  openai: "all:openai+AND+all:(network+OR+distributed+OR+training+OR+inference+OR+datacenter+OR+gpu)",
+  anthropic: "all:anthropic+AND+all:(network+OR+distributed+OR+training+OR+inference+OR+datacenter)",
+  nvidia: "all:nvidia+AND+all:(network+OR+datacenter+OR+gpu+OR+rdma+OR+infiniBand+OR+doca+OR+connectx)",
+  meta: "all:meta+AND+all:(network+OR+datacenter+OR+sdn+OR+optical+OR+fboss+OR+wedge,marianas)",
+  micron: "all:micron+AND+all:(network+OR+memory+OR+storage+OR+datacenter+OR+ddr5)",
+  broadcom: "all:broadcom+AND+all:(network+OR+switch+OR+router+OR+chip+OR+silicon+OR+jericho+OR+tomahawk+OR+trident)",
+  intel: "all:intel+AND+all:(network+OR+datacenter+OR+sdn+OR+chip+OR+ethernet+OR+tofino+OR+ipu)",
+  ibm: "all:ibm+AND+all:(network+OR+cloud+OR+watson+OR+red+hat+OR+telecom+OR+nsf)",
+  huawei: "all:huawei+AND+all:(network+OR+5g+OR+6g+OR+datacenter+OR+router+OR+sdn+OR+ip)",
+  cloudflare: "all:cloudflare+AND+all:(network+OR+dns+OR+cdn+OR+ddos+OR+edge+OR+workers+OR+zero+trust)",
+  apple: "all:apple+AND+all:(network+OR+icloud+OR+edge+OR+privacy+OR+protocol+OR+wifi+OR+bluetooth)",
+  amd: "all:amd+AND+all:(network+OR+datacenter+OR+chip+OR+pensando+OR+xilinx+OR+fpga+OR+smartnic)",
+  tencent: "all:tencent+AND+all:(network+OR+cloud+OR+datacenter+OR+game+OR+streaming+OR+wechat)",
+  alibaba: "all:alibaba+AND+all:(network+OR+cloud+OR+datacenter+OR+sdn+OR+express+OR+transport)",
+  baidu: "all:baidu+AND+all:(network+OR+cloud+OR+sdn+OR+autonomous+OR+transport+OR+paddle)",
+  bytedance: "all:bytedance+AND+all:(network+OR+cloud+OR+video+OR+streaming+OR+tiktok+OR+edge)",
+};
+
+export const COMPANY_SLUGS = Object.keys(COMPANY_ARXIV_QUERIES);
+
+export async function fetchCompanyArxivPapers(companySlug: string, year: number, topicLimit?: number): Promise<PaperFetchResult> {
+  const query = COMPANY_ARXIV_QUERIES[companySlug];
+  if (!query) return { papers: [], categoryStats: [] };
+
+  const validSlugs = await getValidTopicSlugs();
+  const dateFilter = `+AND+submittedDate:[${year}01010000+TO+${year}12312359]`;
+  const url = `https://export.arxiv.org/api/query?search_query=${query}${dateFilter}&start=0&max_results=50&sortBy=submittedDate&sortOrder=descending`;
+
+  try {
+    const result = await fetchArxivOnce(url, `company:${companySlug}`, validSlugs, topicLimit);
+    // Tag all returned papers with this company (in addition to inferred companies)
+    for (const p of result.papers) {
+      if (!p.companies.includes(companySlug)) {
+        p.companies.push(companySlug);
+      }
+    }
+    return result;
+  } catch (err) {
+    return {
+      papers: [],
+      categoryStats: [{ category: `company:${companySlug}`, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" }],
+    };
+  }
+}
+
+export async function fetchAllCompanyPapers(year: number, topicLimit?: number): Promise<PaperFetchResult> {
+  const allPapers: ImportedPaper[] = [];
+  const categoryStats: CategoryStat[] = [];
+  const seen = new Set<string>();
+
+  for (const slug of Object.keys(COMPANY_ARXIV_QUERIES)) {
+    const result = await fetchCompanyArxivPapers(slug, year, topicLimit);
+    categoryStats.push(...result.categoryStats);
+    for (const p of result.papers) {
+      const key = normalizeTitle(p.title);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      allPapers.push(p);
+    }
+    await new Promise((r) => setTimeout(r, 3500));
+  }
+
+  return { papers: allPapers, categoryStats };
 }

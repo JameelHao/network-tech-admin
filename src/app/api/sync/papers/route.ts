@@ -4,8 +4,10 @@ import { requireAdminAuth } from "@/lib/admin/api-auth";
 import {
   fetchSingleArxivCategory,
   fetchSingleS2Venue,
+  fetchCompanyArxivPapers,
   ARXIV_CATEGORIES,
   S2_VENUES,
+  COMPANY_SLUGS,
 } from "@/lib/admin/paper-import";
 import type { ImportedPaper } from "@/lib/admin/paper-import";
 
@@ -55,6 +57,7 @@ async function upsertPapers(fetched: ImportedPaper[]) {
       abstract: p.abstract,
       citation_count: p.citation_count ?? null,
       source: p.source,
+      companies: p.companies,
     }));
     const { data: inserted, error } = await supabase.from("papers").insert(batch).select("id");
     if (!error && inserted) {
@@ -130,6 +133,15 @@ export async function POST(request: Request) {
       totalUpdated += updated;
       totalFetched += result.papers.length;
       allStats.push(result.categoryStats[0]);
+    }
+
+    for (const slug of COMPANY_SLUGS) {
+      const result = await fetchCompanyArxivPapers(slug, CURRENT_YEAR, 5);
+      const { imported, updated } = await upsertPapers(result.papers);
+      totalImported += imported;
+      totalUpdated += updated;
+      totalFetched += result.papers.length;
+      allStats.push(...result.categoryStats);
     }
 
     const supabase = await createClient();

@@ -114,6 +114,7 @@ export async function fetchAndSyncPapers(): Promise<{ papers: Paper[]; total: nu
         url: p.url,
         published_date: p.published_date,
         abstract: p.abstract,
+        companies: p.companies,
       }));
       const { data: inserted } = await supabase.from("papers").insert(batch).select("id");
       if (inserted) {

@@ -3,8 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import {
   fetchSingleArxivCategory,
   fetchSingleS2Venue,
+  fetchCompanyArxivPapers,
   ARXIV_CATEGORIES,
   S2_VENUES,
+  COMPANY_SLUGS,
 } from "@/lib/admin/paper-import";
 import type { CategoryStat, ImportedPaper } from "@/lib/admin/paper-import";
 
@@ -32,6 +34,12 @@ export async function GET(request: Request) {
     categoryStats.push(...result.categoryStats);
   }
 
+  for (const slug of COMPANY_SLUGS) {
+    const result = await fetchCompanyArxivPapers(slug, 2026, 5);
+    allPapers.push(...result.papers);
+    categoryStats.push(...result.categoryStats);
+  }
+
   await supabase.from("sync_meta").upsert(
     { entity: "papers", last_sync_at: new Date().toISOString(), last_result: { categoryStats } },
     { onConflict: "entity" },
@@ -54,6 +62,7 @@ export async function GET(request: Request) {
       url: p.url,
       published_date: p.published_date,
       abstract: p.abstract,
+      companies: p.companies,
     }));
     const { data: inserted, error } = await supabase.from("papers").insert(batch).select("id");
     if (!error && inserted) {
