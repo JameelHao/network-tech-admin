@@ -13,7 +13,7 @@ Starting dev server...
 - Local:         http://localhost:3000
 - Network:       http://11.245.137.147:3000
 - Environments: .env.local
-✓ Ready in 271ms
+✓ Ready in 250ms
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of /Users/pluto/package-lock.json as the root directory.
  To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
@@ -23,7 +23,6 @@ Starting dev server...
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
- GET /admin/topics 200 in 2.8s (next.js: 1242ms, proxy.ts: 54ms, application-code: 1538ms)
 [browser] Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
 
 - A server/client branch `if (typeof window !== 'undefined')`.
@@ -41,10 +40,10 @@ https://react.dev/link/hydration-mismatch
       <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
         <LoadingBoundary name="/" loading={null}>
           <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
-            <HTTPAccessFallbackErrorBoundary pathname="/admin/topics" notFound={{...}} forbidden={undefined} ...>
+            <HTTPAccessFallbackErrorBoundary pathname="/admin/papers" notFound={{...}} forbidden={undefined} ...>
               <RedirectBoundary>
                 <RedirectErrorBoundary router={{...}}>
-                  <InnerLayoutRouter url="/admin/topics" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                  <InnerLayoutRouter url="/admin/papers" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
                     <SegmentViewNode type="layout" pagePath="admin/layo...">
                       <SegmentTrieNode>
                       <script>
@@ -54,7 +53,7 @@ https://react.dev/link/hydration-mismatch
                         <div className="min-h-dvh ...">
                           <a>
                           <Sidebar t={{brand:{...}, ...}}>
-                            <SidebarNav pathname="/admin/topics" sections={[...]} ...>
+                            <SidebarNav pathname="/admin/papers" sections={[...]} ...>
                               <aside aria-label="导航" className="hidden lg:...">
                                 <div className="px-6 pt-7 ...">
                                   <span
@@ -127,9 +126,9 @@ https://react.dev/link/hydration-mismatch
 -                                           style={{font-weight:"400"}}
                                           >
 +                                           生态
-                                      <LinkComponent href="/admin/topics" aria-current="page" className="group rela...">
+                                      <LinkComponent href="/admin/topics" aria-current={undefined} ...>
                                         <a
-                                          aria-current="page"
+                                          aria-current={undefined}
 +                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
 -                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
                                           ref={function}
@@ -139,7 +138,6 @@ https://react.dev/link/hydration-mismatch
                                           href="/admin/topics"
 -                                         style={{font-weight:"400"}}
                                         >
-                                          <span>
                                           <span
 +                                           className="flex-1 min-w-0 truncate text-[15px]"
 -                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
@@ -174,9 +172,9 @@ https://react.dev/link/hydration-mismatch
 -                                           style={{font-weight:"400"}}
                                           >
 +                                           会议
-                                      <LinkComponent href="/admin/papers" aria-current={undefined} ...>
+                                      <LinkComponent href="/admin/papers" aria-current="page" className="group rela...">
                                         <a
-                                          aria-current={undefined}
+                                          aria-current="page"
 +                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 trans..."
 -                                         className="group relative flex items-center gap-3 rounded-md px-3 py-2 text-..."
                                           ref={function}
@@ -186,6 +184,7 @@ https://react.dev/link/hydration-mismatch
                                           href="/admin/papers"
 -                                         style={{font-weight:"400"}}
                                         >
+                                          <span>
                                           <span
 +                                           className="flex-1 min-w-0 truncate text-[15px]"
 -                                           className="flex-1 min-w-0 truncate text-[15px] font-normal"
@@ -344,7 +343,7 @@ https://react.dev/link/hydration-mismatch
                                   >
 +                                   Tech Radar
                                 <div className="px-3 pb-6 ...">
-+                                 <details open={true} className="mb-1 group">
++                                 <details open={false} className="mb-1 group">
 -                                 <div className="mb-1 group">
                                   ...
                           ...
@@ -353,37 +352,26 @@ https://react.dev/link/hydration-mismatch
 
     at <unknown> (https://react.dev/link/hydration-mismatch)
     at details (<anonymous>)
+    at <unknown> (src/components/admin/Sidebar.tsx:104:3)
+    at Array.map (<anonymous>)
+    at navContent (src/components/admin/Sidebar.tsx:101:1)
+    at SidebarNav (src/components/admin/Sidebar.tsx:173:3)
+    at Sidebar (src/components/admin/Sidebar.tsx:75:7)
     at AdminLayout (src/app/admin/layout.tsx:14:7)
-  12 |     <div className="min-h-dvh flex bg-paper text-ink-800">
-  13 |       <SkipToMain label={t.a11y.skipToMain} />
-> 14 |       <Sidebar t={t} />
-     |       ^
-  15 |       <CommandPalette items={searchIndex} labels={t.command} />
-  16 |       <div id="main-content" className="flex-1 min-w-0 flex flex-col">{children}</div>
-  17 |       <MobileNavController />
- GET /admin/ecosystem 200 in 1187ms (next.js: 623ms, proxy.ts: 14ms, application-code: 550ms)
- GET /admin/insights 200 in 911ms (next.js: 343ms, proxy.ts: 9ms, application-code: 559ms)
- GET /admin 200 in 665ms (next.js: 205ms, proxy.ts: 5ms, application-code: 454ms)
- GET /admin/topics 200 in 1849ms (next.js: 5ms, proxy.ts: 8ms, application-code: 1836ms)
- GET /admin/conferences 200 in 614ms (next.js: 208ms, proxy.ts: 8ms, application-code: 398ms)
- GET /admin/conferences?cat=network-systems 200 in 317ms (next.js: 6ms, proxy.ts: 10ms, application-code: 301ms)
- GET /admin/conferences?cat=measurement 200 in 272ms (next.js: 4ms, proxy.ts: 8ms, application-code: 259ms)
- GET /admin/conferences?cat=security 200 in 519ms (next.js: 4ms, proxy.ts: 8ms, application-code: 507ms)
- GET /admin/conferences?cat=emerging 200 in 263ms (next.js: 4ms, proxy.ts: 6ms, application-code: 252ms)
- GET /admin/conferences?cat=infrastructure 200 in 558ms (next.js: 5ms, proxy.ts: 8ms, application-code: 545ms)
- GET /admin/conferences 200 in 307ms (next.js: 4ms, proxy.ts: 8ms, application-code: 295ms)
- GET /admin/papers 200 in 1567ms (next.js: 227ms, proxy.ts: 11ms, application-code: 1328ms)
- GET /api/sync-status 200 in 1066ms (next.js: 216ms, application-code: 849ms)
- GET /api/sync-status 200 in 1154ms (next.js: 3ms, application-code: 1151ms)
- GET /admin/opensource 200 in 485ms (next.js: 201ms, proxy.ts: 5ms, application-code: 279ms)
- GET /api/sync-status 200 in 633ms (next.js: 1365µs, application-code: 632ms)
- GET /api/sync-status 200 in 336ms (next.js: 1941µs, application-code: 334ms)
- GET /admin/products 200 in 466ms (next.js: 175ms, proxy.ts: 8ms, application-code: 283ms)
- GET /api/sync-status 200 in 402ms (next.js: 1493µs, application-code: 400ms)
- GET /api/sync-status 200 in 501ms (next.js: 7ms, application-code: 494ms)
- GET /api/sync-status 200 in 343ms (next.js: 3ms, application-code: 340ms)
- GET /api/sync-status 200 in 293ms (next.js: 3ms, application-code: 290ms)
- GET /admin/news 200 in 509ms (next.js: 184ms, proxy.ts: 3ms, application-code: 323ms)
- GET /api/sync-status 200 in 294ms (next.js: 1449µs, application-code: 293ms)
- GET /api/sync-status 200 in 486ms (next.js: 1973µs, application-code: 485ms)
-✓ Compiled in 38ms
+  102 |
+  103 | const summaryClass =
+> 104 |   "flex items-center justify-between rounded-md px-3 py-2 cursor-pointer list-none font-n...
+      |   ^
+  105 |
+  106 | function SidebarNav({
+  107 |   sections,
+ GET /admin/papers 200 in 2.8s (next.js: 1359ms, proxy.ts: 76ms, application-code: 1326ms)
+[browser] Uncaught TypeError: Cannot read properties of null (reading 'parentNode')
+    at $RS (http://localhost:3000/admin/papers:1:1206476)
+    at <unknown> (http://localhost:3000/admin/papers:1:1206545)
+ GET /api/sync-status 200 in 652ms (next.js: 268ms, application-code: 383ms)
+ GET /api/sync-status 200 in 396ms (next.js: 4ms, application-code: 393ms)
+ GET /admin/topics 200 in 1205ms (next.js: 205ms, proxy.ts: 10ms, application-code: 990ms)
+ GET /admin/ecosystem 200 in 898ms (next.js: 598ms, proxy.ts: 9ms, application-code: 292ms)
+ GET /admin/topics 200 in 794ms (next.js: 5ms, proxy.ts: 6ms, application-code: 783ms)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         [?25h
