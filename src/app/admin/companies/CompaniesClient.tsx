@@ -21,6 +21,7 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
   const [importText, setImportText] = useState("");
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => search ? companies.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())) : companies,
@@ -54,6 +55,28 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
       setImporting(false);
     }
   }, [importSlug, importText, lang]);
+
+  const handleSync = useCallback(async (slug: string) => {
+    setSyncing(slug);
+    try {
+      const res = await fetch("/api/sync/patents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company: slug }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(lang === "zh" ? `同步失败: ${data.error}` : `Sync failed: ${data.error}`);
+      } else {
+        alert(lang === "zh" ? `同步完成: 新增 ${data.inserted} / 共 ${data.total}` : `Synced: ${data.inserted} new / ${data.total} total`);
+      }
+      window.location.reload();
+    } catch (e) {
+      alert(lang === "zh" ? "同步请求失败" : "Sync request failed");
+    } finally {
+      setSyncing(null);
+    }
+  }, [lang]);
 
   return (
     <div className="space-y-4">
@@ -123,6 +146,17 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
               <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] ${c.color}`}>
                 {c.name}
               </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSync(c.slug);
+                }}
+                disabled={syncing === c.slug}
+                className="text-[10px] font-mono text-ink-400 hover:text-green-600 transition-colors disabled:opacity-50"
+              >
+                {syncing === c.slug ? "..." : "sync"}
+              </button>
               <button
                 onClick={(e) => {
                   e.preventDefault();
