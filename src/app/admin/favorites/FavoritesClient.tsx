@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useFavoritesAll, useFavorites, type EntityType } from "@/hooks/useFavorites";
 import { fetchFavoriteItems, type FavoriteItem } from "./actions";
 import type { Dict, Lang } from "@/lib/i18n/dict";
@@ -128,9 +127,5 @@ function FavRow({ item }: { item: FavoriteItem & { ts: number } }) {
     </div>
   );
 
-  // Remove from DOM when unfavorited — component re-renders via useFavoritesAll sync
-  if (item.url) {
-    return <Link href={item.url}>{inner}</Link>;
-  }
   return inner;
 }
