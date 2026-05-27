@@ -17,10 +17,12 @@ export function NewsTableWithModal({
   items,
   t,
   lang,
+  now,
 }: {
   items: NewsItem[];
   t: Dict;
   lang: Lang;
+  now?: number;
 }) {
   const [selected, setSelected] = useState<NewsItem | null>(null);
 
@@ -28,8 +30,8 @@ export function NewsTableWithModal({
     <>
       <tbody>
         {items.map((item) => {
-          const stale = isExpired(item.pub_date, 7);
-          const isNewItem = isNew(item.pub_date);
+          const stale = isExpired(item.pub_date, 7, now);
+          const isNewItem = isNew(item.pub_date, now);
           return (
             <tr key={item.id} data-fav="false" className={`group border-b border-line last:border-b-0 hover:bg-paper/40 transition-colors ${stale ? "opacity-50" : ""}`}>
               <td className="px-3 sm:px-4 py-3 align-middle">
@@ -57,7 +59,7 @@ export function NewsTableWithModal({
               <td className="px-3 sm:px-4 py-3 align-middle whitespace-nowrap">
                 {item.pub_date ? (
                   <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={item.pub_date}>
-                    {relativeTime(item.pub_date, lang)}
+                    {relativeTime(item.pub_date, lang, now)}
                   </span>
                 ) : <span className="text-ink-400">—</span>}
               </td>
@@ -87,6 +89,7 @@ export function NewsTableWithModal({
           item={selected}
           t={t}
           lang={lang}
+          now={now}
           onClose={() => setSelected(null)}
         />
       )}

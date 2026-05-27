@@ -31,6 +31,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/opensource", label: t.nav.opensource },
         { href: "/admin/products", label: t.nav.products },
         { href: "/admin/news", label: t.nav.news },
+        { href: "/admin/rfcs", label: t.nav.rfcs },
         { href: "/admin/jobs", label: t.nav.jobs },
       ],
     },

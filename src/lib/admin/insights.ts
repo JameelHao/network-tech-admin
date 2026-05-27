@@ -139,6 +139,54 @@ export async function getPaperTopicHeatmap(months = 12): Promise<HeatmapPoint[]>
   return result;
 }
 
+export async function getCompanyTopicHeatmap(): Promise<HeatmapPoint[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("papers")
+    .select("companies, paper_topics(topic_slug)")
+    .not("companies", "eq", "{}")
+    .limit(5000);
+
+  const mapped = (data ?? []).map((row: any) => ({
+    companies: row.companies as string[],
+    topics: (row.paper_topics ?? []).map((pt: any) => pt.topic_slug),
+  }));
+
+  const topTopics = countArrayField(mapped, "topics", 15).map((p) => p.name);
+  const topCompanies = new Map<string, number>();
+  for (const row of mapped) {
+    for (const c of row.companies) {
+      topCompanies.set(c, (topCompanies.get(c) ?? 0) + 1);
+    }
+  }
+  const companyList = [...topCompanies.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([c]) => c);
+
+  const counts = new Map<string, number>();
+  for (const c of companyList) {
+    for (const t of topTopics) {
+      counts.set(`${c}|${t}`, 0);
+    }
+  }
+
+  for (const row of mapped) {
+    for (const c of row.companies) {
+      if (!companyList.includes(c)) continue;
+      for (const t of row.topics) {
+        if (!topTopics.includes(t)) continue;
+        const key = `${c}|${t}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+  }
+
+  const result: HeatmapPoint[] = [];
+  for (const [key, count] of counts) {
+    const [company, topic] = key.split("|");
+    result.push({ topic: company, month: topic, count });
+  }
+  return result;
+}
+
 export async function getPaperVenueDistribution(): Promise<ChartPoint[]> {
   const supabase = await createClient();
   const { data } = await supabase

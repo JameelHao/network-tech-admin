@@ -8,23 +8,25 @@ type SourceStatus = { lastSync: string | null; count: number };
 export async function GET() {
   const supabase = await createClient();
 
-  const [papersRes, newsRes, jobsRes, productsRes, opensourceRes, cloudProductsRes, syncMetaRes] = await Promise.all([
+  const [papersRes, newsRes, jobsRes, productsRes, opensourceRes, cloudProductsRes, rfcsRes, syncMetaRes] = await Promise.all([
     supabase.from("papers").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "news").order("created_at", { ascending: false }).limit(1),
     supabase.from("news_items").select("created_at").eq("category", "job").order("created_at", { ascending: false }).limit(1),
     supabase.from("products").select("updated_at").order("updated_at", { ascending: false }).limit(1),
     supabase.from("opensource").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("products").select("updated_at").eq("source", "cloud-releases").order("updated_at", { ascending: false }).limit(1),
-    supabase.from("sync_meta").select("entity, last_sync_at").in("entity", ["papers", "news", "jobs", "products", "opensource", "cloud-products"]),
+    supabase.from("rfcs").select("created_at").order("created_at", { ascending: false }).limit(1),
+    supabase.from("sync_meta").select("entity, last_sync_at").in("entity", ["papers", "news", "jobs", "products", "opensource", "cloud-products", "rfcs"]),
   ]);
 
-  const [papersCount, newsCount, jobsCount, productsCount, opensourceCount, cloudProductsCount] = await Promise.all([
+  const [papersCount, newsCount, jobsCount, productsCount, opensourceCount, cloudProductsCount, rfcsCount] = await Promise.all([
     supabase.from("papers").select("*", { count: "exact", head: true }),
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "news"),
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "job"),
     supabase.from("products").select("*", { count: "exact", head: true }),
     supabase.from("opensource").select("*", { count: "exact", head: true }),
     supabase.from("products").select("*", { count: "exact", head: true }).eq("source", "cloud-releases"),
+    supabase.from("rfcs").select("*", { count: "exact", head: true }),
   ]);
 
   const syncMeta: Record<string, string | null> = {};
@@ -56,6 +58,10 @@ export async function GET() {
     "cloud-products": {
       lastSync: syncMeta["cloud-products"] ?? cloudProductsRes.data?.[0]?.updated_at ?? null,
       count: cloudProductsCount.count ?? 0,
+    },
+    rfcs: {
+      lastSync: syncMeta.rfcs ?? rfcsRes.data?.[0]?.created_at ?? null,
+      count: rfcsCount.count ?? 0,
     },
   };
 

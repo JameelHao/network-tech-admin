@@ -1,4 +1,4 @@
-import { quarterKey } from "./insights";
+import { monthKey, quarterKey } from "./insights";
 import { TOPICS, type TopicCategory } from "./topics";
 import type { Paper, Conference, Product, OpenSource, Vendor } from "./types";
 
@@ -86,13 +86,15 @@ export function buildVendorTopicMap(
 }
 
 export type TrendPoint = {
-  quarter: string;
+  period: string;
   [topicSlug: string]: string | number;
 };
 
-export function getTopicQuarterlyTrend(
+function computeTopicTrend(
   papers: Pick<Paper, "topics" | "published_date">[],
-  topN = 5,
+  topN: number,
+  keyFn: (date: string) => string,
+  keyName: string,
 ): TrendPoint[] {
   const topicCounts = new Map<string, number>();
   for (const p of papers) {
@@ -107,22 +109,36 @@ export function getTopicQuarterlyTrend(
     .slice(0, topN)
     .map(([slug]) => slug);
 
-  const quarterMap = new Map<string, Record<string, number>>();
+  const periodMap = new Map<string, Record<string, number>>();
   for (const p of papers) {
     if (!p.published_date) continue;
-    const q = quarterKey(p.published_date);
-    if (!quarterMap.has(q)) {
-      quarterMap.set(q, Object.fromEntries(topTopics.map((t) => [t, 0])));
+    const k = keyFn(p.published_date);
+    if (!periodMap.has(k)) {
+      periodMap.set(k, Object.fromEntries(topTopics.map((t) => [t, 0])));
     }
-    const rec = quarterMap.get(q)!;
+    const rec = periodMap.get(k)!;
     for (const t of p.topics) {
       if (t in rec) rec[t]++;
     }
   }
 
-  return Array.from(quarterMap.entries())
+  return Array.from(periodMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([quarter, counts]) => ({ quarter, ...counts }));
+    .map(([period, counts]) => ({ period, ...counts }));
+}
+
+export function getTopicQuarterlyTrend(
+  papers: Pick<Paper, "topics" | "published_date">[],
+  topN = 5,
+): TrendPoint[] {
+  return computeTopicTrend(papers, topN, quarterKey, "quarter");
+}
+
+export function getTopicMonthlyTrend(
+  papers: Pick<Paper, "topics" | "published_date">[],
+  topN = 5,
+): TrendPoint[] {
+  return computeTopicTrend(papers, topN, monthKey, "month");
 }
 
 export type BubblePoint = {

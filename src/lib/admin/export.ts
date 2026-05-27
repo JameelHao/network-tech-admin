@@ -61,6 +61,15 @@ export const OPENSOURCE_FIELDS = [
   { key: "topics", label: "Topics", transform: arrayJoin },
 ] as const;
 
+export const RFC_FIELDS = [
+  { key: "rfc_number", label: "RFC Number" },
+  { key: "title", label: "Title" },
+  { key: "abstract", label: "Abstract", transform: str },
+  { key: "published_at", label: "Published", transform: dateSlice },
+  { key: "topics", label: "Topics", transform: arrayJoin },
+  { key: "companies", label: "Companies", transform: arrayJoin },
+] as const;
+
 function escapeCSV(value: string): string {
   if (value.includes('"') || value.includes(",") || value.includes("\n")) {
     return `"${value.replace(/"/g, '""')}"`;

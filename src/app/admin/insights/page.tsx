@@ -23,6 +23,7 @@ import {
   getNewsDailyTrend,
   getNewsSourceActivity,
   getJobsByCompany,
+  getCompanyTopicHeatmap,
 } from "@/lib/admin/insights";
 import { getPaperCount } from "@/lib/admin/papers";
 
@@ -66,12 +67,30 @@ export default async function InsightsPage() {
     paperTopics,
     paperVenues,
     paperHeatmap,
+    companyHeatmap,
+  ] = await Promise.all([
+    getPaperMonthlyTrend(),
+    getPaperTopTopics(),
+    getPaperVenueDistribution(),
+    getPaperTopicHeatmap(),
+    getCompanyTopicHeatmap(),
+  ]);
+  const [
     confQuarterly,
     confTiers,
     confCategories,
     leadFunnel,
     leadSources,
     leadTrend,
+  ] = await Promise.all([
+    getConferenceQuarterlyTrend(),
+    getConferenceTierDistribution(),
+    getConferenceCategoryTrend(),
+    getLeadStageFunnel(),
+    getLeadSourceDistribution(),
+    getLeadMonthlyTrend(),
+  ]);
+  const [
     talentCompanies,
     talentTopics,
     talentStages,
@@ -80,16 +99,6 @@ export default async function InsightsPage() {
     jobCompanies,
     paperTotal,
   ] = await Promise.all([
-    getPaperMonthlyTrend(),
-    getPaperTopTopics(),
-    getPaperVenueDistribution(),
-    getPaperTopicHeatmap(),
-    getConferenceQuarterlyTrend(),
-    getConferenceTierDistribution(),
-    getConferenceCategoryTrend(),
-    getLeadStageFunnel(),
-    getLeadSourceDistribution(),
-    getLeadMonthlyTrend(),
     getTalentCompanyTop(),
     getTalentTopicFrequency(),
     getTalentStageDistribution(),
@@ -153,6 +162,16 @@ export default async function InsightsPage() {
               data={paperHeatmap}
               xLabels={[...new Set(paperHeatmap.map((p) => p.month))].sort()}
               yLabels={[...new Set(paperHeatmap.map((p) => p.topic))]}
+              lang={lang}
+            />
+          </ChartCard>
+        )}
+        {companyHeatmap.length > 0 && (
+          <ChartCard label={t.insights.companyTopicHeatmap}>
+            <Heatmap
+              data={companyHeatmap}
+              xLabels={[...new Set(companyHeatmap.map((p) => p.month))].sort()}
+              yLabels={[...new Set(companyHeatmap.map((p) => p.topic))]}
               lang={lang}
             />
           </ChartCard>

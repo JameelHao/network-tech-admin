@@ -69,7 +69,7 @@ export default async function PapersPage() {
             authors: t.detail.authors,
             venue: t.detail.venue,
             topics: t.detail.topics,
-            citations: t.papers.citations,
+
             source: t.papers.source,
             rows: t.common.rows,
             page: t.common.page,

@@ -57,7 +57,7 @@ export function TechTrendChart({ data, topicKeys, lang, height = 300 }: Props) {
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" strokeOpacity={0.5} />
-          <XAxis dataKey="quarter" tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
+          <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
           <YAxis tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
           <Tooltip content={(props) => <ChartTooltip {...props} />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />

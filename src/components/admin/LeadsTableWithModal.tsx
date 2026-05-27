@@ -12,10 +12,12 @@ export function LeadsTableWithModal({
   leads,
   t,
   lang,
+  now,
 }: {
   leads: Lead[];
   t: Dict;
   lang: Lang;
+  now?: number;
 }) {
   const [selected, setSelected] = useState<Lead | null>(null);
 
@@ -67,13 +69,13 @@ export function LeadsTableWithModal({
                 className="text-left w-full font-normal"
               >
                 <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.created_at}>
-                  {relativeTime(l.created_at, lang)}
+                  {relativeTime(l.created_at, lang, now)}
                 </span>
               </button>
             </td>
             <td className="hidden lg:table-cell px-3 sm:px-4 py-3 whitespace-nowrap">
               <span className="font-mono text-[11.5px] tabular-nums text-ink-700" title={l.updated_at}>
-                {relativeTime(l.updated_at, lang)}
+                {relativeTime(l.updated_at, lang, now)}
               </span>
             </td>
             <td className="px-3 sm:px-4 py-3"><FavoriteButton entity="leads" id={l.id} label={l.title} /></td>

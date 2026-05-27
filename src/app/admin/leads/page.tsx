@@ -122,7 +122,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   </td></tr>
                 </tbody>
               ) : (
-                <LeadsTableWithModal leads={leads} t={t} lang={lang} />
+                <LeadsTableWithModal leads={leads} t={t} lang={lang} now={Date.now()} />
               )}
             </table>
           </div>

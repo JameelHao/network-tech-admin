@@ -55,7 +55,7 @@ type PapersLabels = {
   authors: string;
   venue: string;
   topics: string;
-  citations: string;
+
   source: string;
   rows: string;
   page: string;
@@ -341,9 +341,6 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
                     <Th>
                       <SortableHeaderClient column="venue" label={labels.venue} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
                     </Th>
-                    <Th className="hidden lg:table-cell">
-                      <SortableHeaderClient column="citation_count" label={labels.citations} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
-                    </Th>
                     <Th className="hidden lg:table-cell">{labels.topics}</Th>
                     <Th>
                       <SortableHeaderClient column="published_date" label={labels.publishedAt} currentSort={sortKey ?? undefined} currentDir={sortDir as SortDir | undefined} onSort={onSort} />
@@ -389,11 +386,6 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
                               </span>
                             ))}
                           </div>
-                        </Td>
-                        <Td className="hidden lg:table-cell">
-                          {p.citation_count != null ? (
-                            <span className="font-mono text-[11.5px] tabular-nums text-ink-600">{p.citation_count.toLocaleString()}</span>
-                          ) : <span className="text-ink-300">—</span>}
                         </Td>
                         <Td className="hidden lg:table-cell">
                           <div className="flex flex-wrap gap-1">

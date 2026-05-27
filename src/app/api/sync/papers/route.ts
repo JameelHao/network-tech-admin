@@ -24,7 +24,17 @@ async function upsertPapers(fetched: ImportedPaper[]) {
   const existingMap = new Map(
     (existing ?? []).map((p) => [p.title.toLowerCase(), p.citation_count as number | null]),
   );
-  const newPapers = fetched.filter((p) => !existingMap.has(p.title.toLowerCase()));
+
+  // Dedup within batch
+  const seen = new Set<string>();
+  const deduped = fetched.filter((p) => {
+    const key = p.title.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const newPapers = deduped.filter((p) => !existingMap.has(p.title.toLowerCase()));
 
   const updateTasks: Promise<void>[] = [];
   for (const p of fetched) {

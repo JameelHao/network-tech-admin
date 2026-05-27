@@ -65,7 +65,51 @@ export const FEEDS: FeedConfig[] = [
       "telecom", "subsea", "network", "connectivity",
     ],
   },
-  // OpenAI blog mostly AI model announcements, not networking products
+  {
+    url: "https://blogs.cisco.com/feed",
+    vendor: "cisco",
+    category: "platform",
+    site_url: "https://www.cisco.com",
+    keywords: [
+      "router", "switch", "catalyst", "nexus", "ise", "firepower", "meraki",
+      "sd-wan", "sdwan", "vpn", "firewall", "dna center", "aci",
+      "networking", "vxlan", "evpn", "segment routing", "ios xe", "nx-os",
+      "webex", "collaboration", "security", "zero trust", "sase",
+    ],
+  },
+  {
+    url: "https://www.ericsson.com/en/pressreleases/feed",
+    vendor: "ericsson",
+    category: "platform",
+    site_url: "https://www.ericsson.com",
+    keywords: [
+      "5g", "ran", "radio access", "core network", "ims", "cloud native",
+      "network slicing", "edge", "oss", "bss", "transport", "fronthaul",
+      "midhaul", "backhaul", "cloud ran", "open network", "network",
+    ],
+  },
+  {
+    url: "https://www.nokia.com/blog/feed/",
+    vendor: "nokia",
+    category: "platform",
+    site_url: "https://www.nokia.com",
+    keywords: [
+      "5g", "ran", "optical", "ip routing", "network", "cloud",
+      "data center", "fiber", "broadband", "bell labs",
+    ],
+  },
+  {
+    url: "https://azurecomcdn.azureedge.net/en-us/updates/feed/",
+    vendor: "azure",
+    category: "platform",
+    site_url: "https://azure.microsoft.com",
+    keywords: [
+      "vnet", "vpn", "expressroute", "load balancer", "application gateway",
+      "cdn", "front door", "traffic manager", "dns", "firewall",
+      "ddos", "bastion", "private link", "network watcher", "waf",
+      "virtual wan", "network",
+    ],
+  },
 ];
 
 export const TOPIC_KEYWORDS: [RegExp, string][] = [

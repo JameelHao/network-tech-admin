@@ -51,7 +51,17 @@ export async function GET(request: Request) {
 
   const { data: existing } = await supabase.from("papers").select("title");
   const existingTitles = new Set((existing ?? []).map((p) => p.title.toLowerCase()));
-  const newPapers = allPapers.filter((p) => !existingTitles.has(p.title.toLowerCase()));
+
+  // Dedup within batch — same paper fetched from multiple categories
+  const seen = new Set<string>();
+  const deduped = allPapers.filter((p) => {
+    const key = p.title.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const newPapers = deduped.filter((p) => !existingTitles.has(p.title.toLowerCase()));
 
   let imported = 0;
   for (let i = 0; i < newPapers.length; i += 50) {

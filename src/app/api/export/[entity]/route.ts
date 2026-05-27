@@ -15,6 +15,7 @@ import {
   TALENT_FIELDS,
   NEWS_FIELDS,
   OPENSOURCE_FIELDS,
+  RFC_FIELDS,
 } from "@/lib/admin/export";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,7 @@ function getFields(entity: string): any {
     talents: TALENT_FIELDS,
     news: NEWS_FIELDS,
     opensource: OPENSOURCE_FIELDS,
+    rfcs: RFC_FIELDS,
   };
   return map[entity];
 }
@@ -110,6 +112,15 @@ async function fetchEntityData(
     case "opensource": {
       const result = await listOpenSource(bulk);
       return { data: result.data as unknown as Record<string, unknown>[], filename: "opensource" };
+    }
+    case "rfcs": {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("rfcs")
+        .select("rfc_number, title, abstract, url, published_at, topics, companies")
+        .order("published_at", { ascending: false })
+        .limit(MAX_EXPORT);
+      return { data: (data ?? []) as unknown as Record<string, unknown>[], filename: "rfcs" };
     }
     default:
       throw new Error(`Unknown entity: ${entity}`);

@@ -6,6 +6,7 @@ import { getDict } from "@/lib/i18n/server";
 import type { Lang } from "@/lib/i18n/dict";
 import { COMPANY_NAMES } from "@/lib/admin/companies";
 import { relativeTime } from "@/lib/admin/format";
+import { CompanyTrendChart } from "@/components/admin/CompanyTrendChart";
 
 const PAGE_SIZE = 10;
 
@@ -54,8 +55,95 @@ export default async function CompanyDetailPage({ params, searchParams }: { para
     supabase.from("news_items").select("*", { count: "exact", head: true }).eq("category", "news").contains("companies", [slug]),
     supabase.from("github_repos").select("id, full_name, html_url, stars, language, pushed_at, description, topics").eq("company_slug", slug).order("stars", { ascending: false }).range((repoPage - 1) * PAGE_SIZE, repoPage * PAGE_SIZE - 1),
     supabase.from("github_repos").select("*", { count: "exact", head: true }).eq("company_slug", slug),
-    supabase.from("products").select("id, name, category, description, url, topics, stage, pricing").eq("vendor", name).order("name"),
+    supabase.from("products").select("id, name, category, description, url, topics, stage, pricing").ilike("vendor", name).order("name"),
   ]);
+
+  // Topic trends — aggregate papers + news by topic+month
+  const [topicPaperRows, topicNewsRows] = await Promise.all([
+    supabase.from("papers").select("published_date, paper_topics(topic_slug)")
+      .contains("companies", [slug]).not("published_date", "is", null).limit(2000),
+    supabase.from("news_items").select("title, pub_date")
+      .eq("category", "news").contains("companies", [slug]).not("pub_date", "is", null).limit(2000),
+  ]);
+
+  const months = 12;
+  const today = new Date();
+  const monthKeys: string[] = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    monthKeys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+
+  // Topic keyword map — match news headlines to topics
+  const TOPIC_KEYWORDS: Record<string, string[]> = {
+    "dc-networking": ["data center"],
+    "5g-6g": ["5g", "6g"],
+    "network-ai": ["ai", "machine learning", "deep learning", "intelligence"],
+    "edge-computing": ["edge"],
+    "cloud-infra": ["cloud", "kubernetes", "container"],
+    "sdn-nfv": ["sdn", "nfv", "software-defined"],
+    "ddos-defense": ["ddos"],
+    "zero-trust": ["zero trust"],
+    "satellite-leo": ["satellite", "leo", "starlink"],
+    "ebpf-xdp": ["ebpf", "xdp"],
+    "security": ["security", "cybersecurity", "firewall", "encryption", "vulnerability", "breach", "malware"],
+    "intent-based-networking": ["intent-based"],
+    "automation": ["automation", "orchestration"],
+    "observability": ["observability", "telemetry", "monitoring"],
+    "transport-protocols": ["tcp", "quic", "http3", "transport protocol"],
+    "distributed-sys": ["distributed system"],
+    "mobile-wireless": ["wi-fi", "wifi", "wireless", "5g"],
+    "high-speed-networking": ["400g", "800g", "silicon photonics", "optical"],
+  };
+
+  const topicBuckets = new Map<string, Map<string, number>>();
+
+  // Count papers by topic+month
+  for (const row of topicPaperRows.data ?? []) {
+    const m = (row as any).published_date?.slice(0, 7);
+    if (!m || !monthKeys.includes(m)) continue;
+    for (const pt of (row as any).paper_topics ?? []) {
+      const slug = pt.topic_slug;
+      if (!slug) continue;
+      if (!topicBuckets.has(slug)) topicBuckets.set(slug, new Map());
+      const tmap = topicBuckets.get(slug)!;
+      tmap.set(m, (tmap.get(m) ?? 0) + 1);
+    }
+  }
+
+  // Count news by topic+month using keyword matching
+  for (const row of topicNewsRows.data ?? []) {
+    const m = (row as any).pub_date?.slice(0, 7);
+    if (!m || !monthKeys.includes(m)) continue;
+    const title = ((row as any).title ?? "").toLowerCase();
+    const matched = new Set<string>();
+    for (const [slug, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+      if (keywords.some((kw) => title.includes(kw))) {
+        matched.add(slug);
+      }
+    }
+    for (const slug of matched) {
+      if (!topicBuckets.has(slug)) topicBuckets.set(slug, new Map());
+      const tmap = topicBuckets.get(slug)!;
+      tmap.set(m, (tmap.get(m) ?? 0) + 1);
+    }
+  }
+
+  // Pick top 8 topics by total count
+  const topicTotals = Array.from(topicBuckets.entries())
+    .map(([slug, months]) => [slug, Array.from(months.values()).reduce((a, b) => a + b, 0)] as const)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([slug]) => slug);
+
+  // Build chart data: array of { month, topic1: count, topic2: count, ... }
+  const topicChartData = monthKeys.map((month) => {
+    const point: Record<string, string | number> = { month };
+    for (const slug of topicTotals) {
+      point[slug] = topicBuckets.get(slug)?.get(month) ?? 0;
+    }
+    return point;
+  });
 
   return (
     <>
@@ -71,6 +159,17 @@ export default async function CompanyDetailPage({ params, searchParams }: { para
             {repoCountRes.count ?? 0} repos · {productsRes.data?.length ?? 0} products · {papersCountRes.count ?? 0} papers · {newsCountRes.count ?? 0} news
           </p>
         </header>
+
+        <section className="rounded-lg border border-line bg-surface p-5 mb-6">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
+            {lang === "zh" ? "研究方向趋势 (论文+新闻)" : "Topic Trends (Papers + News)"}
+          </h3>
+          <CompanyTrendChart
+            data={topicChartData}
+            topics={topicTotals}
+            lang={lang}
+          />
+        </section>
 
         {/* GitHub Repos */}
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">GitHub Repos</p>

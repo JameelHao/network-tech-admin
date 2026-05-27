@@ -156,7 +156,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                   </td></tr>
                 </tbody>
               ) : (
-                <NewsTableWithModal items={items} t={t} lang={lang} />
+                <NewsTableWithModal items={items} t={t} lang={lang} now={Date.now()} />
               )}
             </table>
           </div>

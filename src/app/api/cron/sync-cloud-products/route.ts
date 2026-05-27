@@ -62,7 +62,7 @@ async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]
         vendor: feed.vendor,
         category: feed.category,
         description: truncate(item.description, 200),
-        url: feed.site_url ?? item.link,
+        url: item.link,
         pricing: "paid",
         topics: mapTopics(item),
         source_url: item.link,

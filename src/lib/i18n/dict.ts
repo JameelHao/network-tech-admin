@@ -20,6 +20,7 @@ const en = {
     ecosystem: "Ecosystem",
     favorites: "Favorites",
     companies: "Companies",
+    rfcs: "RFCs",
   },
   topbar: {
     signOut: "Sign out",
@@ -414,6 +415,11 @@ const en = {
     startupCount: "Startups",
     startupSub: "Startup companies",
   },
+  rfcs: {
+    title: "IETF RFCs",
+    description: "Tracking IETF RFC publications relevant to networking and infrastructure",
+    noMatch: "No RFCs found",
+  },
   ecosystem: {
     title: "Ecosystem Overview",
     products: "Products",
@@ -450,6 +456,7 @@ const en = {
     topTopics: "Top Topics",
     venueDistribution: "Venue Distribution",
     topicHeatmap: "Topic Heatmap",
+    companyTopicHeatmap: "Company-Topic Heatmap",
     conferenceHeat: "Conference Heat",
     quarterlyTrend: "Quarterly Trend",
     tierDistribution: "Tier Distribution",
@@ -561,6 +568,8 @@ const en = {
     productsDesc: "Add products to start tracking.",
     vendors: "No vendors yet",
     vendorsDesc: "Add vendors to start tracking.",
+    rfcs: "No RFCs yet",
+    rfcsDesc: "RFC feed will be fetched automatically.",
   },
   error: {
     fetchFailed: "Failed to load data",
@@ -664,6 +673,7 @@ const zh: typeof en = {
     ecosystem: "生态",
     favorites: "收藏",
     companies: "公司",
+    rfcs: "RFC",
   },
   topbar: {
     signOut: "退出",
@@ -1058,6 +1068,11 @@ const zh: typeof en = {
     startupCount: "创业公司",
     startupSub: "创业公司数量",
   },
+  rfcs: {
+    title: "IETF RFC",
+    description: "追踪与网络技术基础设施相关的 IETF RFC 发布",
+    noMatch: "暂无相关 RFC",
+  },
   ecosystem: {
     title: "生态总览",
     products: "产品",
@@ -1094,6 +1109,7 @@ const zh: typeof en = {
     topTopics: "热门议题",
     venueDistribution: "发表渠道分布",
     topicHeatmap: "主题热力图",
+    companyTopicHeatmap: "公司-主题热力图",
     conferenceHeat: "会议热度",
     quarterlyTrend: "季度趋势",
     tierDistribution: "级别分布",
@@ -1205,6 +1221,8 @@ const zh: typeof en = {
     productsDesc: "添加产品以开始追踪。",
     vendors: "暂无厂商",
     vendorsDesc: "添加厂商以开始追踪。",
+    rfcs: "暂无 RFC",
+    rfcsDesc: "暂无 IETF RFC 数据。",
   },
   error: {
     fetchFailed: "数据加载失败",

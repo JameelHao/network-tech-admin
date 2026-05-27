@@ -154,3 +154,15 @@ export type Vendor = {
 
 export const VENDOR_TYPES: VendorType[] = ["vendor", "partner", "competitor", "startup", "academic"];
 export const VENDOR_STAGES: VendorStage[] = ["watching", "engaging", "partnered", "archived"];
+
+export type Rfc = {
+  id: string;
+  rfc_number: number;
+  title: string;
+  abstract: string | null;
+  url: string;
+  published_at: string | null;
+  topics: string[];
+  companies: string[];
+  created_at: string;
+};

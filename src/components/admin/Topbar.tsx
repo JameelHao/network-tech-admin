@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { setLang } from "@/lib/i18n/actions";
 import { logout } from "@/app/login/actions";
 import type { Dict, Lang } from "@/lib/i18n/dict";
@@ -15,7 +15,7 @@ function applyTheme(mode: Mode) {
   document.documentElement.classList.toggle("dark", dark);
 }
 
-export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: string }[]; t: Dict; lang: Lang }) {
+export function Topbar({ t, lang, crumbs: _crumbs }: { t: Dict; lang: Lang; crumbs?: { label: string; href?: string }[] }) {
   const [mode, setMode] = useState<Mode>("system");
   const [pending, startTransition] = useTransition();
 
@@ -77,18 +77,6 @@ export function Topbar({ crumbs, t, lang }: { crumbs: { label: string; href?: st
           </span>
         </a>
 
-        <nav className="hidden lg:flex items-center gap-1.5 text-sm text-ink-500">
-          {crumbs.map((c, i) => (
-            <Fragment key={i}>
-              {i > 0 && <span className="text-ink-300">/</span>}
-              {c.href ? (
-                <a href={c.href} className="hover:text-ink-800 transition-colors">{c.label}</a>
-              ) : (
-                <span className="text-ink-800 font-medium">{c.label}</span>
-              )}
-            </Fragment>
-          ))}
-        </nav>
 
         <div className="ml-auto flex items-center gap-3">
           {/* Theme toggle */}

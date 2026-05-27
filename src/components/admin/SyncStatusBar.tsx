@@ -38,6 +38,7 @@ const SYNC_ENDPOINTS: Record<string, string> = {
   products: "/api/sync/products",
   opensource: "/api/sync/opensource",
   "cloud-products": "/api/sync/cloud-products",
+  rfcs: "/api/sync/rfcs",
 };
 
 export function SyncStatusBar({
@@ -45,7 +46,7 @@ export function SyncStatusBar({
   labels,
   lang,
 }: {
-  entity: "papers" | "news" | "jobs" | "products" | "opensource" | "cloud-products";
+  entity: "papers" | "news" | "jobs" | "products" | "opensource" | "cloud-products" | "rfcs";
   labels: SyncLabels;
   lang: Lang;
 }) {

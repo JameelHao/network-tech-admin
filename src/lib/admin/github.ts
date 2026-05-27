@@ -57,6 +57,7 @@ export async function syncOrgRepos(companySlug: string, org: string): Promise<{ 
       topics: r.topics ?? [],
       is_fork: r.fork ?? false,
       pushed_at: r.pushed_at,
+      gh_created_at: r.created_at,
       updated_at: new Date().toISOString(),
     };
 
