@@ -10,6 +10,7 @@ export type FeedConfig = {
   vendor: string;
   category: "saas" | "platform" | "tool";
   keywords: string[];
+  site_url?: string;
 };
 
 export const FEEDS: FeedConfig[] = [
@@ -17,37 +18,54 @@ export const FEEDS: FeedConfig[] = [
     url: "https://aws.amazon.com/about-aws/whats-new/recent/feed/",
     vendor: "aws",
     category: "platform",
+    site_url: "https://aws.amazon.com",
     keywords: [
-      "network", "vpc", "cdn", "cloudfront", "load balancer", "gateway",
+      "vpc", "cdn", "cloudfront", "load balancer", "gateway",
       "transit", "route53", "route 53", "direct connect", "global accelerator",
       "elastic ip", "privatelink", "elb", "alb", "nlb",
+      "vpn", "firewall", "waf", "dns",
     ],
   },
-  {
-    url: "https://azurecomcdn.azureedge.net/en-us/updates/feed/",
-    vendor: "azure",
-    category: "platform",
-    keywords: [
-      "network", "vnet", "cdn", "front door", "load balancer", "expressroute",
-      "firewall", "waf", "application gateway", "traffic manager", "private link",
-      "ddos", "dns", "vpn",
-    ],
-  },
+  // Azure feed moved; old https://azurecomcdn.azureedge.net/en-us/updates/feed/ dead
   {
     url: "https://cloud.google.com/feeds/gcp-release-notes.xml",
     vendor: "gcp",
     category: "platform",
+    site_url: "https://cloud.google.com",
     keywords: [
-      "network", "vpc", "cdn", "cloud armor", "load balancing", "interconnect",
+      "vpc", "cdn", "cloud armor", "load balancing", "interconnect",
       "cloud dns", "cloud nat", "cloud vpn", "cloud router", "network service tiers",
+      "firewall", "ddos",
     ],
   },
   {
     url: "https://blog.cloudflare.com/rss/",
     vendor: "cloudflare",
     category: "saas",
+    site_url: "https://blog.cloudflare.com",
     keywords: [],
   },
+  {
+    url: "https://blogs.nvidia.com/feed/",
+    vendor: "nvidia",
+    category: "platform",
+    site_url: "https://www.nvidia.com",
+    keywords: [
+      "dpdk", "rdma", "bluefield", "connectx", "infiniband", "spectrum",
+      "networking", "data processing unit", "smartnic",
+    ],
+  },
+  {
+    url: "https://engineering.fb.com/feed/",
+    vendor: "meta",
+    category: "platform",
+    site_url: "https://meta.com",
+    keywords: [
+      "open compute", "wifi", "terragraph", "evenstar", "open ran",
+      "telecom", "subsea", "network", "connectivity",
+    ],
+  },
+  // OpenAI blog mostly AI model announcements, not networking products
 ];
 
 export const TOPIC_KEYWORDS: [RegExp, string][] = [

@@ -26,8 +26,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         { label: product.name },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/products"
-        backLabel={t.nav.products}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/products"

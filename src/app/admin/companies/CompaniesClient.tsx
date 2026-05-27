@@ -11,73 +11,53 @@ type CompanyRow = {
   color: string;
   paperCount: number;
   newsCount: number;
-  patentCount: number;
+  repoCount: number;
+  latestRepoPush: string | null;
   total: number;
 };
 
+function timeAgo(dateStr: string, lang: Lang): string {
+  const sec = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (sec < 60) return lang === "zh" ? "刚刚" : "now";
+  if (sec < 3600) return `${Math.floor(sec / 60)}m`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h`;
+  if (sec < 2592000) return `${Math.floor(sec / 86400)}d`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; lang: Lang }) {
   const [search, setSearch] = useState("");
-  const [importSlug, setImportSlug] = useState<string | null>(null);
-  const [importText, setImportText] = useState("");
-  const [importing, setImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const filtered = useMemo(
     () => search ? companies.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())) : companies,
     [companies, search],
   );
 
-  const handleImport = useCallback(async () => {
-    if (!importSlug || !importText.trim()) return;
-    setImporting(true);
-    setImportMsg(null);
-    const numbers = importText.split("\n").map((s) => s.trim()).filter(Boolean);
+  const handleSyncAll = useCallback(async () => {
+    if (!confirm(lang === "zh" ? `同步全部 ${companies.length} 家公司?` : `Sync all ${companies.length} companies?`)) return;
+    setSyncingAll(true);
     try {
-      const res = await fetch("/api/sync/patents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company: importSlug, numbers }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setImportMsg(lang === "zh" ? `导入失败: ${data.error}` : `Import failed: ${data.error}`);
-      } else {
-        setImportMsg(lang === "zh" ? `导入 ${data.inserted} 条，${data.duplicates} 条已存在` : `Imported ${data.inserted}, ${data.duplicates} already exist`);
-      }
-      setImportText("");
-      setImportSlug(null);
-      setTimeout(() => setImportMsg(null), 5000);
-      window.location.reload();
-    } catch (e) {
-      setImportMsg(lang === "zh" ? "导入失败" : `Import failed: ${e instanceof Error ? e.message : "unknown"}`);
-    } finally {
-      setImporting(false);
-    }
-  }, [importSlug, importText, lang]);
-
-  const handleSync = useCallback(async (slug: string) => {
-    setSyncing(slug);
-    try {
-      const res = await fetch("/api/sync/patents", {
+      const res = await fetch("/api/sync/github", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ company: slug }),
+        body: JSON.stringify({ all: true }),
       });
       const data = await res.json();
       if (data.error) {
         alert(lang === "zh" ? `同步失败: ${data.error}` : `Sync failed: ${data.error}`);
       } else {
-        alert(lang === "zh" ? `同步完成: 新增 ${data.inserted} / 共 ${data.total}` : `Synced: ${data.inserted} new / ${data.total} total`);
+        const total = Object.values(data.results ?? {}).reduce((s: number, r: any) => s + (r?.inserted ?? 0), 0);
+        alert(lang === "zh" ? `全部同步完成: ${total} repos` : `All synced: ${total} repos`);
       }
       window.location.reload();
-    } catch (e) {
+    } catch {
       alert(lang === "zh" ? "同步请求失败" : "Sync request failed");
     } finally {
-      setSyncing(null);
+      setSyncingAll(false);
     }
-  }, [lang]);
+  }, [companies.length, lang]);
 
   return (
     <div className="space-y-4">
@@ -89,52 +69,14 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
           placeholder={lang === "zh" ? "搜索公司..." : "Search companies..."}
           className="rounded-lg border border-line bg-surface px-4 py-2.5 text-[13px] text-ink-700 w-full sm:w-64"
         />
+        <button
+          onClick={handleSyncAll}
+          disabled={syncingAll}
+          className="rounded-md border border-line bg-surface px-4 py-2.5 text-[12px] font-mono text-ink-600 hover:bg-paper/40 transition-colors disabled:opacity-50"
+        >
+          {syncingAll ? (lang === "zh" ? "同步中..." : "Syncing...") : (lang === "zh" ? "同步全部" : "Sync All")}
+        </button>
       </div>
-
-      {/* Import dialog */}
-      {importSlug && (
-        <div className="rounded-lg border border-line bg-surface p-4 space-y-3">
-          <p className="text-[13px] font-medium text-ink-800">
-            {lang === "zh" ? `导入 ${COMPANY_NAMES[importSlug] ?? importSlug} 的专利` : `Import patents for ${COMPANY_NAMES[importSlug] ?? importSlug}`}
-          </p>
-          <p className="text-[11px] text-ink-500">
-            {lang === "zh"
-              ? "在 Google Patents 搜索后，每行粘贴一个专利号（如 US20260073310A1）"
-              : "Search on Google Patents, then paste one patent number per line (e.g. US20260073310A1)"}
-          </p>
-          <a
-            href={`https://patents.google.com/?q=assignee:${encodeURIComponent(COMPANY_NAMES[importSlug] ?? importSlug)}&sort=new`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-[12px] font-mono text-navy-500 hover:text-navy-700"
-          >
-            {lang === "zh" ? "打开 Google Patents 搜索" : "Open Google Patents search"} &rarr;
-          </a>
-          <textarea
-            value={importText}
-            onChange={(e) => setImportText(e.target.value)}
-            rows={5}
-            placeholder={lang === "zh" ? "每行一个专利号..." : "One patent number per line..."}
-            className="w-full rounded-md border border-line bg-surface px-3 py-2 text-[12px] text-ink-700 font-mono"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={handleImport}
-              disabled={importing || !importText.trim()}
-              className="rounded-md bg-navy-600 px-4 py-2 text-[12px] font-mono text-white hover:bg-navy-700 transition-colors disabled:opacity-50"
-            >
-              {importing ? (lang === "zh" ? "导入中..." : "Importing...") : (lang === "zh" ? "导入" : "Import")}
-            </button>
-            <button
-              onClick={() => { setImportSlug(null); setImportText(""); }}
-              className="rounded-md border border-line bg-surface px-4 py-2 text-[12px] font-mono text-ink-600 hover:bg-paper/40 transition-colors"
-            >
-              {lang === "zh" ? "取消" : "Cancel"}
-            </button>
-            {importMsg && <span className="text-[12px] text-ink-500 font-mono self-center">{importMsg}</span>}
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {filtered.map((c) => (
@@ -147,35 +89,17 @@ export function CompaniesClient({ companies, lang }: { companies: CompanyRow[]; 
               <span className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] ${c.color}`}>
                 {c.name}
               </span>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSync(c.slug);
-                }}
-                disabled={syncing === c.slug}
-                className="text-[10px] font-mono text-ink-400 hover:text-green-600 transition-colors disabled:opacity-50"
-              >
-                {syncing === c.slug ? "..." : "sync"}
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setImportSlug(c.slug);
-                  setImportText("");
-                  setImportMsg(null);
-                }}
-                className="text-[10px] font-mono text-ink-400 hover:text-navy-500 transition-colors"
-              >
-                + patent
-              </button>
             </div>
             <div className="flex gap-4 text-[12px] text-ink-500 font-mono tabular-nums">
               <span>{c.paperCount} papers</span>
               <span>{c.newsCount} news</span>
-              <span>{c.patentCount} patents</span>
+              <span>{c.repoCount} repos</span>
             </div>
+            {c.latestRepoPush && (
+              <p className="text-[10px] text-ink-300 font-mono mt-2">
+                {lang === "zh" ? "最新: " : "latest: "}{timeAgo(c.latestRepoPush, lang)}
+              </p>
+            )}
           </Link>
         ))}
       </div>

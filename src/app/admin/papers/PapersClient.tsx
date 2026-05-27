@@ -4,11 +4,10 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { NewBadge } from "@/components/admin/NewBadge";
-import { TimeRangeBar } from "@/components/admin/TimeRangeBar";
+
 import { ExportButton } from "@/components/admin/ExportButton";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
-import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
-import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
+
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { DuplicateWarning } from "@/components/admin/DuplicateWarning";
 import { FilterSummary } from "@/components/admin/FilterSummary";
@@ -86,9 +85,11 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
   const timeRange = fp.get("timeRange");
   const [viewMode, setViewMode] = useState<"list" | "cluster">("list");
   const [showOnlyFavs, setShowOnlyFavs] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [page, setPage] = useState(1);
   // Topic filter: React state + server-side, not URL-driven
   const [selectedTopics, setSelectedTopics] = useState<string[]>(() => fp.getAll("topics"));
+  const filterCount = [keyword, venue, sourceFilter, dateFrom, dateTo, timeRange, selectedTopics.length > 0 ? "t" : null].filter(Boolean).length;
   const [topicFilteredIds, setTopicFilteredIds] = useState<Set<string> | null>(null);
   const [topicLoading, setTopicLoading] = useState(false);
   const { favIds } = useFavorites("papers");
@@ -200,84 +201,20 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
   return (
     <div className="rounded-lg border border-line bg-surface overflow-hidden">
       <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-        <div className="hidden lg:flex items-center gap-2">
-          <FavoriteFilter entity="papers" labels={{ favorites: labels.favorites, all: labels.favoritesAll }} onToggle={setShowOnlyFavs} />
-          <TimeRangeBar value={timeRange} onChange={(v) => fp.set("timeRange", v)} labels={labels.timeRange} />
-          <div className={tabGroupClass()}>
-            <button
-              onClick={() => setViewMode("list")}
-              className={tabClass(viewMode === "list", "sm")}
-            >
-              {labels.viewList}
-            </button>
-            <button
-              onClick={() => setViewMode("cluster")}
-              className={tabClass(viewMode === "cluster", "sm")}
-            >
-              {labels.viewCluster}
-            </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setShowFilter(!showFilter)}
+            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-mono transition-colors ${showFilter ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}
+          >
+            {labels.filter}{filterCount > 0 ? ` (${filterCount})` : ""}
+          </button>
+          <div className="hidden lg:flex items-center gap-2">
+            <div className={tabGroupClass()}>
+              <button onClick={() => setViewMode("list")} className={tabClass(viewMode === "list", "sm")}>{labels.viewList}</button>
+              <button onClick={() => setViewMode("cluster")} className={tabClass(viewMode === "cluster", "sm")}>{labels.viewCluster}</button>
+            </div>
           </div>
         </div>
-        <MobileFilterPanel label={labels.filter} activeCount={[keyword, venue, ...selectedTopics, sourceFilter, dateFrom, dateTo].filter(Boolean).length}>
-          <input
-            type="text"
-            key={keyword}
-            defaultValue={keyword}
-            placeholder={labels.searchPlaceholder}
-            onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
-            onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
-            className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-          />
-          {venues.length > 1 && (
-            <select
-              value={venue}
-              onChange={(e) => fp.set("venue", e.target.value)}
-              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-            >
-              <option value="">{labels.allSources}</option>
-              {venues.map((v) => (
-                <option key={v} value={v}>{v}</option>
-              ))}
-            </select>
-          )}
-          {topics.length > 0 && (
-            <TopicMultiSelect
-              topics={topics}
-              selectedTopics={selectedTopics}
-              onToggle={handleTopicToggle}
-              labels={labels}
-            />
-          )}
-          {sources.length > 1 && (
-            <select
-              value={sourceFilter}
-              onChange={(e) => fp.set("source", e.target.value)}
-              className="rounded-md border border-line bg-surface px-2 py-1.5 min-h-[36px] text-[12px] text-ink-700 w-full"
-            >
-              <option value="">{labels.source}</option>
-              {sources.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          )}
-          <div className="flex items-center gap-1">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => fp.set("dateFrom", e.target.value)}
-              aria-label={labels.dateFrom}
-              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
-            />
-            <span className="text-ink-400 text-[10px]">–</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => fp.set("dateTo", e.target.value)}
-              aria-label={labels.dateTo}
-              className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]"
-            />
-          </div>
-        </MobileFilterPanel>
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden lg:flex items-center gap-2">
             <ExportButton entity="papers" format="csv" label={labels.exportCSV} />
@@ -290,18 +227,84 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
         </div>
       </header>
 
-      {topics.length > 0 && (
-        <div className="relative px-5 py-2.5 border-b border-line">
-          <div className="flex items-center gap-2">
-            <TopicMultiSelect
-              topics={topics}
-              selectedTopics={selectedTopics}
-              onToggle={handleTopicToggle}
-              labels={labels}
-            />
-            {topicLoading && (
-              <span className="h-3 w-3 animate-spin rounded-full border-[2px] border-navy-300 border-t-navy-700" />
+      {showFilter && (
+        <div className="px-5 py-4 border-b border-line bg-paper/20 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{labels.searchPlaceholder}</p>
+              <input
+                type="text"
+                key={keyword}
+                defaultValue={keyword}
+                placeholder={labels.searchPlaceholder}
+                onBlur={(e) => { const v = e.target.value.trim(); if (v !== keyword) fp.set("keyword", v); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { const v = e.currentTarget.value.trim(); if (v !== keyword) fp.set("keyword", v); } }}
+                className="rounded-md border border-line bg-surface px-2 py-1.5 text-[12px] text-ink-700 w-full"
+              />
+            </div>
+            {venues.length > 1 && (
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{labels.venue}</p>
+                <div className="flex flex-wrap gap-2">
+                  {venues.map((v) => {
+                    const active = venue === v;
+                    return (
+                      <button key={v} onClick={() => fp.set("venue", active ? "" : v)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}
+                      >
+                        {active && "✓ "}{v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
+            {sources.length > 1 && (
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{labels.source}</p>
+                <div className="flex flex-wrap gap-2">
+                  {sources.map((s) => {
+                    const active = sourceFilter === s;
+                    return (
+                      <button key={s} onClick={() => fp.set("source", active ? "" : s)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}
+                      >
+                        {active && "✓ "}{s}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{labels.dateRange}</p>
+              <div className="flex items-center gap-1">
+                <input type="date" value={dateFrom} onChange={(e) => fp.set("dateFrom", e.target.value)} aria-label={labels.dateFrom} className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-full sm:w-[130px]" />
+                <span className="text-ink-400 text-[10px]">–</span>
+                <input type="date" value={dateTo} onChange={(e) => fp.set("dateTo", e.target.value)} aria-label={labels.dateTo} className="rounded-md border border-line bg-surface px-2 py-1 text-[12px] text-ink-700 w-full sm:w-[130px]" />
+              </div>
+            </div>
+          </div>
+          {topics.length > 0 && (
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{labels.topics}</p>
+              <div className="flex items-center gap-2">
+                <TopicMultiSelect topics={topics} selectedTopics={selectedTopics} onToggle={handleTopicToggle} labels={labels} />
+                {topicLoading && (
+                  <span className="h-3 w-3 animate-spin rounded-full border-[2px] border-navy-300 border-t-navy-700" />
+                )}
+              </div>
+            </div>
+          )}
+<div className="flex items-center gap-2 pt-1">
+            {filterCount > 0 && (
+              <button onClick={() => { fp.clearAll(); setSelectedTopics([]); }} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+                ← {lang === "zh" ? "清除全部" : "Clear all"}
+              </button>
+            )}
+            <button onClick={() => setShowFilter(false)} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+              {lang === "zh" ? "收起" : "Collapse"} ↑
+            </button>
           </div>
         </div>
       )}

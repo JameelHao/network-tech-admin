@@ -24,8 +24,6 @@ export default async function OpenSourceDetailPage({ params }: { params: Promise
         { label: project.name },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/opensource"
-        backLabel={t.nav.opensource}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/opensource"

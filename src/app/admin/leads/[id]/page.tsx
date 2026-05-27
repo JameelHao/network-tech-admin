@@ -24,8 +24,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         { label: lead.title.slice(0, 30) },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/leads"
-        backLabel={t.nav.leads}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/leads"

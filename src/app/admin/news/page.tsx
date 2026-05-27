@@ -14,7 +14,6 @@ import { listNews } from "@/lib/admin/news";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { getDict } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
-import { computeNewsStats } from "@/lib/admin/news-utils";
 import type { SortDir } from "@/lib/admin/pagination";
 
 export default async function NewsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -37,8 +36,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     .eq("category", "news")
     .not("source", "is", null);
   const sources = Array.from(new Set((sourceRows ?? []).map((r) => r.source as string).filter(Boolean))).sort();
-
-  const { today, thisWeek } = computeNewsStats(items);
 
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
@@ -74,18 +71,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </header>
 
         <SyncStatusBar entity="news" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
-
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
-          {t.news.overview}
-        </p>
-        <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
-            <Stat label={t.news.totalNews} value={result.total} sub={t.news.totalSub} />
-            <Stat label={t.news.todayNew} value={today} sub={t.news.todaySub} />
-            <Stat label={t.news.thisWeek} value={thisWeek} sub={t.news.thisWeekSub} />
-            <Stat label={t.news.sourceCount} value={sources.length} sub={t.news.sourceCountSub} />
-          </div>
-        </section>
 
         <section data-fav-filter="news" className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
@@ -196,18 +181,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
         </section>
       </main>
     </>
-  );
-}
-
-function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
-  return (
-    <div className="bg-surface p-6">
-      <p className="tracked-label">{label}</p>
-      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
-        {value}
-      </p>
-      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
-    </div>
   );
 }
 

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { TopicTag } from "@/components/admin/TopicTag";
-import { StatusPill } from "@/components/admin/StatusPill";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { ProductsDetailModal } from "@/components/admin/ProductsDetailModal";
 import type { Product } from "@/lib/admin/types";
@@ -38,11 +37,7 @@ export function ProductsTableWithModal({
             </td>
             <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600">{p.vendor ?? "—"}</td>
             <td className="px-3 sm:px-5 py-3 text-ink-600 whitespace-nowrap">{t.product[p.category as keyof typeof t.product] as string}</td>
-            <td className="px-3 sm:px-5 py-3 whitespace-nowrap">
-              <StatusPill label={p.stage} lang={lang} />
-            </td>
-            <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 whitespace-nowrap">{t.product[p.pricing === "open-source" ? "openSource" : p.pricing as keyof typeof t.product] as string}</td>
-            <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 font-mono text-[12px]">{p.latest_version ?? "—"}</td>
+            <td className="hidden lg:table-cell px-3 sm:px-5 py-3 text-ink-600 font-mono text-[12px] tabular-nums">{p.published_at ? new Date(p.published_at).toLocaleDateString(lang === "zh" ? "zh-CN" : "en-US", { month: "2-digit", day: "2-digit", year: "numeric" }) : "—"}</td>
             <td className="hidden lg:table-cell px-3 sm:px-5 py-3">
               <div className="flex flex-wrap gap-1">
                 {p.topics.length > 0

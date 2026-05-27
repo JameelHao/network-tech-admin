@@ -922,7 +922,7 @@ const zh: typeof en = {
   },
   common: {
     title: "标题",
-    name: "姓名",
+    name: "名称",
     role: "角色",
     company: "公司",
     stage: "阶段",

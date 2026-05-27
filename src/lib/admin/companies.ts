@@ -50,9 +50,41 @@ export const COMPANY_NAMES: Record<string, string> = {
   bytedance: "ByteDance",
 };
 
+export const COMPANY_GITHUB_ORGS: Record<string, string[]> = {
+  cisco: ["cisco"],
+  google: ["google"],
+  ericsson: ["ericsson"],
+  nokia: ["nokia", "nokia-networks"],
+  aws: ["aws"],
+  azure: ["microsoft"],
+  microsoft: ["microsoft"],
+  openai: ["openai"],
+  anthropic: ["anthropics"],
+  nvidia: ["nvidia"],
+  meta: ["facebook"],
+  micron: ["micron"],
+  broadcom: ["broadcom"],
+  intel: ["intel"],
+  ibm: ["IBM"],
+  huawei: ["huawei"],
+  cloudflare: ["cloudflare"],
+  apple: ["apple"],
+  amd: ["amd"],
+  tencent: ["Tencent"],
+  alibaba: ["alibaba"],
+  baidu: ["baidu"],
+  bytedance: ["bytedance"],
+};
+
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function inferCompanies(text: string): string[] {
-  const lower = text.toLowerCase();
-  return COMPANY_KEYWORDS.filter((c) => c.keywords.some((k) => lower.includes(k)))
+  return COMPANY_KEYWORDS
+    .filter((c) => c.keywords.some((k) => {
+      try { return new RegExp(`\\b${escapeRegExp(k)}\\b`, "i").test(text); } catch { return false; }
+    }))
     .map((c) => c.slug)
     .sort();
 }
@@ -78,7 +110,7 @@ export const COMPANY_KEYWORDS: { slug: string; keywords: string[] }[] = [
   { slug: "apple", keywords: ["apple"] },
   { slug: "amd", keywords: ["amd"] },
   { slug: "tencent", keywords: ["tencent"] },
-  { slug: "alibaba", keywords: ["alibaba", "alibab"] },
+  { slug: "alibaba", keywords: ["alibaba"] },
   { slug: "baidu", keywords: ["baidu"] },
   { slug: "bytedance", keywords: ["bytedance", "tiktok"] },
 ];

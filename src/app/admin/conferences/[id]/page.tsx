@@ -39,8 +39,6 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
       ]} t={t} lang={lang} />
 
       <DetailNav
-        backHref="/admin/conferences"
-        backLabel={t.nav.conferences}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/conferences"

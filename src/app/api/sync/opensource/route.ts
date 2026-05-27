@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminAuth } from "@/lib/admin/api-auth";
+import { TOPIC_KEYWORD_RULES } from "@/lib/admin/paper-topics";
 
 export const dynamic = "force-dynamic";
 
@@ -12,44 +13,18 @@ const SEARCH_QUERIES = [
   "topic:service-mesh stars:>1000 pushed:>2026-01-01",
 ];
 
-const TOPIC_MAP: Record<string, string> = {
-  networking: "dc-networking",
-  network: "dc-networking",
-  "data-center": "dc-networking",
-  datacenter: "dc-networking",
-  sdn: "sdn-nfv",
-  nfv: "sdn-nfv",
-  openflow: "sdn-nfv",
-  ebpf: "ebpf-xdp",
-  xdp: "ebpf-xdp",
-  bpf: "ebpf-xdp",
-  "cloud-native": "cloud-infra",
-  kubernetes: "cloud-infra",
-  k8s: "cloud-infra",
-  "service-mesh": "cloud-infra",
-  dpdk: "high-speed-networking",
-  "high-performance": "high-speed-networking",
-  bgp: "dns-bgp",
-  routing: "dns-bgp",
-  ospf: "dns-bgp",
-  dns: "dns-bgp",
-  firewall: "protocol-security",
-  ids: "protocol-security",
-  "network-security": "protocol-security",
-  security: "protocol-security",
-  monitoring: "network-monitoring",
-  observability: "network-monitoring",
-  "distributed-systems": "distributed-sys",
-  "distributed-system": "distributed-sys",
-};
-
-export function mapTopics(ghTopics: string[]): string[] {
+export function inferRepoTopics(name: string, description: string | null): string[] {
   const slugs = new Set<string>();
-  for (const t of ghTopics) {
-    const mapped = TOPIC_MAP[t.toLowerCase()];
-    if (mapped) slugs.add(mapped);
+  const text = `${name} ${description ?? ""}`;
+  for (const rule of TOPIC_KEYWORD_RULES) {
+    for (const p of rule.patterns) {
+      if (p.test(text)) {
+        slugs.add(rule.topic);
+        break;
+      }
+    }
   }
-  return slugs.size > 0 ? [...slugs] : ["dc-networking"];
+  return [...slugs];
 }
 
 type SyncStat = { name: string; status: "ok" | "error" | "skipped"; error?: string };
@@ -114,7 +89,7 @@ export async function POST() {
   for (const repo of allRepos.values()) {
     const repoUrl = repo.html_url;
     const lastActive = repo.pushed_at ? repo.pushed_at.split("T")[0] : null;
-    const topics = mapTopics(repo.topics ?? []);
+    const topics = inferRepoTopics(repo.full_name, repo.description);
 
     if (existingMap.has(repoUrl)) {
       if (existingMap.get(repoUrl) !== repo.stargazers_count) {

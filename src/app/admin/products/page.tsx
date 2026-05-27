@@ -1,68 +1,68 @@
+import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/admin/Topbar";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { ExportButton } from "@/components/admin/ExportButton";
-import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { Pagination } from "@/components/admin/Pagination";
 import { ProductsTableWithModal } from "@/components/admin/ProductsTableWithModal";
+import { NewProductModal } from "@/components/admin/NewProductModal";
 import { listProducts } from "@/lib/admin/products";
 import { parsePaginationParams } from "@/lib/admin/pagination";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
-import { FilterSelect, FilterInput } from "@/components/admin/FilterControls";
-import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { SyncStatusBar } from "@/components/admin/SyncStatusBar";
 import { getDict } from "@/lib/i18n/server";
-import { computeProductStats } from "@/lib/admin/products-utils";
-import { PRODUCT_CATEGORIES, PRODUCT_STAGES, PRODUCT_PRICING } from "@/lib/admin/types";
+import { PRODUCT_CATEGORIES } from "@/lib/admin/types";
 import Link from "next/link";
 import type { SortDir } from "@/lib/admin/pagination";
-import { tabClass } from "@/lib/admin/ui";
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   const { lang, t } = await getDict();
   const params = parsePaginationParams(sp);
   const filterCategory = typeof sp.category === "string" ? sp.category : undefined;
-  const filterStage = typeof sp.stage === "string" ? sp.stage : undefined;
-  const filterPricing = typeof sp.pricing === "string" ? sp.pricing : undefined;
   const filterVendor = typeof sp.vendor === "string" ? sp.vendor : undefined;
   const filterKeyword = typeof sp.keyword === "string" ? sp.keyword : undefined;
+  const filterTopic = typeof sp.topic === "string" ? sp.topic : undefined;
+  const showFilter = sp.showFilter === "1";
   const sortCol = typeof sp.sort === "string" ? sp.sort : undefined;
   const sortDir = typeof sp.dir === "string" ? sp.dir as SortDir : undefined;
 
   const result = await listProducts(params, {
     category: filterCategory,
-    stage: filterStage,
-    pricing: filterPricing,
     vendor: filterVendor,
     keyword: filterKeyword,
+    topic: filterTopic,
   });
   const products = result.data;
 
-  const { usingCount, evaluatingCount, openSourceCount } = computeProductStats(products);
+  const supabase = await createClient();
+  const [{ data: vendorRows }, { data: topicRows }] = await Promise.all([
+    supabase.from("products").select("vendor").not("vendor", "is", null),
+    supabase.from("products").select("topics").not("topics", "is", null),
+  ]);
+  const allVendors = [...new Set(vendorRows?.map((v: any) => v.vendor) ?? [])].sort() as string[];
+  const allTopics = [...new Set(topicRows?.flatMap((t: any) => t.topics ?? []) ?? [])].sort() as string[];
 
   const filterParams: Record<string, string> = {};
   if (filterCategory) filterParams.category = filterCategory;
-  if (filterStage) filterParams.stage = filterStage;
-  if (filterPricing) filterParams.pricing = filterPricing;
   if (filterVendor) filterParams.vendor = filterVendor;
   if (filterKeyword) filterParams.keyword = filterKeyword;
+  if (filterTopic) filterParams.topic = filterTopic;
   if (sortCol && sortDir) { filterParams.sort = sortCol; filterParams.dir = sortDir; }
+
+  const filterParamsStr = new URLSearchParams(filterParams).toString();
+  const collapseHref = filterParamsStr ? `/admin/products?${filterParamsStr}` : "/admin/products";
 
   const activeFilters: { label: string; value: string }[] = [];
   if (filterCategory) activeFilters.push({ label: t.product.category, value: filterCategory });
-  if (filterStage) activeFilters.push({ label: t.common.stage, value: filterStage });
-  if (filterPricing) activeFilters.push({ label: t.product.pricing, value: filterPricing });
   if (filterVendor) activeFilters.push({ label: t.vendor.title, value: filterVendor });
   if (filterKeyword) activeFilters.push({ label: t.common.name, value: filterKeyword });
+  if (filterTopic) activeFilters.push({ label: t.common.topics, value: filterTopic });
 
   const clearParams = new URLSearchParams();
   if (sortCol && sortDir) { clearParams.set("sort", sortCol); clearParams.set("dir", sortDir); }
   const clearHref = clearParams.toString() ? `/admin/products?${clearParams.toString()}` : "/admin/products";
-
-  const categoryOpts = PRODUCT_CATEGORIES.map((c) => ({ value: c, label: t.product[c as keyof typeof t.product] as string }));
-  const pricingOpts = PRODUCT_PRICING.map((p) => ({ value: p, label: t.product[p === "open-source" ? "openSource" : p as keyof typeof t.product] as string }));
 
   return (
     <>
@@ -78,57 +78,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </header>
 
         <SyncStatusBar entity="products" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
-        <SyncStatusBar entity="cloud-products" lang={lang} labels={{ lastSync: t.sync.lastSync, refresh: t.sync.refresh, refreshing: t.sync.refreshing, noData: t.sync.noData, syncResult: t.sync.syncResult, sourcesFailed: t.sync.sourcesFailed }} />
-
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">
-          {t.product.overview}
-        </p>
-        <section className="mb-4 rounded-lg border border-line bg-surface overflow-hidden">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-line">
-            <Stat label={t.product.totalProducts} value={result.total} sub={t.product.totalSub} />
-            <Stat label={t.product.usingProducts} value={usingCount} sub={t.product.usingSub} />
-            <Stat label={t.product.evaluatingProducts} value={evaluatingCount} sub={t.product.evaluatingSub} />
-            <Stat label={t.product.openSourceCount} value={openSourceCount} sub={t.product.openSourceSub} />
-          </div>
-        </section>
 
         <section data-fav-filter="products" className="rounded-lg border border-line bg-surface overflow-hidden">
           <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-            <div className="hidden lg:flex flex-wrap items-center gap-1">
-              {[undefined, ...PRODUCT_STAGES].map((s) => {
-                const isActive = filterStage === s;
-                const p = new URLSearchParams(filterParams);
-                p.delete("stage"); p.delete("page");
-                if (s) p.set("stage", s);
-                const href = p.toString() ? `/admin/products?${p.toString()}` : "/admin/products";
-                return (
-                  <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>
-                    {s ? (t.product[s as keyof typeof t.product] as string) : t.common.all}
-                  </Link>
-                );
-              })}
-              <span className="text-ink-300 text-[10px]">|</span>
-              <FilterSelect paramKey="category" label={t.product.allCategories} value={filterCategory ?? ""} searchParams={filterParams} options={categoryOpts} />
-              <FilterSelect paramKey="pricing" label={t.product.allPricing} value={filterPricing ?? ""} searchParams={filterParams} options={pricingOpts} />
-              <FilterInput paramKey="vendor" value={filterVendor ?? ""} placeholder={t.product.vendorPlaceholder} searchParams={filterParams} />
-            </div>
-            <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
-              <div className="flex flex-wrap gap-1">
-                {[undefined, ...PRODUCT_STAGES].map((s) => {
-                  const isActive = filterStage === s;
-                  const p = new URLSearchParams(filterParams);
-                  p.delete("stage"); p.delete("page");
-                  if (s) p.set("stage", s);
-                  const href = p.toString() ? `/admin/products?${p.toString()}` : "/admin/products";
-                  return <Link key={s ?? "all"} href={href} className={tabClass(isActive, "sm")}>{s ? (t.product[s as keyof typeof t.product] as string) : t.common.all}</Link>;
-                })}
-              </div>
-              <FilterSelect paramKey="category" label={t.product.allCategories} value={filterCategory ?? ""} searchParams={filterParams} options={categoryOpts} />
-              <FilterSelect paramKey="pricing" label={t.product.allPricing} value={filterPricing ?? ""} searchParams={filterParams} options={pricingOpts} />
-              <FilterInput paramKey="vendor" value={filterVendor ?? ""} placeholder={t.product.vendorPlaceholder} searchParams={filterParams} />
-            </MobileFilterPanel>
             <div className="flex items-center gap-2 shrink-0">
-              <FavoriteFilter entity="products" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+              <Link
+                href={showFilter ? collapseHref : `/admin/products?showFilter=1&${filterParamsStr}`}
+                className={`rounded-md border px-2.5 py-1.5 text-[11px] font-mono transition-colors ${showFilter ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}
+              >
+                {lang === "zh" ? "筛选" : "Filter"}{activeFilters.length > 0 ? ` (${activeFilters.length})` : ""}
+              </Link>
               <div className="hidden lg:flex items-center gap-2">
                 <ExportButton entity="products" format="csv" filters={filterParams} label={t.common.exportCSV} />
                 <ExportButton entity="products" format="json" filters={filterParams} label={t.common.exportJSON} />
@@ -137,14 +96,84 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <ExportButton entity="products" format="csv" filters={filterParams} label={t.common.exportCSV} />
                 <ExportButton entity="products" format="json" filters={filterParams} label={t.common.exportJSON} />
               </OverflowMenu>
-              <Link
-                href="/admin/products/new"
-                className="rounded-md bg-navy-700 px-3 py-1.5 text-[12.5px] text-navy-50 hover:bg-navy-600 transition-colors"
-              >
-                + {t.common.new}
-              </Link>
+              <NewProductModal t={t} lang={lang} />
             </div>
           </header>
+
+          {showFilter && (
+            <div className="px-5 py-4 border-b border-line bg-paper/20 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.product.category}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PRODUCT_CATEGORIES.map((cat) => {
+                      const p = new URLSearchParams(filterParams);
+                      p.delete("page");
+                      if (p.get("category") === cat) p.delete("category");
+                      else p.set("category", cat);
+                      const href = p.toString() ? `/admin/products?${p.toString()}` : "/admin/products";
+                      const active = filterCategory === cat;
+                      return (
+                        <Link key={cat} href={href} className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}>
+                          {active && "✓ "}{t.product[cat as keyof typeof t.product] as string}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+                {allVendors.length > 0 && (
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.vendor.title}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {allVendors.map((v) => {
+                      const p = new URLSearchParams(filterParams);
+                      p.delete("page");
+                      if (p.get("vendor") === v) p.delete("vendor");
+                      else p.set("vendor", v);
+                      const href = p.toString() ? `/admin/products?${p.toString()}` : "/admin/products";
+                      const active = filterVendor === v;
+                      return (
+                        <Link key={v} href={href} className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}>
+                          {active && "✓ "}{v}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+                )}
+              </div>
+              {allTopics.length > 0 && (
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.common.topics}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {allTopics.map((topic) => {
+                      const p = new URLSearchParams(filterParams);
+                      p.delete("page");
+                      if (p.get("topic") === topic) p.delete("topic");
+                      else p.set("topic", topic);
+                      const href = p.toString() ? `/admin/products?${p.toString()}` : "/admin/products";
+                      const active = filterTopic === topic;
+                      return (
+                        <Link key={topic} href={href} className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}>
+                          {active && "✓ "}{topic}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-2 pt-1">
+                {(filterCategory || filterKeyword || filterVendor || filterTopic) && (
+                  <Link href={clearHref} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+                    ← {lang === "zh" ? "清除全部" : "Clear all"}
+                  </Link>
+                )}
+                <Link href={collapseHref} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+                  {lang === "zh" ? "收起" : "Collapse"} ↑
+                </Link>
+              </div>
+            </div>
+          )}
 
           <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
 
@@ -155,16 +184,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <SortableHeader column="name" label={t.common.name} currentSort={sortCol} currentDir={sortDir} basePath="/admin/products" searchParams={filterParams} />
                 <SortableHeader column="vendor" label={t.vendor.title} currentSort={sortCol} currentDir={sortDir} basePath="/admin/products" searchParams={filterParams} className="hidden lg:table-cell" />
                 <SortableHeader column="category" label={t.product.category} currentSort={sortCol} currentDir={sortDir} basePath="/admin/products" searchParams={filterParams} />
-                <SortableHeader column="stage" label={t.common.stage} currentSort={sortCol} currentDir={sortDir} basePath="/admin/products" searchParams={filterParams} />
-                <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.product.pricing}</th>
-                <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.product.latestVersion}</th>
+                <SortableHeader column="published_at" label={t.product.releaseDate} currentSort={sortCol} currentDir={sortDir} basePath="/admin/products" searchParams={filterParams} />
                 <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.common.topics}</th>
                 <th className="hidden lg:table-cell px-3 sm:px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">★</th>
               </tr>
             </thead>
             {products.length === 0 ? (
               <tbody className="divide-y divide-line">
-                <tr><td colSpan={8}>
+                <tr><td colSpan={6}>
                   <EmptyState title={t.empty.products} description={t.empty.productsDesc} />
                 </td></tr>
               </tbody>
@@ -188,14 +215,3 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
-  return (
-    <div className="bg-surface p-6">
-      <p className="tracked-label">{label}</p>
-      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">
-        {value}
-      </p>
-      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
-    </div>
-  );
-}

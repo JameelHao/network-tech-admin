@@ -15,13 +15,10 @@ import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES, type TopicCategory } from "@/lib/admin/topics";
 import { conferenceStatus, formatDateRange } from "@/lib/admin/format";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
-import { FavoriteFilter } from "@/components/admin/FavoriteFilter";
 import { SortableHeader } from "@/components/admin/SortableHeader";
 import { FilterSummary } from "@/components/admin/FilterSummary";
-import { FilterDateRange } from "@/components/admin/FilterControls";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { MobileFilterPanel } from "@/components/admin/MobileFilterPanel";
 import { OverflowMenu } from "@/components/admin/OverflowMenu";
 import { tabClass } from "@/lib/admin/ui";
 import type { SortDir } from "@/lib/admin/pagination";
@@ -61,6 +58,9 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
   if (sortCol && sortDir) { clearParams.set("sort", sortCol); clearParams.set("dir", sortDir); }
   if (view === "calendar") clearParams.set("view", "calendar");
   const clearHref = clearParams.toString() ? `/admin/conferences?${clearParams.toString()}` : "/admin/conferences";
+  const showFilter = sp.showFilter === "1";
+  const filterParamsStr = new URLSearchParams(filterParams).toString();
+  const collapseHref = filterParamsStr ? `/admin/conferences?${filterParamsStr}` : "/admin/conferences";
 
   const now = new Date();
   let calYear = now.getFullYear();
@@ -124,77 +124,13 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
         {view === "list" ? (
           <section data-fav-filter="conferences" className="rounded-lg border border-line bg-surface overflow-hidden">
             <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-line bg-paper/30">
-              <div className="hidden lg:flex items-center gap-2 overflow-x-auto">
-                {CATEGORY_KEYS.map((key) => {
-                  const isActive = key === activeCategory;
-                  const label = key === "all" ? t.conf.filterAll : TOPIC_CATEGORIES[key][lang];
-                  const p = new URLSearchParams(filterParams);
-                  p.delete("cat"); p.delete("page");
-                  if (key !== "all") p.set("cat", key);
-                  const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
-                  return (
-                    <Link
-                      key={key}
-                      href={href}
-                      className={tabClass(isActive, "sm")}
-                    >
-                      {label}
-                    </Link>
-                  );
-                })}
-                <span className="text-ink-300 text-[10px]">|</span>
-                {(["", "upcoming", "past"] as const).map((s) => {
-                  const isActive = (statusFilter ?? "") === s;
-                  const label = s === "" ? t.filter.allStatuses : s === "upcoming" ? t.filter.upcoming : t.filter.past;
-                  const p = new URLSearchParams(filterParams);
-                  p.delete("status"); p.delete("page");
-                  if (s) p.set("status", s);
-                  const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
-                  return (
-                    <Link key={s} href={href} className={tabClass(isActive, "sm")}>
-                      {label}
-                    </Link>
-                  );
-                })}
-                <FilterDateRange
-                  fromKey="dateFrom" toKey="dateTo"
-                  fromValue={dateFrom ?? ""} toValue={dateTo ?? ""}
-                  fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo}
-                  searchParams={filterParams}
-                />
-              </div>
-              <MobileFilterPanel label={t.filter.filterLabel} activeCount={activeFilters.length}>
-                <div className="flex flex-wrap gap-2">
-                  {CATEGORY_KEYS.map((key) => {
-                    const isActive = key === activeCategory;
-                    const label = key === "all" ? t.conf.filterAll : TOPIC_CATEGORIES[key][lang];
-                    const p = new URLSearchParams(filterParams);
-                    p.delete("cat"); p.delete("page");
-                    if (key !== "all") p.set("cat", key);
-                    const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
-                    return <Link key={key} href={href} className={tabClass(isActive, "sm")}>{label}</Link>;
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {(["", "upcoming", "past"] as const).map((s) => {
-                    const isActive = (statusFilter ?? "") === s;
-                    const label = s === "" ? t.filter.allStatuses : s === "upcoming" ? t.filter.upcoming : t.filter.past;
-                    const p = new URLSearchParams(filterParams);
-                    p.delete("status"); p.delete("page");
-                    if (s) p.set("status", s);
-                    const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
-                    return <Link key={s} href={href} className={tabClass(isActive, "sm")}>{label}</Link>;
-                  })}
-                </div>
-                <FilterDateRange
-                  fromKey="dateFrom" toKey="dateTo"
-                  fromValue={dateFrom ?? ""} toValue={dateTo ?? ""}
-                  fromLabel={t.filter.dateFrom} toLabel={t.filter.dateTo}
-                  searchParams={filterParams}
-                />
-              </MobileFilterPanel>
               <div className="flex items-center gap-2 shrink-0">
-                <FavoriteFilter entity="conferences" labels={{ favorites: t.favorite.favorites, all: t.favorite.all }} />
+                <Link
+                  href={showFilter ? collapseHref : `/admin/conferences?showFilter=1&${filterParamsStr}`}
+                  className={`rounded-md border px-2.5 py-1.5 text-[11px] font-mono transition-colors ${showFilter ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}
+                >
+                  {lang === "zh" ? "筛选" : "Filter"}{activeFilters.length > 0 ? ` (${activeFilters.length})` : ""}
+                </Link>
                 <ViewToggle
                   active="list"
                   basePath="/admin/conferences"
@@ -213,6 +149,75 @@ export default async function ConferencesPage({ searchParams }: { searchParams: 
                 <ConferenceCreateModal t={t} lang={lang} />
               </div>
             </header>
+
+            {showFilter && (
+              <div className="px-5 py-4 border-b border-line bg-paper/20 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.conf.category}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {CATEGORY_KEYS.filter(k => k !== "all").map((key) => {
+                        const p = new URLSearchParams(filterParams);
+                        p.delete("page"); p.delete("cat");
+                        if (activeCategory !== key) p.set("cat", key);
+                        const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
+                        const active = activeCategory === key;
+                        const label = TOPIC_CATEGORIES[key][lang];
+                        return (
+                          <Link key={key} href={href} className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}>
+                            {active && "✓ "}{label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.conf.status}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(["upcoming", "past"] as const).map((s) => {
+                        const p = new URLSearchParams(filterParams);
+                        p.delete("page"); p.delete("status");
+                        if (statusFilter !== s) p.set("status", s);
+                        const href = p.toString() ? `/admin/conferences?${p.toString()}` : "/admin/conferences";
+                        const active = statusFilter === s;
+                        const label = s === "upcoming" ? t.filter.upcoming : t.filter.past;
+                        return (
+                          <Link key={s} href={href} className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${active ? "bg-navy-50 border-navy-300 text-navy-600" : "border-line text-ink-500 hover:bg-paper/40"}`}>
+                            {active && "✓ "}{label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-500 mb-2">{t.filter.dateFrom}</p>
+                    <form method="GET" action="/admin/conferences" className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1">
+                      {Object.entries(filterParams).filter(([k]) => k !== 'dateFrom' && k !== 'dateTo' && k !== 'page').map(([k, v]) => (
+                        <input key={k} type="hidden" name={k} value={v} />
+                      ))}
+                      <input type="date" name="dateFrom" defaultValue={dateFrom ?? ""} aria-label={t.filter.dateFrom}
+                        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]" />
+                      <span className="hidden sm:inline text-ink-400 text-[10px]">–</span>
+                      <input type="date" name="dateTo" defaultValue={dateTo ?? ""} aria-label={t.filter.dateTo}
+                        className="rounded-md border border-line bg-surface px-2 py-1 min-h-[36px] text-[12px] text-ink-700 w-full sm:w-[130px]" />
+                      <button type="submit" className="px-2 py-1 min-h-[36px] rounded text-[11px] font-mono border border-line text-ink-500 hover:bg-paper transition-colors">
+                        {lang === "zh" ? "筛选" : "Go"}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  {(activeCategory !== "all" || statusFilter || dateFrom || dateTo) && (
+                    <Link href={clearHref} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+                      ← {lang === "zh" ? "清除全部" : "Clear all"}
+                    </Link>
+                  )}
+                  <Link href={collapseHref} className="text-[11px] font-mono text-ink-400 hover:text-ink-700 transition-colors">
+                    {lang === "zh" ? "收起" : "Collapse"} ↑
+                  </Link>
+                </div>
+              </div>
+            )}
 
             <FilterSummary filters={activeFilters} labels={{ activeFilters: t.filter.activeFilters, clearAll: t.filter.clearAll }} clearHref={clearHref} />
             <div className="overflow-x-auto">

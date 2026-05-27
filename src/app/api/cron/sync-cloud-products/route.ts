@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { upsertCloudProducts, type CloudProductInput } from "@/lib/admin/products";
+import { fetchRSSItems } from "@/lib/admin/rss";
 import {
   FEEDS,
   parseItems,
@@ -12,7 +13,36 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const GITHUB_RE = /github\.com\/([^/]+)\/([^/]+)/;
+const TIMEOUT_MS = 10_000;
 const FEED_TIMEOUT_MS = 8_000;
+
+// ---- GitHub release checker ----
+
+async function fetchWithTimeout(url: string, ms: number): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function checkGitHubRelease(owner: string, repo: string): Promise<{ version: string; date: string } | null> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
+  const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const res = await fetchWithTimeout(url, TIMEOUT_MS);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return {
+    version: (data.tag_name as string)?.replace(/^v/, "") ?? "",
+    date: data.published_at ? new Date(data.published_at as string).toISOString().split("T")[0] : "",
+  };
+}
+
+// ---- Cloud feed fetcher ----
 
 async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]; error?: string }> {
   try {
@@ -20,26 +50,25 @@ async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]
       headers: { "User-Agent": "Mozilla/5.0 (compatible; CloudProductsBot/1.0)" },
       signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
     });
-
     if (!res.ok) return { items: [], error: `HTTP ${res.status}` };
 
     const xml = await res.text();
     const parsed = parseItems(xml);
     const filtered = parsed.filter((item) => matchesNetworking(item, feed.keywords));
 
-    const items: CloudProductInput[] = filtered.map((item) => ({
-      name: truncate(item.title, 200),
-      vendor: feed.vendor,
-      category: feed.category,
-      description: truncate(item.description, 200),
-      url: item.link,
-      pricing: "paid",
-      topics: mapTopics(item),
-      source_url: item.link,
-      published_at: new Date(item.pubDate).toISOString(),
-    }));
-
-    return { items };
+    return {
+      items: filtered.map((item) => ({
+        name: truncate(item.title, 200),
+        vendor: feed.vendor,
+        category: feed.category,
+        description: truncate(item.description, 200),
+        url: feed.site_url ?? item.link,
+        pricing: "paid",
+        topics: mapTopics(item),
+        source_url: item.link,
+        published_at: new Date(item.pubDate).toISOString(),
+      })),
+    };
   } catch (err) {
     return { items: [], error: (err as Error).message };
   }
@@ -51,11 +80,55 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // ---- Part 1: check GitHub releases for tracked products ----
+  const supabase = await createClient();
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, url, changelog_url, latest_version")
+    .or("url.neq.null,changelog_url.neq.null");
+
+  let ghUpdated = 0;
+  if (products?.length) {
+    const ghTasks = products.map(async (p) => {
+      const ghMatch = p.url?.match(GITHUB_RE);
+      if (ghMatch) {
+        const release = await checkGitHubRelease(ghMatch[1], ghMatch[2]);
+        if (release?.version && release.version !== p.latest_version) {
+          await supabase.from("products").update({
+            latest_version: release.version,
+            release_date: release.date || null,
+            updated_at: new Date().toISOString(),
+          }).eq("id", p.id);
+          ghUpdated++;
+        }
+        return;
+      }
+      if (p.changelog_url) {
+        try {
+          const items = await fetchRSSItems([{ url: p.changelog_url, source: p.name }], 1);
+          if (items.length > 0) {
+            const version = items[0].title?.replace(/^v/, "").trim();
+            const date = items[0].pubDate ? new Date(items[0].pubDate).toISOString().split("T")[0] : null;
+            if (version && version !== p.latest_version) {
+              await supabase.from("products").update({
+                latest_version: version,
+                release_date: date,
+                updated_at: new Date().toISOString(),
+              }).eq("id", p.id);
+              ghUpdated++;
+            }
+          }
+        } catch {}
+      }
+    });
+    await Promise.all(ghTasks);
+  }
+
+  // ---- Part 2: fetch cloud feeds ----
   const results: { vendor: string; status: "ok" | "error"; count: number; error?: string }[] = [];
   const allItems: CloudProductInput[] = [];
 
   const feedResults = await Promise.all(FEEDS.map((feed) => fetchFeed(feed)));
-
   for (let i = 0; i < FEEDS.length; i++) {
     const { items, error } = feedResults[i];
     if (error) {
@@ -73,13 +146,26 @@ export async function GET(request: Request) {
     return true;
   });
 
-  const { inserted, updated } = await upsertCloudProducts(unique);
+  let inserted = 0;
+  let updated = 0;
+  try {
+    const r = await upsertCloudProducts(unique);
+    inserted = r.inserted;
+    updated = r.updated;
+  } catch (e) {
+    console.log(`[cron-products] upsert ERROR: ${(e as Error).message}`);
+  }
 
-  const supabase = await createClient();
   await supabase.from("sync_meta").upsert(
     { entity: "cloud-products", last_sync_at: new Date().toISOString(), last_result: { results, inserted, updated } },
     { onConflict: "entity" },
   );
+  await supabase.from("sync_meta").upsert(
+    { entity: "products", last_sync_at: new Date().toISOString(), last_result: { updated: ghUpdated, checked: products?.length } },
+    { onConflict: "entity" },
+  );
+
+  console.log(`[cron-products] done: feeds=${results.filter(r => r.status === "ok").length}/${results.length} ok, inserted=${inserted}, updated=${updated}, ghUpdated=${ghUpdated}`);
 
   return NextResponse.json({
     success: true,
@@ -87,5 +173,6 @@ export async function GET(request: Request) {
     total: unique.length,
     inserted,
     updated,
+    ghUpdated,
   });
 }

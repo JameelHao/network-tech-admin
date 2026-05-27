@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminAuth } from "@/lib/admin/api-auth";
-import { fetchAndStorePatents, importPatents, getStoredPatentCount, getCompanyPatentUrl } from "@/lib/admin/patents";
+import { syncCompanyRepos, getStoredRepoCount } from "@/lib/admin/github";
 import { COMPANY_NAMES } from "@/lib/admin/companies";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,16 @@ export async function POST(request: Request) {
   if (unauth) return unauth;
 
   const body = await request.json();
-  const { company, numbers } = body;
+  const { company, all } = body;
+
+  // Sync all companies
+  if (all) {
+    const results: Record<string, { inserted: number; total: number; error?: string }> = {};
+    for (const s of COMPANY_SLUGS) {
+      results[s] = await syncCompanyRepos(s);
+    }
+    return NextResponse.json({ all: true, results });
+  }
 
   if (!company) {
     return NextResponse.json({ error: "Missing company" }, { status: 400 });
@@ -22,13 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Invalid company: ${company}` }, { status: 400 });
   }
 
-  // If numbers provided → manual import; otherwise → automated fetch
-  if (numbers && Array.isArray(numbers)) {
-    const result = await importPatents(company, numbers);
-    return NextResponse.json({ company, ...result });
-  }
-
-  const result = await fetchAndStorePatents(company);
+  const result = await syncCompanyRepos(company);
   return NextResponse.json({ company, ...result });
 }
 
@@ -37,18 +40,16 @@ export async function GET(request: Request) {
   const slug = searchParams.get("company");
 
   if (slug) {
-    const searchUrl = getCompanyPatentUrl(slug);
-    const count = await getStoredPatentCount(slug);
-    return NextResponse.json({ company: slug, count, searchUrl });
+    const count = await getStoredRepoCount(slug);
+    return NextResponse.json({ company: slug, count });
   }
 
   const counts: Record<string, number> = {};
   for (const s of COMPANY_SLUGS) {
-    counts[s] = await getStoredPatentCount(s);
+    counts[s] = await getStoredRepoCount(s);
   }
   return NextResponse.json({
     total: Object.values(counts).reduce((a, c) => a + c, 0),
     companies: counts,
-    searchUrls: Object.fromEntries(COMPANY_SLUGS.map((s) => [s, getCompanyPatentUrl(s)])),
   });
 }

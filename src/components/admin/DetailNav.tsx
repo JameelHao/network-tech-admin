@@ -1,24 +1,24 @@
+"use client";
+
 import Link from "next/link";
 import type { AdjacentItem } from "@/lib/admin/adjacent";
 
 type Props = {
-  backHref: string;
-  backLabel: string;
   prev: AdjacentItem;
   next: AdjacentItem;
   basePath: string;
   labels: { backTo: string; prev: string; next: string };
 };
 
-export function DetailNav({ backHref, backLabel, prev, next, basePath, labels }: Props) {
+export function DetailNav({ prev, next, basePath, labels }: Props) {
   return (
     <nav className="flex items-center justify-between px-4 sm:px-6 xl:px-10 py-3">
-      <Link
-        href={backHref}
+      <button
+        onClick={() => window.history.back()}
         className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-500 hover:text-ink-800 transition-colors"
       >
-        <span aria-hidden>←</span> {labels.backTo} {backLabel}
-      </Link>
+        <span aria-hidden>←</span> {labels.backTo}
+      </button>
       <div className="flex items-center gap-2">
         {prev ? (
           <Link

@@ -43,8 +43,6 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
         { label: vendor.name },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/vendors"
-        backLabel={t.nav.vendors}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/vendors"

@@ -24,8 +24,6 @@ export default async function TalentDetailPage({ params }: { params: Promise<{ i
         { label: talent.name },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/talents"
-        backLabel={t.nav.talents}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/talents"

@@ -23,17 +23,29 @@ type ProviderResult = {
 };
 
 async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]; error?: string }> {
+  const tag = `[cloud-sync:${feed.vendor}]`;
   try {
+    console.log(`${tag} fetching ${feed.url}`);
     const res = await fetch(feed.url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; CloudProductsBot/1.0)" },
       signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
     });
+    console.log(`${tag} HTTP ${res.status} ${res.statusText}`);
 
-    if (!res.ok) return { items: [], error: `HTTP ${res.status}` };
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.log(`${tag} response body (${body.length} chars): ${body.slice(0, 200)}`);
+      return { items: [], error: `HTTP ${res.status} ${res.statusText}` };
+    }
 
     const xml = await res.text();
+    console.log(`${tag} body ${xml.length} bytes, first 200: ${xml.slice(0, 200)}`);
+
     const parsed = parseItems(xml);
+    console.log(`${tag} parsed ${parsed.length} raw items`);
+
     const filtered = parsed.filter((item) => matchesNetworking(item, feed.keywords));
+    console.log(`${tag} ${filtered.length} networking items`);
 
     const items: CloudProductInput[] = filtered.map((item) => ({
       name: truncate(item.title, 200),
@@ -49,7 +61,9 @@ async function fetchFeed(feed: FeedConfig): Promise<{ items: CloudProductInput[]
 
     return { items };
   } catch (err) {
-    return { items: [], error: (err as Error).message };
+    const msg = (err as Error).message;
+    console.log(`${tag} ERROR: ${msg}`);
+    return { items: [], error: msg };
   }
 }
 
@@ -80,7 +94,15 @@ export async function POST() {
     return true;
   });
 
-  const { inserted, updated } = await upsertCloudProducts(unique);
+  let inserted = 0;
+  let updated = 0;
+  try {
+    const result = await upsertCloudProducts(unique);
+    inserted = result.inserted;
+    updated = result.updated;
+  } catch (e) {
+    console.log(`[cloud-sync] upsert ERROR: ${(e as Error).message}`);
+  }
 
   const supabase = await createClient();
   await supabase.from("sync_meta").upsert(
@@ -88,9 +110,12 @@ export async function POST() {
     { onConflict: "entity" },
   );
 
+  console.log(`[cloud-sync] done: ${unique.length} unique, ${inserted} inserted, ${updated} updated`);
+
   return NextResponse.json({
     success: true,
     providers: results,
+    stats: results.map((r) => ({ name: r.vendor, status: r.status, error: r.error })),
     total: unique.length,
     inserted,
     updated,

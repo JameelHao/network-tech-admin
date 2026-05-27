@@ -14,29 +14,29 @@ export type CloudProductInput = {
   published_at: string;
 };
 
-export const PRODUCT_SORTABLE = ["name", "vendor", "category", "release_date", "stage"] as const;
+export const PRODUCT_SORTABLE = ["name", "vendor", "category", "release_date", "stage", "published_at"] as const;
 
 export async function listProducts(
   params?: PaginationParams,
-  filter?: { category?: string; vendor?: string; stage?: string; pricing?: string; keyword?: string },
+  filter?: { category?: string; vendor?: string; keyword?: string; topic?: string },
 ): Promise<PaginatedResult<Product>> {
   const supabase = await createClient();
   const page = params?.page ?? 1;
   const pageSize = params?.pageSize ?? 25;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { column, ascending } = validateSort(params?.sort, params?.dir, PRODUCT_SORTABLE, "created_at", "desc");
+  const { column, ascending } = validateSort(params?.sort, params?.dir, PRODUCT_SORTABLE, "published_at", "desc");
 
+  const sortByPublished = column === "published_at";
   let query = supabase
     .from("products")
     .select("*", { count: "exact" })
-    .order(column, { ascending });
+    .order(column, { ascending, nullsFirst: sortByPublished ? false : undefined });
 
   if (filter?.category) query = query.eq("category", filter.category);
   if (filter?.vendor) query = query.ilike("vendor", `%${filter.vendor}%`);
-  if (filter?.stage) query = query.eq("stage", filter.stage);
-  if (filter?.pricing) query = query.eq("pricing", filter.pricing);
   if (filter?.keyword) query = query.ilike("name", `%${filter.keyword}%`);
+  if (filter?.topic) query = query.contains("topics", [filter.topic]);
 
   const { data, error, count } = await query.range(from, to);
 
@@ -89,12 +89,24 @@ export async function upsertCloudProducts(
   const supabase = await createClient();
   const urls = items.map((i) => i.source_url);
 
-  const { data: existing } = await supabase
-    .from("products")
-    .select("id, source_url")
-    .in("source_url", urls);
-
-  const existingMap = new Map((existing ?? []).map((r) => [r.source_url, r.id]));
+  // Batch lookup to avoid URL length limit on Supabase REST in() clause
+  const existingMap = new Map<string, string>();
+  const batchSize = 50;
+  for (let i = 0; i < urls.length; i += batchSize) {
+    const batch = urls.slice(i, i + batchSize);
+    const { data: batchData, error: batchError } = await supabase
+      .from("products")
+      .select("id, source_url")
+      .in("source_url", batch);
+    if (batchError) {
+      console.log(`[upsertCloudProducts] batch fetch error: ${batchError.message}`);
+    } else if (batchData) {
+      for (const r of batchData) {
+        existingMap.set(r.source_url, r.id);
+      }
+    }
+  }
+  console.log(`[upsertCloudProducts] ${items.length} items, ${existingMap.size} existing match`);
 
   let inserted = 0;
   let updated = 0;
@@ -113,7 +125,11 @@ export async function upsertCloudProducts(
         })
         .eq("id", existingId);
 
-      if (!error) updated++;
+      if (error) {
+        console.log(`[upsertCloudProducts] update error "${item.name}": ${error.message}`);
+      } else {
+        updated++;
+      }
     } else {
       const { error } = await supabase.from("products").insert({
         name: item.name,
@@ -128,7 +144,11 @@ export async function upsertCloudProducts(
         published_at: item.published_at,
       });
 
-      if (!error) inserted++;
+      if (error) {
+        console.log(`[upsertCloudProducts] insert error "${item.name}": ${error.message}`);
+      } else {
+        inserted++;
+      }
     }
   }
 

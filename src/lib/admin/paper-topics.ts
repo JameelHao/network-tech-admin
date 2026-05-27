@@ -29,7 +29,7 @@ const ARXIV_CATEGORY_MAP: Record<string, string[]> = {
 };
 
 /** Keyword patterns for title/abstract matching → topic slug improvements */
-const TOPIC_KEYWORD_RULES: { topic: string; patterns: RegExp[] }[] = [
+export const TOPIC_KEYWORD_RULES: { topic: string; patterns: RegExp[] }[] = [
   { topic: "dc-networking",         patterns: [/data\s*center/i, /dcn\b/i, /dc\s+networking/i] },
   { topic: "transport-protocols",   patterns: [/tcp\b/i, /quic\b/i, /transport\s+protocol/i, /congestion\s+control/i, /packet\s+loss/i] },
   { topic: "programmable-net",      patterns: [/p4\b/i, /programmable\s+(data\s*plane|network|switch)/i, /openflow/i] },

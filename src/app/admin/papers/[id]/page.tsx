@@ -30,8 +30,6 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
         { label: paper.title.slice(0, 40) },
       ]} t={t} lang={lang} />
       <DetailNav
-        backHref="/admin/papers"
-        backLabel={t.nav.papers}
         prev={adjacent.prev}
         next={adjacent.next}
         basePath="/admin/papers"
