@@ -66,7 +66,8 @@ export default async function EcosystemPage() {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
 
-  const [confResult, paperResult, osResult, productResult, vendorResult, leadResult, talentCount, newsCount] = await Promise.all([
+  // Fetch everything in parallel — stat cards and trend data
+  const [confResult, paperResult, osResult, productResult, vendorResult, leadResult, talentCount, newsCount, trendPage0, trendPage1] = await Promise.all([
     listConferences({ page: 1, pageSize: 100 }),
     listPapers({ page: 1, pageSize: 100 }),
     listOpenSource({ page: 1, pageSize: 100 }),
@@ -75,6 +76,17 @@ export default async function EcosystemPage() {
     listLeads({ page: 1, pageSize: 100 }),
     supabase.from("talent_leads").select("*", { count: "exact", head: true }),
     supabase.from("news_items").select("*", { count: "exact", head: true }),
+    // Trend data: 2 pages in parallel (Supabase caps at 1k rows)
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)")
+      .not("published_date", "is", null)
+      .order("published_date", { ascending: false })
+      .range(0, 999),
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)")
+      .not("published_date", "is", null)
+      .order("published_date", { ascending: false })
+      .range(1000, 1999),
   ]);
 
   const products = productResult.data;
@@ -87,25 +99,12 @@ export default async function EcosystemPage() {
   const topicMatrix = aggregateTopicMatrix(papers, conferences, products, opensource, vendors);
   const vendorTopicMap = buildVendorTopicMap(vendors, products);
 
-  // Trend: fetch all papers with dates (paginated to avoid Supabase 1k cap)
-  const trendPageSize = 1000;
-  const trendPapers: { published_date: string; topics: string[] }[] = [];
-  for (let offset = 0; ; offset += trendPageSize) {
-    const { data: page } = await supabase
-      .from("papers")
-      .select("published_date, paper_topics(topic_slug)")
-      .not("published_date", "is", null)
-      .order("published_date", { ascending: false })
-      .range(offset, offset + trendPageSize - 1);
-    if (!page || page.length === 0) break;
-    for (const r of page) {
-      trendPapers.push({
-        published_date: r.published_date,
-        topics: (r.paper_topics ?? []).map((pt: any) => pt.topic_slug),
-      });
-    }
-    if (page.length < trendPageSize) break;
-  }
+  const trendPapers = [...(trendPage0.data ?? []), ...(trendPage1.data ?? [])]
+    .filter((r: any) => r.published_date)
+    .map((r: any) => ({
+      published_date: r.published_date,
+      topics: (r.paper_topics ?? []).map((pt: any) => pt.topic_slug),
+    }));
   const trendData = getTopicMonthlyTrend(trendPapers, 8);
   const trendTopicKeys = trendData.length > 0
     ? Object.keys(trendData[0]).filter((k) => k !== "period")

@@ -28,17 +28,6 @@ export const FEEDS: FeedConfig[] = [
   },
   // Azure feed moved; old https://azurecomcdn.azureedge.net/en-us/updates/feed/ dead
   {
-    url: "https://cloud.google.com/feeds/gcp-release-notes.xml",
-    vendor: "gcp",
-    category: "platform",
-    site_url: "https://cloud.google.com",
-    keywords: [
-      "vpc", "cdn", "cloud armor", "load balancing", "interconnect",
-      "cloud dns", "cloud nat", "cloud vpn", "cloud router", "network service tiers",
-      "firewall", "ddos",
-    ],
-  },
-  {
     url: "https://blog.cloudflare.com/rss/",
     vendor: "cloudflare",
     category: "saas",

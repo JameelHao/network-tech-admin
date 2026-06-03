@@ -25,7 +25,7 @@ async function upsertPapers(fetched: ImportedPaper[]) {
     (existing ?? []).map((p) => [p.title.toLowerCase(), p.citation_count as number | null]),
   );
 
-  // Dedup within batch
+  // Intra-batch dedup
   const seen = new Set<string>();
   const deduped = fetched.filter((p) => {
     const key = p.title.toLowerCase().trim();
@@ -36,45 +36,39 @@ async function upsertPapers(fetched: ImportedPaper[]) {
 
   const newPapers = deduped.filter((p) => !existingMap.has(p.title.toLowerCase()));
 
+  // Update citation counts for existing papers
   const updateTasks: Promise<void>[] = [];
   for (const p of fetched) {
     const key = p.title.toLowerCase();
-    if (
-      existingMap.has(key) &&
-      p.citation_count !== undefined &&
-      existingMap.get(key) !== p.citation_count
-    ) {
+    if (existingMap.has(key) && p.citation_count !== undefined && existingMap.get(key) !== p.citation_count) {
       updateTasks.push(
-        (async () => {
-          await supabase
-            .from("papers")
-            .update({ citation_count: p.citation_count })
-            .eq("title", p.title);
-        })(),
+        supabase.from("papers").update({ citation_count: p.citation_count }).eq("title", p.title).then(),
       );
     }
   }
   await Promise.all(updateTasks);
 
+  // Insert new papers individually so 1 duplicate doesn't kill the batch
+  // (unique index on normalized title catches any race-condition duplicates)
   let imported = 0;
-  for (let i = 0; i < newPapers.length; i += 50) {
-    const batch = newPapers.slice(i, i + 50).map((p) => ({
-      title: p.title,
-      authors: p.authors,
-      venue: p.venue,
-      url: p.url,
-      published_date: p.published_date,
-      abstract: p.abstract,
-      citation_count: p.citation_count ?? null,
-      source: p.source,
-      companies: p.companies,
-    }));
-    const { data: inserted, error } = await supabase.from("papers").insert(batch).select("id");
-    if (!error && inserted) {
-      imported += inserted.length;
-      const topicRows = newPapers.slice(i, i + 50).flatMap((p, j) =>
-        (p.topics ?? []).map((t) => ({ paper_id: inserted[j]?.id, topic_slug: t }))
-      ).filter((r) => r.paper_id);
+  for (const p of newPapers) {
+    const { data: inserted } = await supabase
+      .from("papers")
+      .insert({
+        title: p.title,
+        authors: p.authors,
+        venue: p.venue,
+        url: p.url,
+        published_date: p.published_date,
+        abstract: p.abstract,
+        citation_count: p.citation_count ?? null,
+        source: p.source,
+        companies: p.companies,
+      })
+      .select("id");
+    if (inserted && inserted.length > 0) {
+      imported++;
+      const topicRows = (p.topics ?? []).map((t) => ({ paper_id: inserted[0].id, topic_slug: t }));
       if (topicRows.length > 0) {
         await supabase.from("paper_topics").insert(topicRows);
       }
@@ -122,37 +116,38 @@ export async function POST(request: Request) {
   }
 
   if (!source) {
+    // Collect all sources first, dedup globally, then upsert once
     const allStats = [];
-    let totalImported = 0;
-    let totalUpdated = 0;
-    let totalFetched = 0;
+    const allFetched: ImportedPaper[] = [];
 
     for (const cat of ARXIV_CATEGORIES) {
       const result = await fetchSingleArxivCategory(cat, CURRENT_YEAR);
-      const { imported, updated } = await upsertPapers(result.papers);
-      totalImported += imported;
-      totalUpdated += updated;
-      totalFetched += result.papers.length;
+      allFetched.push(...result.papers);
       allStats.push(result.categoryStats[0]);
     }
 
     for (const v of S2_VENUES) {
       const result = await fetchSingleS2Venue(v, CURRENT_YEAR);
-      const { imported, updated } = await upsertPapers(result.papers);
-      totalImported += imported;
-      totalUpdated += updated;
-      totalFetched += result.papers.length;
+      allFetched.push(...result.papers);
       allStats.push(result.categoryStats[0]);
     }
 
     for (const slug of COMPANY_SLUGS) {
       const result = await fetchCompanyArxivPapers(slug, CURRENT_YEAR, 5);
-      const { imported, updated } = await upsertPapers(result.papers);
-      totalImported += imported;
-      totalUpdated += updated;
-      totalFetched += result.papers.length;
+      allFetched.push(...result.papers);
       allStats.push(...result.categoryStats);
     }
+
+    // Global dedup — same paper from cs.NI + cs.AI
+    const seen = new Set<string>();
+    const deduped = allFetched.filter((p) => {
+      const key = p.title.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const { imported, updated } = await upsertPapers(deduped);
 
     const supabase = await createClient();
     await supabase.from("sync_meta").upsert(
@@ -165,9 +160,10 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json({
-      imported: totalImported,
-      updated: totalUpdated,
-      total_fetched: totalFetched,
+      imported,
+      updated,
+      total_fetched: allFetched.length,
+      deduped: allFetched.length - deduped.length,
       categoryStats: allStats,
     });
   }
