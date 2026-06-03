@@ -22,18 +22,13 @@ export type FetchResult = {
 };
 
 const NEWS_FEEDS = [
-  { url: "https://hnrss.org/newest?q=networking+OR+SDN+OR+datacenter+OR+BGP+OR+eBPF+OR+network+protocol", source: "Hacker News" },
-  { url: "https://hnrss.org/newest?q=cloudflare+OR+AWS+networking+OR+network+infrastructure+OR+xAI+cluster+OR+colossus", source: "Hacker News" },
-  { url: "https://www.sdxcentral.com/feed/", source: "SDxCentral" },
   { url: "https://blog.cloudflare.com/rss/", source: "Cloudflare Blog" },
   { url: "https://aws.amazon.com/blogs/networking-and-content-delivery/feed/", source: "AWS Networking" },
   { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
-  { url: "https://www.theregister.com/networks/headlines.rss", source: "The Register" },
+  { url: "https://www.theregister.com/feed/", source: "The Register" },
   { url: "https://engineering.fb.com/category/networking-traffic/feed/", source: "Meta Engineering" },
-  { url: "https://cloud.google.com/feeds/", source: "Google Cloud" },
-  { url: "https://azure.microsoft.com/blog/feed/", source: "Azure Networking" },
+  // Azure feed blocks direct fetch — removed temporarily
   { url: "https://blogs.cisco.com/feed/", source: "Cisco Blogs" },
-  { url: "https://netflixtechblog.com/feed", source: "Netflix TechBlog" },
   { url: "https://developer.nvidia.com/blog/feed", source: "NVIDIA Developer" },
   { url: "https://news.google.com/rss/search?q=%22Ericsson%22+network+OR+5G+OR+6G+OR+RAN+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Ericsson" },
   { url: "https://news.google.com/rss/search?q=%22Nokia%22+network+OR+5G+OR+6G+OR+IP+optical+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Nokia" },
@@ -54,13 +49,12 @@ const NEWS_FEEDS = [
   // Chinese tech feeds
   { url: "https://www.infoq.cn/feed", source: "InfoQ 中文" },
   { url: "https://www.oschina.net/news/rss", source: "开源中国" },
-  { url: "https://www.freebuf.com/feed", source: "FreeBuf" },
+  // FreeBuf feed blocks direct fetch — removed temporarily
   { url: "https://blog.cloudflare.com/zh-cn/rss/", source: "Cloudflare 中文" },
   { url: "https://lwn.net/headlines/rss", source: "LWN.net" },
 ];
 
 const JOBS_FEEDS = [
-  { url: "https://hnrss.org/jobs?q=network+engineer+OR+SDN+OR+datacenter+networking+OR+BGP+OR+network+infrastructure", source: "HN Jobs" },
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Amazon+OR+AWS+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Amazon/AWS" },
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Cloudflare+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Cloudflare" },
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Google+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Google" },
@@ -68,7 +62,6 @@ const JOBS_FEEDS = [
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Microsoft+Azure+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Microsoft" },
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+xAI+when:7d&hl=en-US&gl=US&ceid=US:en", source: "xAI" },
   { url: "https://news.google.com/rss/search?q=%22network+engineer%22+Juniper+OR+Cisco+OR+Arista+when:7d&hl=en-US&gl=US&ceid=US:en", source: "Juniper/Cisco/Arista" },
-  { url: "https://remoteok.com/remote-networking-jobs.rss", source: "RemoteOK" },
 ];
 
 export async function fetchRSSItems(feeds: { url: string; source: string }[], limit = 20): Promise<RSSItem[]> {
