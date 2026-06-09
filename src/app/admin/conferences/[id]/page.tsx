@@ -3,6 +3,7 @@ import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
+import { ConfSummarySection } from "@/components/admin/ConfSummarySection";
 import { RefreshButton } from "@/components/admin/RefreshButton";
 import { SessionStats } from "@/components/admin/SessionStats";
 import { SessionsPanel } from "@/components/admin/SessionsPanel";
@@ -103,6 +104,9 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
             )}
           </div>
         </section>
+
+        {/* AI Summary */}
+        <ConfSummarySection confId={id} initialSummary={conf.ai_summary} />
 
         {/* Section 2: Stats Cards */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">

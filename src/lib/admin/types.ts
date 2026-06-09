@@ -17,6 +17,7 @@ export type Conference = {
   topics: string[];
   notes: string | null;
   created_at: string;
+  ai_summary?: string | null;
 };
 
 export type ConferenceSession = {
@@ -46,6 +47,8 @@ export type Paper = {
   source: string | null;
   notes: string | null;
   created_at: string;
+  ai_summary?: string | null;
+  relevance_score?: number | null;
 };
 
 export type OpenSource = {

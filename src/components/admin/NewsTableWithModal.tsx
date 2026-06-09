@@ -60,13 +60,6 @@ export function NewsTableWithModal({
               ) : <span className="text-ink-400">—</span>}
             </td>
             <td className="hidden lg:table-cell px-3 sm:px-4 py-3 align-middle">
-              {item.snippet ? (
-                <span className="text-[12px] text-ink-500 line-clamp-1 max-w-full sm:max-w-[200px] block" title={item.snippet}>
-                  {item.snippet}
-                </span>
-              ) : <span className="text-ink-400">—</span>}
-            </td>
-            <td className="hidden lg:table-cell px-3 sm:px-4 py-3 align-middle">
               {isNewItem ? (
                 <NewBadge label={t.time.new} />
               ) : stale ? (

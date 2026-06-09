@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { fetchAllNetworkPapers } from "./paper-import";
 import { buildResult, type PaginatedResult, type PaginationParams } from "./pagination";
 import type { Paper } from "./types";
 
@@ -73,15 +72,13 @@ export async function getPaperFull(id: string): Promise<Paper | null> {
   return data ? mapRow(data) : null;
 }
 
-export async function fetchAndSyncPapers(): Promise<{ papers: Paper[]; total: number }> {
+export async function listAllPapers(): Promise<{ papers: Paper[]; total: number }> {
   const supabase = await createClient();
 
-  // Get total count
   const { count } = await supabase
     .from("papers")
     .select("*", { count: "exact", head: true });
 
-  // Fetch all papers with topics via paper_topics
   const all: Paper[] = [];
   const pageSize = 1000;
   let from = 0;
@@ -100,40 +97,7 @@ export async function fetchAndSyncPapers(): Promise<{ papers: Paper[]; total: nu
     from += pageSize;
   }
 
-  if (all.length > 0) return { papers: all, total: count ?? all.length };
-
-  // First-time fetch from arXiv + Semantic Scholar
-  const { papers: fetched } = await fetchAllNetworkPapers(2026, 5);
-
-  if (fetched.length > 0) {
-    for (let i = 0; i < fetched.length; i += 50) {
-      const batch = fetched.slice(i, i + 50).map((p) => ({
-        title: p.title,
-        authors: p.authors,
-        venue: p.venue,
-        url: p.url,
-        published_date: p.published_date,
-        abstract: p.abstract,
-        companies: p.companies,
-      }));
-      const { data: inserted } = await supabase.from("papers").insert(batch).select("id");
-      if (inserted) {
-        const topicRows = fetched.slice(i, i + 50).flatMap((p, j) =>
-          (p.topics ?? []).map((t: string) => ({ paper_id: inserted[j]?.id, topic_slug: t }))
-        ).filter((r) => r.paper_id);
-        if (topicRows.length > 0) {
-          await supabase.from("paper_topics").insert(topicRows);
-        }
-      }
-    }
-  }
-
-  const { data: fresh } = await supabase
-    .from("papers")
-    .select(PAPER_WITH_TOPICS)
-    .order("created_at", { ascending: false });
-
-  return { papers: (fresh ?? []).map(mapRow), total: count ?? (fresh?.length ?? 0) };
+  return { papers: all, total: count ?? all.length };
 }
 
 export async function listAllPapersLight(): Promise<Paper[]> {

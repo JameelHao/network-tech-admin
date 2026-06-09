@@ -47,6 +47,19 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.date}</dt><dd className="mt-1 text-ink-800 tabular-nums">{paper.published_date ?? "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.detail.link}</dt><dd className="mt-1">{paper.url ? <a href={paper.url} target="_blank" rel="noreferrer" className="text-navy-500 hover:text-navy-700 transition-colors truncate block">{paper.url}</a> : "—"}</dd></div>
             <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.papers.source}</dt><dd className="mt-1 text-ink-800">{paper.source ?? "—"}</dd></div>
+            {paper.relevance_score != null && (
+              <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">Relevance</dt>
+                <dd className="mt-1">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[10px] ${
+                    paper.relevance_score >= 8 ? "bg-emerald-100 text-emerald-700" :
+                    paper.relevance_score >= 5 ? "bg-amber-100 text-amber-700" :
+                    "bg-rose-100 text-rose-700"
+                  }`}>
+                    {paper.relevance_score}/10
+                  </span>
+                </dd>
+              </div>
+            )}
             {paper.companies && paper.companies.length > 0 && (
               <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">Companies</dt><dd className="mt-1 flex flex-wrap gap-1">{[...new Set(paper.companies)].map((c) => (
                 <span key={c} className={`rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] ${COMPANY_COLORS[c] ?? "bg-zinc-100 text-zinc-600 border border-zinc-200"}`}>
@@ -55,6 +68,12 @@ export default async function PaperDetailPage({ params }: { params: Promise<{ id
               ))}</dd></div>
             )}
           </dl>
+          {paper.ai_summary && (
+            <div className="bg-navy-50 border border-navy-200 rounded-lg p-4 -mx-1">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-navy-600 mb-1">AI Summary</p>
+              <p className="text-[13px] text-navy-800 leading-relaxed">{paper.ai_summary}</p>
+            </div>
+          )}
           {paper.abstract && (
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-1">{t.detail.abstract}</p>

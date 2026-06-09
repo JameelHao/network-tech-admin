@@ -3,7 +3,6 @@ import { inferCompanies } from "./companies";
 export type RSSItem = {
   title: string;
   link: string;
-  snippet: string;
   source: string;
   pubDate: string | null;
   companies: string[];
@@ -135,7 +134,6 @@ function parseRSSXml(xml: string, source: string): RSSItem[] {
       items.push({
         title: decodeEntities(title),
         link,
-        snippet: decodeEntities(stripHtml(description || "")).slice(0, 200),
         source,
         pubDate: pubDate || null,
         companies: inferCompanies(`${title} ${description ?? ""}`),

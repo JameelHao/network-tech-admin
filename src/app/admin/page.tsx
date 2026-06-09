@@ -1,264 +1,182 @@
 import { Topbar } from "@/components/admin/Topbar";
-import { EmptyState } from "@/components/admin/EmptyState";
 import { StatCard } from "@/components/admin/StatCard";
-import { StatusPill } from "@/components/admin/StatusPill";
-import { TopicTag } from "@/components/admin/TopicTag";
-import { DataSourceStatus } from "@/components/admin/DataSourceStatus";
+import { EmptyState } from "@/components/admin/EmptyState";
+import { VendorTopicGrid } from "@/components/admin/charts/VendorTopicGrid";
+import { TechTrendChart } from "@/components/admin/charts/TechTrendChart";
 import { Watchlist } from "@/components/admin/Watchlist";
-import { listConferences } from "@/lib/admin/conferences";
-import { listPapers } from "@/lib/admin/papers";
-import { listOpenSource } from "@/lib/admin/opensource";
-import { listLeads, getStageCounts } from "@/lib/admin/leads";
+
 import { listProducts } from "@/lib/admin/products";
 import { listVendors } from "@/lib/admin/vendors";
+import { listOpenSource } from "@/lib/admin/opensource";
+import { listConferences } from "@/lib/admin/conferences";
+import { listPapers } from "@/lib/admin/papers";
+import { listLeads } from "@/lib/admin/leads";
+import { buildVendorTopicMap, getTopicMonthlyTrend } from "@/lib/admin/ecosystem-stats";
 import { getDict } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
+type TimelineEvent = {
+  type: "conference" | "paper" | "product" | "vendor" | "lead";
+  date: string;
+  title: string;
+  href: string;
+};
+
+const EVENT_DOT_COLORS: Record<TimelineEvent["type"], string> = {
+  conference: "bg-violet-500", paper: "bg-blue-500", product: "bg-amber-500",
+  vendor: "bg-emerald-500", lead: "bg-rose-500",
+};
+
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-lg border border-line bg-surface overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-line bg-paper/30">
+        <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{title}</h3>
+      </div>
+      <div className="p-4 sm:p-5">{children}</div>
+    </section>
+  );
+}
+
 export default async function DashboardPage() {
   const { lang, t } = await getDict();
   const supabase = await createClient();
-  const [confResult, paperResult, osResult, leadResult, productResult, vendorResult] = await Promise.all([
-    listConferences(),
-    listPapers(),
-    listOpenSource(),
-    listLeads(),
-    listProducts(),
-    listVendors(),
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
+
+  const [confResult, paperResult, osResult, productResult, vendorResult, leadResult, talentCount, newsCount, trendPage0, trendPage1] = await Promise.all([
+    listConferences({ page: 1, pageSize: 100 }),
+    listPapers({ page: 1, pageSize: 100 }),
+    listOpenSource({ page: 1, pageSize: 100 }),
+    listProducts({ page: 1, pageSize: 100 }),
+    listVendors({ page: 1, pageSize: 100 }),
+    listLeads({ page: 1, pageSize: 100 }),
+    supabase.from("talent_leads").select("*", { count: "exact", head: true }),
+    supabase.from("news_items").select("*", { count: "exact", head: true }),
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)").not("published_date", "is", null)
+      .order("published_date", { ascending: false }).range(0, 999),
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)").not("published_date", "is", null)
+      .order("published_date", { ascending: false }).range(1000, 1999),
   ]);
 
+  const products = productResult.data;
+  const vendors = vendorResult.data;
+  const opensource = osResult.data;
   const conferences = confResult.data;
   const papers = paperResult.data;
-  const opensource = osResult.data;
   const leads = leadResult.data;
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const vendorTopicMap = buildVendorTopicMap(vendors, products);
 
-  const { data: newsItems } = await supabase
-    .from("news_items")
-    .select("title, link, source")
-    .eq("category", "news")
-    .gte("pub_date", sevenDaysAgo)
-    .order("pub_date", { ascending: false })
-    .limit(5);
+  const trendPapers = [...(trendPage0.data ?? []), ...(trendPage1.data ?? [])]
+    .filter((r: any) => r.published_date)
+    .map((r: any) => ({
+      published_date: r.published_date,
+      topics: (r.paper_topics ?? []).map((pt: any) => pt.topic_slug),
+    }));
+  const trendData = getTopicMonthlyTrend(trendPapers, 8);
+  const trendTopicKeys = trendData.length > 0
+    ? Object.keys(trendData[0]).filter((k) => k !== "period")
+    : [];
 
-  const stageCounts = getStageCounts(leads);
-  const activeLeads = leads.filter((l) => l.stage !== "archived");
+  const timeline: TimelineEvent[] = [
+    ...conferences.filter((c) => c.start_date >= thirtyDaysAgo.slice(0, 10))
+      .map((c) => ({ type: "conference" as const, date: c.start_date, title: c.name, href: `/admin/conferences/${c.id}` })),
+    ...papers.filter((p) => p.created_at >= thirtyDaysAgo)
+      .map((p) => ({ type: "paper" as const, date: p.created_at.slice(0, 10), title: p.title, href: p.url || `/admin/papers` })),
+    ...products.filter((p) => p.release_date && p.release_date >= thirtyDaysAgo.slice(0, 10))
+      .map((p) => ({ type: "product" as const, date: p.release_date!, title: `${p.name} ${p.latest_version ?? ""}`.trim(), href: `/admin/products/${p.id}` })),
+    ...vendors.filter((v) => v.created_at >= thirtyDaysAgo)
+      .map((v) => ({ type: "vendor" as const, date: v.created_at.slice(0, 10), title: v.name, href: `/admin/vendors/${v.id}` })),
+    ...leads.filter((l) => l.created_at >= thirtyDaysAgo)
+      .map((l) => ({ type: "lead" as const, date: l.created_at.slice(0, 10), title: l.title, href: `/admin/leads/${l.id}` })),
+  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 15);
 
-  const upcoming = conferences
-    .filter((c) => new Date(c.start_date) > new Date())
-    .sort((a, b) => a.start_date.localeCompare(b.start_date));
-
-  const latestPapers = papers
-    .filter((p) => p.published_date && Date.now() - new Date(p.published_date).getTime() < 7 * 86_400_000)
-    .slice(0, 5);
-
-  const latestUpdatedProducts = productResult.data
-    .filter((p) => p.release_date)
-    .sort((a, b) => b.release_date!.localeCompare(a.release_date!))
-    .slice(0, 5);
-
-  const keyVendors = vendorResult.data
-    .filter((v) => v.stage === "engaging" || v.stage === "partnered")
-    .slice(0, 5);
-
-  const TYPE_I18N_MAP: Record<string, string> = {
-    vendor: "vendorType",
-    partner: "partner",
-    competitor: "competitor",
-    startup: "startup",
-    academic: "academic",
+  const EVENT_LABEL: Record<string, string> = {
+    conference: t.ecosystem.conferences, paper: t.ecosystem.papers, product: t.ecosystem.products,
+    vendor: t.ecosystem.vendors, lead: t.ecosystem.leads,
   };
 
   return (
     <>
       <Topbar crumbs={[{ label: t.nav.dashboard }]} t={t} lang={lang} />
-      <main className="px-6 xl:px-10 py-10 space-y-6 sm:space-y-8">
-        <header className="mb-6">
-          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">
-            {t.nav.dashboard}
-          </p>
-          <p className="mt-4 max-w-2xl text-[13.5px] text-ink-500">
-            {t.dashboard.description}
-          </p>
+      <main className="px-6 xl:px-10 py-10 max-w-[1200px] mx-auto">
+        <header className="mb-8">
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-ink-500">{t.nav.dashboard}</p>
+          <p className="mt-3 max-w-2xl text-[13px] text-ink-500 leading-relaxed">{t.dashboard.description}</p>
         </header>
 
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.dashboard.overview}</p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-line rounded-lg overflow-hidden border border-line">
-            <StatCard label={t.dashboard.conferences} value={confResult.total} sub={t.dashboard.recorded} />
-            <StatCard label={t.dashboard.papers} value={paperResult.total} sub={t.dashboard.recorded} />
+        {/* Overview stats */}
+        <section className="mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line rounded-lg overflow-hidden border border-line">
+            <StatCard label={t.ecosystem.conferences} value={confResult.total} sub={t.dashboard.recorded} />
+            <StatCard label={t.ecosystem.papers} value={paperResult.total} sub={t.dashboard.recorded} />
             <StatCard label={t.dashboard.opensource} value={osResult.total} sub={t.dashboard.tracking} />
-            <StatCard label={t.dashboard.products} value={productResult.total} sub={t.dashboard.tracking} />
-            <StatCard label={t.dashboard.vendors} value={vendorResult.total} sub={t.dashboard.tracking} />
-            <StatCard label={t.dashboard.activeLeads} value={activeLeads.length} accent="text-navy-500" />
+            <StatCard label={t.ecosystem.products} value={productResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.ecosystem.vendors} value={vendorResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.ecosystem.leads} value={leadResult.total} sub={t.dashboard.tracking} />
+            <StatCard label={t.ecosystem.talents} value={talentCount.count ?? 0} sub={t.dashboard.recorded} />
+            <StatCard label={t.ecosystem.news} value={newsCount.count ?? 0} sub={t.dashboard.recorded} />
           </div>
+        </section>
+
+        {/* Tech Trend */}
+        <SectionCard title={t.ecosystem.techTrend}>
+          {trendData.length > 0 ? (
+            <TechTrendChart data={trendData} topicKeys={trendTopicKeys} lang={lang} />
+          ) : (
+            <EmptyState title={t.ecosystem.noEvents} description={t.ecosystem.noEventsDesc} compact />
+          )}
+        </SectionCard>
+
+        {/* Vendor positioning */}
+        <div className="mt-6">
+          <SectionCard title={t.ecosystem.vendorTopicLayout}>
+            {vendorTopicMap.length > 0 ? (
+              <VendorTopicGrid data={vendorTopicMap} lang={lang} />
+            ) : (
+              <EmptyState title={t.empty.vendors} description={t.empty.vendorsDesc} compact />
+            )}
+          </SectionCard>
         </div>
 
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.upcomingConferences}</p>
-            <Link href="/admin/conferences" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-          </div>
-          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-            {upcoming.length === 0 && (
-              <EmptyState title={t.dashboard.noUpcoming} description={t.empty.conferencesDesc} compact />
-            )}
-            {upcoming.slice(0, 5).map((c) => (
-              <Link key={c.id} href={`/admin/conferences/${c.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-ink-800 truncate">{c.name}</p>
-                  <p className="text-[12px] text-ink-400 mt-0.5">{c.location} · {c.start_date}</p>
-                </div>
-                <div className="flex gap-1.5">
-                  {c.topics.slice(0, 2).map((tp) => <TopicTag key={tp} label={tp} lang={lang} />)}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.latestPapers} <span className="text-ink-400">({t.time.recentDays})</span></p>
-            <Link href="/admin/papers" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-          </div>
-          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-            {latestPapers.length === 0 && (
-              <EmptyState title={t.papers.noPapers} description={t.empty.papersDesc} compact />
-            )}
-            {latestPapers.map((p) => (
-              <a key={p.id} href={p.url || `https://scholar.google.com/scholar?q=${encodeURIComponent(p.title)}`} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                <p className="text-[13px] font-medium text-ink-800 truncate">{p.title}</p>
-                <p className="text-[12px] text-ink-400 mt-0.5 truncate">
-                  {p.authors.slice(0, 3).join(", ")}{p.authors.length > 3 ? ` +${p.authors.length - 3}` : ""}
-                  {p.venue && <> · <span className="text-navy-500">{p.venue}</span></>}
-                </p>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.news.latestNews} <span className="text-ink-400">({t.time.recentDays})</span></p>
-            <Link href="/admin/news" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-          </div>
-          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-            {(!newsItems || newsItems.length === 0) && (
-              <EmptyState title={t.news.noNews} description={t.empty.newsDesc} compact />
-            )}
-            {(newsItems ?? []).map((item) => (
-              <a key={item.link} href={item.link} target="_blank" rel="noopener noreferrer" className="block px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                <p className="text-[13px] font-medium text-ink-800 truncate">{item.title}</p>
-                <p className="text-[11px] text-ink-400 mt-0.5">{item.source}</p>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {latestUpdatedProducts.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestProductUpdates}</p>
-              <Link href="/admin/products" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-            </div>
-            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {latestUpdatedProducts.map((p) => (
-                <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-ink-800 truncate">{p.name}</p>
-                    <p className="text-[12px] text-ink-400 mt-0.5 truncate">
-                      {p.vendor ?? "—"} · {p.release_date}
-                    </p>
-                  </div>
-                  {p.latest_version && (
-                    <span className="font-mono text-[11px] text-ink-400">{p.latest_version}</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {keyVendors.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.keyVendors}</p>
-              <Link href="/admin/vendors" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-            </div>
-            <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-              {keyVendors.map((v) => (
-                <Link key={v.id} href={`/admin/vendors/${v.id}`} className="flex items-center gap-3 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-ink-800 truncate">{v.name}</p>
-                    {v.key_products.length > 0 && (
-                      <p className="text-[12px] text-ink-400 mt-0.5 truncate">{v.key_products.slice(0, 3).join(", ")}</p>
-                    )}
-                  </div>
-                  <StatusPill label={t.vendor[TYPE_I18N_MAP[v.type] as keyof typeof t.vendor] as string} lang={lang} />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">{t.dashboard.latestLeads}</p>
-            <Link href="/admin/leads" className="font-mono text-[10px] uppercase tracking-[0.16em] text-navy-500 hover:text-navy-700 transition-colors">{t.dashboard.viewAll}</Link>
-          </div>
-          <div className="rounded-lg border border-line bg-surface divide-y divide-line">
-            {leads.slice(0, 5).map((l) => (
-              <Link key={l.id} href={`/admin/leads/${l.id}`} className="flex items-center gap-4 px-4 sm:px-5 py-3.5 hover:bg-paper/40 transition-colors min-h-[44px]">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium text-ink-800 truncate">{l.title}</p>
-                  <p className="text-[12px] text-ink-400 mt-0.5">
-                    {t.leads.source}: {t.sourceType[l.source_type]} · {l.source_label}
-                  </p>
-                </div>
-                <StatusPill label={l.stage} lang={lang} />
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <Watchlist labels={{
-          watchlist: t.favorite.watchlist,
-          noFavorites: t.favorite.noFavorites,
-          noFavoritesDesc: t.favorite.noFavoritesDesc,
-          entityLabels: {
-            conferences: t.nav.conferences,
-            papers: t.nav.papers,
-            leads: t.nav.leads,
-            talents: t.nav.talents,
-            opensource: t.nav.opensource,
-            news: t.nav.news,
-            jobs: t.nav.jobs,
-            products: t.nav.products,
-            vendors: t.nav.vendors,
-          },
-        }} />
-
-        <DataSourceStatus lang={lang} labels={{
-          title: t.sync.dataSourceTitle,
-          dataSource: t.sync.dataSource,
-          lastSync: t.sync.lastSync,
-          status: t.sync.status,
-          count: t.sync.count,
-        }} />
-
-        <section>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500 mb-2">{t.dashboard.stageDistribution}</p>
-          <div className="rounded-lg border border-line bg-surface p-5 flex flex-wrap gap-3 sm:gap-4">
-            {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
-              <div key={stage} className="flex items-center gap-2">
-                <StatusPill label={stage} lang={lang} />
-                <span className="text-[13px] font-semibold text-ink-800 tabular-nums">{count}</span>
+        {/* Timeline + Watchlist */}
+        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+          <SectionCard title={t.ecosystem.timeline}>
+            {timeline.length === 0 ? (
+              <EmptyState title={t.ecosystem.noEvents} description={t.ecosystem.noEventsDesc} compact />
+            ) : (
+              <div className="space-y-1">
+                {timeline.map((ev, i) => (
+                  <Link key={`${ev.type}-${ev.date}-${i}`} href={ev.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-paper/40 transition-colors min-h-[44px] group">
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${EVENT_DOT_COLORS[ev.type]}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] text-ink-800 truncate group-hover:text-navy-600 transition-colors">{ev.title}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-mono text-[10px] text-ink-400">{ev.date}</span>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-400 bg-ink-100 px-1.5 py-0.5 rounded">{EVENT_LABEL[ev.type]}</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            )}
+          </SectionCard>
+
+          <Watchlist labels={{
+            watchlist: t.favorite.watchlist,
+            noFavorites: t.favorite.noFavorites,
+            noFavoritesDesc: t.favorite.noFavoritesDesc,
+            entityLabels: {
+              conferences: t.nav.conferences, papers: t.nav.papers, leads: t.nav.leads,
+              talents: t.nav.talents, opensource: t.nav.opensource, news: t.nav.news,
+              jobs: t.nav.jobs, products: t.nav.products, vendors: t.nav.vendors,
+            },
+          }} />
+        </div>
       </main>
     </>
   );

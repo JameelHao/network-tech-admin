@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       const items = data.map((d) => ({
         title: d.title,
         link: d.link,
-        snippet: d.snippet,
+        snippet: "",
         source: d.source,
         pubDate: d.pub_date,
         companies: d.companies ?? [],

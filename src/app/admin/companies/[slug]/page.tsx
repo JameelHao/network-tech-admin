@@ -62,9 +62,8 @@ export default async function CompanyDetailPage({ params, searchParams }: { para
   const [topicPaperRows, topicNewsRows] = await Promise.all([
     supabase.from("papers").select("published_date, paper_topics(topic_slug)")
       .contains("companies", [slug]).not("published_date", "is", null).limit(2000),
-    supabase.from("news_items").select("title, pub_date")
-      .eq("category", "news").contains("companies", [slug]).not("pub_date", "is", null).limit(2000),
-  ]);
+    supabase.from("news_items").select("title, pub_date, ai_topics")
+      .eq("category", "news").contains("companies", [slug]).not("pub_date", "is", null).limit(2000),  ]);
 
   const months = 12;
   const today = new Date();
@@ -73,28 +72,6 @@ export default async function CompanyDetailPage({ params, searchParams }: { para
     const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
     monthKeys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
   }
-
-  // Topic keyword map — match news headlines to topics
-  const TOPIC_KEYWORDS: Record<string, string[]> = {
-    "dc-networking": ["data center"],
-    "5g-6g": ["5g", "6g"],
-    "network-ai": ["ai", "machine learning", "deep learning", "intelligence"],
-    "edge-computing": ["edge"],
-    "cloud-infra": ["cloud", "kubernetes", "container"],
-    "sdn-nfv": ["sdn", "nfv", "software-defined"],
-    "ddos-defense": ["ddos"],
-    "zero-trust": ["zero trust"],
-    "satellite-leo": ["satellite", "leo", "starlink"],
-    "ebpf-xdp": ["ebpf", "xdp"],
-    "security": ["security", "cybersecurity", "firewall", "encryption", "vulnerability", "breach", "malware"],
-    "intent-based-networking": ["intent-based"],
-    "automation": ["automation", "orchestration"],
-    "observability": ["observability", "telemetry", "monitoring"],
-    "transport-protocols": ["tcp", "quic", "http3", "transport protocol"],
-    "distributed-sys": ["distributed system"],
-    "mobile-wireless": ["wi-fi", "wifi", "wireless", "5g"],
-    "high-speed-networking": ["400g", "800g", "silicon photonics", "optical"],
-  };
 
   const topicBuckets = new Map<string, Map<string, number>>();
 
@@ -111,18 +88,12 @@ export default async function CompanyDetailPage({ params, searchParams }: { para
     }
   }
 
-  // Count news by topic+month using keyword matching
+  // Count news by topic+month using AI-classified topics
   for (const row of topicNewsRows.data ?? []) {
     const m = (row as any).pub_date?.slice(0, 7);
     if (!m || !monthKeys.includes(m)) continue;
-    const title = ((row as any).title ?? "").toLowerCase();
-    const matched = new Set<string>();
-    for (const [slug, keywords] of Object.entries(TOPIC_KEYWORDS)) {
-      if (keywords.some((kw) => title.includes(kw))) {
-        matched.add(slug);
-      }
-    }
-    for (const slug of matched) {
+    for (const slug of (row as any).ai_topics ?? []) {
+      if (!slug) continue;
       if (!topicBuckets.has(slug)) topicBuckets.set(slug, new Map());
       const tmap = topicBuckets.get(slug)!;
       tmap.set(m, (tmap.get(m) ?? 0) + 1);

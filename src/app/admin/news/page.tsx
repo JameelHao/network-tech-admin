@@ -144,14 +144,13 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                   <Th className="hidden lg:table-cell">{t.news.domain}</Th>
                   <Th className="hidden lg:table-cell">{t.detail.topics}</Th>
                   <SortableHeader column="pub_date" label={t.list.publishedAt} currentSort={sortCol} currentDir={sortDir} basePath="/admin/news" searchParams={filterParams} />
-                  <Th className="hidden lg:table-cell">{t.news.snippet}</Th>
                   <Th className="hidden lg:table-cell">{t.news.freshness}</Th>
                   <Th>★</Th>
                 </tr>
               </thead>
               {items.length === 0 ? (
                 <tbody>
-                  <tr><td colSpan={8}>
+                  <tr><td colSpan={7}>
                     <EmptyState title={t.news.noMatch} description={t.empty.newsDesc} compact />
                   </td></tr>
                 </tbody>

@@ -19,7 +19,7 @@ import { COMPANY_COLORS, COMPANY_NAMES } from "@/lib/admin/companies";
 import type { Lang } from "@/lib/i18n/dict";
 import type { SortDir } from "@/lib/admin/pagination";
 
-type NewsItem = { title: string; link: string; snippet: string; source?: string; pubDate?: string; companies?: string[] };
+type NewsItem = { title: string; link: string; source?: string; pubDate?: string; companies?: string[] };
 
 function extractDomain(url: string): string {
   try { return new URL(url).hostname.replace("www.", ""); }
@@ -115,7 +115,7 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
     if (keyword) {
       const kw = keyword.toLowerCase();
       list = list.filter((item) =>
-        item.title.toLowerCase().includes(kw) || item.snippet.toLowerCase().includes(kw)
+        item.title.toLowerCase().includes(kw)
       );
     }
     if (source) {
@@ -248,9 +248,6 @@ export function NewsContent({ labels, lang }: { labels: NewsLabels; lang: Lang }
                         <p className={`text-[13px] font-medium flex-1 ${stale ? "text-ink-500" : "text-ink-800"}`}>{item.title}</p>
                         {isNew(item.pubDate) && <NewBadge label={labels.newLabel} />}
                       </div>
-                      {item.snippet && (
-                        <p className="text-[12px] text-ink-400 mt-1.5 line-clamp-2">{item.snippet}</p>
-                      )}
                       {item.companies && item.companies.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {item.companies.map((c) => (

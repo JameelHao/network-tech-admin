@@ -57,7 +57,7 @@ describe("paper count consistency", () => {
     });
   });
 
-  describe("fetchAndSyncPapers return shape", () => {
+  describe("listAllPapers return shape", () => {
     const papersTs = readFileSync(
       join(process.cwd(), "src/lib/admin/papers.ts"),
       "utf-8",
@@ -121,7 +121,7 @@ describe("paper count consistency", () => {
 
     it("destructures total from fetchAndSyncPapers", () => {
       expect(papersPageTs).toContain("total:");
-      expect(papersPageTs).toContain("fetchAndSyncPapers()");
+      expect(papersPageTs).toContain("listAllPapers()");
     });
 
     it("passes dbTotal to computePaperStats", () => {

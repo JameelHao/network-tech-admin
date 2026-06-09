@@ -366,6 +366,7 @@ export function PapersClient({ papers, duplicateGroups, labels, lang, t, now }: 
                             >
                               {p.title}
                             </Link>
+                            {(p as any).ai_summary && <span className="shrink-0 text-[9px] font-mono bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded">AI</span>}
                             {isNew(p.published_date, now) && <NewBadge label={labels.newLabel} />}
                           </div>
                         </Td>

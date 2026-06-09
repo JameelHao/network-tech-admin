@@ -1,9 +1,6 @@
-"use client";
-
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { getFreshness, freshnessLabel } from "@/lib/admin/freshness";
+import { createClient } from "@/lib/supabase/server";
 import { relativeTime } from "@/lib/admin/format";
+import { getFreshness } from "@/lib/admin/freshness";
 import type { Lang } from "@/lib/i18n/dict";
 
 type SyncLabels = {
@@ -16,228 +13,39 @@ type SyncLabels = {
   syncProgress?: string;
 };
 
-type SyncData = { lastSync: string | null; count: number };
-
-type SyncResultInfo = {
-  news?: number;
-  jobs?: number;
-  imported?: number;
-  updated?: number;
-  checked?: number;
-  feedStats?: { source: string; status: string; count: number; error?: string }[];
-  categoryStats?: { category: string; status: string; count: number; error?: string }[];
-  stats?: { name: string; status: string; version?: string; error?: string }[];
-};
-
-type StepInfo = { source: "arxiv" | "s2"; key: string; label: string };
-
-const SYNC_ENDPOINTS: Record<string, string> = {
-  papers: "/api/sync/papers",
-  news: "/api/sync/feeds",
-  jobs: "/api/sync/feeds",
-  products: "/api/sync/products",
-  opensource: "/api/sync/opensource",
-  "cloud-products": "/api/sync/cloud-products",
-  rfcs: "/api/sync/rfcs",
-};
-
-export function SyncStatusBar({
+export async function SyncStatusBar({
   entity,
   labels,
   lang,
 }: {
-  entity: "papers" | "news" | "jobs" | "products" | "opensource" | "cloud-products" | "rfcs";
+  entity: string;
   labels: SyncLabels;
   lang: Lang;
 }) {
-  const [data, setData] = useState<SyncData | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [syncResult, setSyncResult] = useState<SyncResultInfo | null>(null);
-  const [progress, setProgress] = useState<{ current: number; total: number; label: string } | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  const router = useRouter();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("sync_meta")
+    .select("last_sync_at, last_result")
+    .eq("entity", entity)
+    .maybeSingle();
 
-  const refreshPage = useCallback(() => {
-    router.refresh();
-    window.location.reload();
-  }, [router]);
+  if (!data?.last_sync_at) {
+    return (
+      <div className="flex items-center gap-2 px-5 py-2 bg-ink-50 border-b border-line">
+        <span className="w-1.5 h-1.5 rounded-full bg-ink-300" />
+        <span className="text-[11px] font-mono text-ink-400">{labels.noData}</span>
+      </div>
+    );
+  }
 
-  const fetchStatus = useCallback(() => {
-    fetch("/api/sync-status")
-      .then((r) => r.json())
-      .then((json) => setData(json[entity] ?? null))
-      .catch(() => {});
-  }, [entity]);
-
-  useEffect(() => { fetchStatus(); }, [fetchStatus]);
-
-  useEffect(() => {
-    if (!syncResult) return;
-    const resultStats = syncResult.feedStats ?? syncResult.categoryStats ?? syncResult.stats ?? [];
-    const failedCount = resultStats.filter((s) => s.status === "error").length;
-    if (failedCount === resultStats.length) return;
-    const timer = setTimeout(() => setSyncResult(null), 5000);
-    return () => clearTimeout(timer);
-  }, [syncResult]);
-
-  const handleSteppedRefresh = async () => {
-    setRefreshing(true);
-    setSyncResult(null);
-    setProgress(null);
-    abortRef.current = new AbortController();
-
-    try {
-      const stepsRes = await fetch("/api/sync/papers/steps", { signal: abortRef.current.signal });
-      const { steps } = (await stepsRes.json()) as { steps: StepInfo[] };
-
-      let totalImported = 0;
-      let totalUpdated = 0;
-      const categoryStats: { category: string; status: string; count: number; error?: string }[] = [];
-
-      for (let i = 0; i < steps.length; i++) {
-        if (abortRef.current.signal.aborted) break;
-        const step = steps[i];
-        setProgress({ current: i + 1, total: steps.length, label: step.label });
-
-        const param = step.source === "arxiv"
-          ? `source=arxiv&category=${encodeURIComponent(step.key)}`
-          : `source=s2&venue=${encodeURIComponent(step.key)}`;
-
-        try {
-          const res = await fetch(`/api/sync/papers?${param}`, {
-            method: "POST",
-            signal: abortRef.current.signal,
-          });
-          const json = await res.json();
-          totalImported += json.imported ?? 0;
-          totalUpdated += json.updated ?? 0;
-          if (json.step) categoryStats.push(json.step);
-        } catch {
-          if (abortRef.current.signal.aborted) break;
-          categoryStats.push({ category: step.key, status: "error", count: 0, error: "fetch failed" });
-        }
-      }
-
-      if (!abortRef.current.signal.aborted) {
-        await fetch("/api/sync/papers/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categoryStats }),
-        }).catch(() => {});
-        setSyncResult({ imported: totalImported, updated: totalUpdated, categoryStats });
-        fetchStatus();
-        refreshPage();
-      }
-    } finally {
-      setRefreshing(false);
-      setProgress(null);
-      abortRef.current = null;
-    }
-  };
-
-  const handleSimpleRefresh = async () => {
-    setRefreshing(true);
-    setSyncResult(null);
-    try {
-      const res = await fetch(SYNC_ENDPOINTS[entity], { method: "POST" });
-      const json = await res.json();
-      if (json.feedStats || json.categoryStats || json.stats) setSyncResult(json);
-      fetchStatus();
-      refreshPage();
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const handleRefresh = entity === "papers" ? handleSteppedRefresh : handleSimpleRefresh;
-
-  if (!data) return null;
-
-  const freshness = getFreshness(data.lastSync);
-  const fLabel = freshnessLabel(freshness.level, lang);
-  const timeStr = data.lastSync ? relativeTime(data.lastSync, lang) : null;
-  const dateStr = data.lastSync
-    ? new Date(data.lastSync).toLocaleString(lang === "zh" ? "zh-CN" : "en-US", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
-
-  const productStats = syncResult?.stats?.map((s) => ({ source: s.name, status: s.status, count: s.version ? 1 : 0, error: s.error }));
-  const allStats = syncResult?.feedStats ?? syncResult?.categoryStats ?? productStats ?? [];
-  const failedFeeds = allStats.filter((s) => s.status === "error");
-  const skippedFeeds = allStats.filter((s) => s.status === "skipped");
-  const totalItems = syncResult
-    ? (syncResult.updated ?? syncResult.imported ?? ((syncResult.news ?? 0) + (syncResult.jobs ?? 0)))
-    : 0;
-  const activeStats = allStats.filter((s) => s.status !== "skipped");
-  const allFailed = syncResult && activeStats.length > 0 && failedFeeds.length === activeStats.length;
+  const freshness = getFreshness(data.last_sync_at);
 
   return (
-    <div className="mb-4 space-y-1.5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-4 py-2.5">
-        <span className={`inline-block h-2 w-2 rounded-full ${freshness.dotClass}`} />
-        <span className={`font-mono text-[11px] ${freshness.color}`}>{fLabel}</span>
-        {timeStr ? (
-          <span className="text-[12px] text-ink-500">
-            {labels.lastSync}: {timeStr}
-            {dateStr && <span className="text-ink-400 ml-1">({dateStr})</span>}
-          </span>
-        ) : (
-          <span className="text-[12px] text-ink-400">{labels.noData}</span>
-        )}
-        {progress && (
-          <span className="text-[11px] text-blue-600 font-mono">
-            {progress.label} {progress.current}/{progress.total}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="ml-auto rounded-md border border-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-600 hover:text-ink-800 hover:border-line-strong transition-colors disabled:opacity-50"
-        >
-          {refreshing ? labels.refreshing : labels.refresh}
-        </button>
-      </div>
-
-      {syncResult && (
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-[12px] ${
-          allFailed
-            ? "border-red-200 bg-red-50 text-red-700"
-            : failedFeeds.length > 0
-              ? "border-amber-200 bg-amber-50 text-amber-700"
-              : "border-emerald-200 bg-emerald-50 text-emerald-700"
-        }`}>
-          <span className="font-semibold">
-            {labels.syncResult ?? "Sync"}: {totalItems} {syncResult?.imported !== undefined ? (lang === "zh" ? "篇导入" : "imported") : (lang === "zh" ? "条" : "items")}
-          </span>
-          {failedFeeds.length > 0 && (
-            <span>
-              · {failedFeeds.length} {labels.sourcesFailed ?? (lang === "zh" ? "个源失败" : "sources failed")}
-              <span className="text-[11px] ml-1 opacity-70">
-                ({failedFeeds.map((f) => ("source" in f ? f.source : (f as { category: string }).category)).join(", ")})
-              </span>
-            </span>
-          )}
-          {skippedFeeds.length > 0 && (
-            <span className="text-ink-400">
-              · {skippedFeeds.length} {lang === "zh" ? "个源跳过" : "skipped"}
-            </span>
-          )}
-          {!allFailed && (
-            <button
-              type="button"
-              onClick={() => setSyncResult(null)}
-              className="ml-auto text-[10px] opacity-60 hover:opacity-100"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      )}
+    <div className="flex items-center gap-2 px-5 py-2 bg-ink-50 border-b border-line">
+      <span className={`w-1.5 h-1.5 rounded-full ${freshness.level === "fresh" ? "bg-emerald-500" : freshness.level === "stale" ? "bg-amber-500" : "bg-rose-500"}`} />
+      <span className="text-[11px] font-mono text-ink-500">
+        {labels.lastSync}: {relativeTime(data.last_sync_at, lang)}
+      </span>
     </div>
   );
 }
