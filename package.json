@@ -1,0 +1,22 @@
+{
+  "name": "network-sync-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:papers": "npx tsx src/index.ts papers",
+    "sync:feeds": "npx tsx src/index.ts feeds",
+    "sync:products": "npx tsx src/index.ts products",
+    "sync:github": "npx tsx src/index.ts github",
+    "sync:rfcs": "npx tsx src/index.ts rfcs",
+    "sync:all": "npx tsx src/index.ts all"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "tsx": "^4",
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2"
+  }
+}
