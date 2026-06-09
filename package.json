@@ -13,10 +13,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "dotenv": "^17.4.2",
     "tsx": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.2"
+    "@types/node": "^25.9.2",
+    "@types/ws": "^8.18.1"
   }
 }

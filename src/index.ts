@@ -4,6 +4,8 @@ import { syncAllPapers, syncArxivPapers, syncS2Papers, syncCompanyPapers } from 
 import { syncAllFeeds } from "./sync/feeds.js";
 import { syncGitHubRepos } from "./sync/github.js";
 import { syncRFCs } from "./sync/rfcs.js";
+import { classifyPapers, classifyNews } from "./lib/ai-classify.js";
+import { generateConfSummary, generateAllConfSummaries } from "./sync/conf-ai.js";
 
 const task = process.argv[2] ?? "all";
 
@@ -52,6 +54,34 @@ async function main() {
         console.log(`[sync-worker] RFC sync complete:`, JSON.stringify(stats));
         break;
       }
+      case "classify": {
+        const paperResult = await classifyPapers(30);
+        console.log(`[sync-worker] Classified papers: ${paperResult.updated}/${paperResult.processed}`);
+        const newsResult = await classifyNews(30);
+        console.log(`[sync-worker] Classified news: ${newsResult.updated}/${newsResult.processed}`);
+        break;
+      }
+      case "classify-papers": {
+        const r = await classifyPapers(30);
+        console.log(`[sync-worker] Classified papers: ${r.updated}/${r.processed}`);
+        break;
+      }
+      case "classify-news": {
+        const r = await classifyNews(30);
+        console.log(`[sync-worker] Classified news: ${r.updated}/${r.processed}`);
+        break;
+      }
+      case "conf-summaries": {
+        const count = await generateAllConfSummaries();
+        console.log(`[sync-worker] Generated ${count} conference summaries`);
+        break;
+      }
+      case "conf-summary": {
+        const id = process.argv[3];
+        if (!id) { console.error("[sync-worker] Usage: conf-summary <conferenceId>"); process.exit(1); }
+        await generateConfSummary(id);
+        break;
+      }
       case "all": {
         const year = parseInt(process.env.SYNC_YEAR ?? String(new Date().getFullYear()), 10);
         const results = await Promise.allSettled([
@@ -59,6 +89,8 @@ async function main() {
           syncAllFeeds().then((s) => ({ task: "feeds", stats: s })),
           syncGitHubRepos().then((s) => ({ task: "github", stats: s })),
           syncRFCs().then((s) => ({ task: "rfcs", stats: s })),
+          classifyPapers(30).then((s) => ({ task: "classify-papers", stats: s })),
+          classifyNews(30).then((s) => ({ task: "classify-news", stats: s })),
         ]);
         for (const r of results) {
           if (r.status === "fulfilled") {
@@ -72,7 +104,7 @@ async function main() {
       default:
         console.error(`[sync-worker] Unknown task: ${task}`);
         console.log(`Usage: npx tsx src/index.ts <task>`);
-        console.log(`Tasks: papers, arxiv, s2, company-papers, feeds, github, rfcs, all`);
+        console.log(`Tasks: papers, arxiv, s2, company-papers, feeds, github, rfcs, classify, classify-papers, classify-news, conf-summary, conf-summaries, all`);
         process.exit(1);
     }
   } catch (err) {

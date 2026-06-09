@@ -1,5 +1,6 @@
 import { inferCompanies } from "../lib/companies.js";
 import { supabase } from "../lib/supabase.js";
+import { filterQuality } from "../lib/ai-quality.js";
 import type { RSSItem, FeedStat } from "../types/index.js";
 
 const NEWS_FEEDS = [
@@ -147,16 +148,28 @@ export async function syncAllFeeds(): Promise<FeedStat[]> {
     return true;
   }).slice(0, limit);
 
-  // Insert into DB
+  // AI quality filter — rates relevance 1-10, discards fluff
+  console.log(`[feeds] Quality filtering ${deduped.length} items...`);
+  const { keep, scores } = filterQuality(deduped.map(i => ({ title: i.title, snippet: i.snippet })));
+  const filtered = deduped.filter((_, i) => keep[i]);
+  const discarded = deduped.length - filtered.length;
+  if (discarded > 0) console.log(`[feeds] Discarded ${discarded} low-quality items`);
+
+  // Insert into DB with relevance score
   let totalInserted = 0;
-  for (const item of deduped) {
+  for (let i = 0; i < filtered.length; i++) {
+    const item = filtered[i];
+    const origIdx = deduped.indexOf(item);
+    const score = origIdx >= 0 ? scores[origIdx] ?? 5 : 5;
+
     const { data: existing } = await supabase
       .from("news_items").select("id").eq("link", item.link).maybeSingle();
     if (!existing) {
       await supabase.from("news_items").insert({
-        title: item.title, link: item.link, snippet: item.snippet,
+        title: item.title, link: item.link,
         source: item.source, category: "news",
         pub_date: item.pubDate, companies: item.companies,
+        relevance_score: score,
       });
       totalInserted++;
     }
