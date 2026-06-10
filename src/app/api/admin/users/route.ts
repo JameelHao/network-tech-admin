@@ -1,59 +1,63 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { requireAdminAuth } from "@/lib/admin/api-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
-async function getAdminClient() {
-  const supabase = await createClient();
-  // Use service_role key for admin operations
-  const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-  return createAdminClient(
+const ADMIN = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { persistSession: false } },
+);
+
+async function requireUser(request: NextRequest) {
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: () => {},
+      },
+    },
   );
+  const { data } = await supabase.auth.getUser();
+  return data.user ?? null;
 }
 
-export async function GET() {
-  const unauth = await requireAdminAuth();
-  if (unauth) return unauth;
+export async function GET(request: NextRequest) {
+  const user = await requireUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = await getAdminClient();
-  const { data: users, error } = await admin.auth.admin.listUsers();
-
+  const { data: users, error } = await ADMIN.auth.admin.listUsers();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(users);
 }
 
-export async function POST(request: Request) {
-  const unauth = await requireAdminAuth();
-  if (unauth) return unauth;
+export async function POST(request: NextRequest) {
+  const user = await requireUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const { email } = body;
-  if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
-
-  const admin = await getAdminClient();
-  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/register`,
-  });
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  try {
+    const { email } = await request.json();
+    if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const { data, error } = await ADMIN.auth.admin.inviteUserByEmail(email, { redirectTo: `${siteUrl}/register` });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
+  }
 }
 
-export async function DELETE(request: Request) {
-  const unauth = await requireAdminAuth();
-  if (unauth) return unauth;
+export async function DELETE(request: NextRequest) {
+  const user = await requireUser(request);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const { id } = body;
+  const { id } = await request.json();
   if (!id) return NextResponse.json({ error: "User ID required" }, { status: 400 });
-
-  const admin = await getAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(id);
-
+  const { error } = await ADMIN.auth.admin.deleteUser(id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ deleted: true });
 }
