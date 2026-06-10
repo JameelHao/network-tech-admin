@@ -14,31 +14,32 @@ const VALID_TOPICS = [
   "security", "automation", "observability",
 ];
 
+const COMPANY_SLUGS = [
+  "cisco","google","ericsson","nokia","aws","azure","microsoft","openai",
+  "anthropic","nvidia","meta","micron","broadcom","intel","ibm","huawei",
+  "cloudflare","apple","amd","tencent","alibaba","baidu","bytedance",
+];
+
 function buildClassifyPrompt(items: { title: string; abstract?: string | null }[]): string {
   const itemBlock = items.map((item, i) =>
     `[${i + 1}] Title: ${item.title}\n    Abstract: ${(item.abstract ?? "").slice(0, 600)}`
   ).join("\n\n");
 
-  return `You are a network research classifier. For each item, return:
-1. 1-3 topic slugs from this list: ${VALID_TOPICS.join(", ")}
-2. A 2-3 sentence Chinese summary of the paper's key contribution
-3. A relevance_score (1-10) measuring how relevant this item is to professional networking/cloud/infrastructure engineering
-
-Scoring guide:
-- 9-10: Direct networking research (protocols, architectures, measurement, SDN, routing)
-- 7-8: Related infrastructure (distributed systems, cloud, security, edge, hardware)
-- 5-6: General CS/ML that could apply to networking
-- 3-4: Tangentially related, little networking substance
-- 1-2: Not relevant to networking at all
+  return `You are a network research classifier. For each item return JSON with:
+1. topics (1-3 slugs from this list: ${VALID_TOPICS.join(", ")})
+2. summary_cn (2-3 sentence Chinese summary)
+3. relevance_score (1-10)
+4. companies (slugs this item mentions from: ${COMPANY_SLUGS.join(", ")})
 
 Return JSON only:
-{"results": [{"idx": 1, "topics": ["slug1"], "summary_cn": "中文摘要", "relevance_score": 8, "reason": "short reason"}]}
+{"results": [{"idx": 1, "topics": ["slug1"], "summary_cn": "中文摘要", "relevance_score": 8, "companies": ["cisco","nvidia"], "reason": "short"}]}
 
 Rules:
-- Only use topic slugs from the list
+- Topics: only use slugs from the provided list
 - "machine-learning" = ML method paper, "network-ai" = AI applied to networking
-- "security" = general, use specific (ddos-defense, protocol-security) when more precise
-- Summary must be in Chinese, 2-3 sentences, focus on contribution
+- "security" = general, use specific (ddos-defense etc) when more precise
+- Summary: Chinese, 2-3 sentences, focus on contribution
+- Companies: include slug only if content clearly mentions or is directly about that company. Empty array if none.
 
 Items:
 ${itemBlock}`;
@@ -53,7 +54,6 @@ function callClaude(prompt: string): string {
   });
   if (r.error) { console.error("[ai] Claude spawn error:", r.error.message); return "[]"; }
   const output = (r.stdout ?? "").trim();
-  // Accept both "results" (new) and "classifications" (old) format
   const jsonMatch = output.match(/\{[\s\S]*"results"[\s\S]*\}/) || output.match(/\{[\s\S]*"classifications"[\s\S]*\}/);
   if (!jsonMatch) {
     console.error("[ai] No JSON in response, raw:", output.slice(0, 300));
@@ -61,11 +61,18 @@ function callClaude(prompt: string): string {
   }
   try {
     const parsed = JSON.parse(jsonMatch[0]);
-    // Normalize to "classifications" key
     const data = parsed.results ?? parsed.classifications ?? [];
     return JSON.stringify(data);
   } catch { return "[]"; }
 }
+
+type ClassifyResult = {
+  idx: number;
+  topics: string[];
+  summary_cn?: string;
+  relevance_score?: number;
+  companies?: string[];
+};
 
 export async function classifyPapers(batchSize = 30): Promise<{ processed: number; updated: number }> {
   let totalProcessed = 0;
@@ -75,7 +82,7 @@ export async function classifyPapers(batchSize = 30): Promise<{ processed: numbe
   for (let round = 0; round < 100; round++) {
     const { data: papers, error } = await supabase
       .from("papers")
-      .select("id, title, abstract")
+      .select("id, title, abstract, companies")
       .eq("ai_classified", false)
       .neq("title", "test paper")
       .limit(batchSize);
@@ -88,72 +95,52 @@ export async function classifyPapers(batchSize = 30): Promise<{ processed: numbe
     const prompt = buildClassifyPrompt(papers.map(p => ({ title: p.title, abstract: p.abstract })));
     const raw = callClaude(prompt);
 
-    let results: { idx: number; topics: string[]; summary_cn?: string; relevance_score?: number }[];
+    let results: ClassifyResult[];
     try { results = JSON.parse(raw); } catch { console.error("[ai] JSON parse failed"); break; }
 
     let updated = 0;
-    const batchIds: string[] = [];
     for (const r of results) {
       const paper = papers[r.idx - 1];
       if (!paper) continue;
       if (r.topics?.length) {
         await supabase.from("paper_topics").delete().eq("paper_id", paper.id);
-        const rows = r.topics.map(t => ({ paper_id: paper.id, topic_slug: t }));
+        const rows = r.topics.map((t: string) => ({ paper_id: paper.id, topic_slug: t }));
         if (rows.length) await supabase.from("paper_topics").insert(rows);
       }
       const updateData: Record<string, any> = { ai_classified: true };
       if (r.summary_cn) updateData.ai_summary = r.summary_cn;
       if (r.relevance_score) updateData.relevance_score = r.relevance_score;
+      // Merge AI-detected companies with existing keyword-based companies
+      if (r.companies?.length) {
+        const existing = (paper as any).companies ?? [];
+        updateData.companies = [...new Set([...existing, ...r.companies])];
+      }
       await supabase.from("papers").update(updateData).eq("id", paper.id);
-      batchIds.push(paper.id);
+      allPaperIds.push(paper.id);
       updated++;
     }
-    allPaperIds.push(...batchIds);
     totalProcessed += papers.length;
     totalUpdated += updated;
     console.log(`[ai] Batch done: ${updated}/${papers.length} updated`);
   }
 
-  // Find similar papers for newly classified papers
-  if (allPaperIds.length > 0) {
-    await findSimilarPapers(allPaperIds);
-  }
-
+  if (allPaperIds.length > 0) await findSimilarPapers(allPaperIds);
   return { processed: totalProcessed, updated: totalUpdated };
 }
 
-export async function findSimilarPapers(
-  paperIds: string[],
-): Promise<void> {
+export async function findSimilarPapers(paperIds: string[]): Promise<void> {
   if (!paperIds.length) return;
   console.log(`[ai] Finding similar papers for ${paperIds.length} papers...`);
-
   for (const id of paperIds) {
     const { data: paper } = await supabase.from("papers").select("id, title").eq("id", id).single();
     if (!paper) continue;
-
-    // Keywords from title
     const keywords = paper.title.toLowerCase().split(/\s+/).filter((w: string) => w.length > 4).slice(0, 5);
     if (keywords.length < 2) continue;
-
     const wordQuery = keywords.map((k: string) => `title.ilike.%${k}%`).join(",");
     const { data: candidates } = await supabase
-      .from("papers")
-      .select("id, title")
-      .eq("ai_classified", true)
-      .neq("id", paper.id)
-      .or(wordQuery)
-      .limit(15);
-
+      .from("papers").select("id, title").eq("ai_classified", true).neq("id", paper.id).or(wordQuery).limit(15);
     if (!candidates?.length) continue;
-
-    const prompt = `From these papers, pick the 5 most similar to the reference paper. Return JSON: {"similar_ids": ["id1","id2","id3","id4","id5"]}
-
-Reference: ${paper.title.slice(0, 200)}
-
-Candidates:
-${candidates.map((c, i) => `[${i + 1}] ${c.title.slice(0, 200)} (${c.id})`).join("\n")}`;
-
+    const prompt = `From these papers, pick the 5 most similar to the reference. Return JSON: {"similar_ids": ["id1","id2","id3","id4","id5"]}\n\nReference: ${paper.title.slice(0, 200)}\n\nCandidates:\n${candidates.map((c, i) => `[${i + 1}] ${c.title.slice(0, 200)} (${c.id})`).join("\n")}`;
     const r = spawnSync("claude", ["-p", "--print"], {
       input: prompt, encoding: "utf-8", timeout: 30_000, maxBuffer: 5 * 1024 * 1024,
     });
@@ -162,9 +149,7 @@ ${candidates.map((c, i) => `[${i + 1}] ${c.title.slice(0, 200)} (${c.id})`).join
     if (!match) continue;
     try {
       const { similar_ids } = JSON.parse(match[0]);
-      if (similar_ids?.length) {
-        await supabase.from("papers").update({ similar_papers: similar_ids }).eq("id", paper.id);
-      }
+      if (similar_ids?.length) await supabase.from("papers").update({ similar_papers: similar_ids }).eq("id", paper.id);
     } catch {}
   }
   console.log(`[ai] Similar papers done`);
@@ -177,7 +162,7 @@ export async function classifyNews(batchSize = 30): Promise<{ processed: number;
   for (let round = 0; round < 100; round++) {
     const { data: items, error } = await supabase
       .from("news_items")
-      .select("id, title, snippet")
+      .select("id, title, snippet, companies")
       .eq("ai_classified", false)
       .limit(batchSize);
 
@@ -185,11 +170,10 @@ export async function classifyNews(batchSize = 30): Promise<{ processed: number;
     if (!items?.length) { console.log(`[ai] No more unclassified news`); break; }
 
     console.log(`[ai] News batch ${round + 1}: ${items.length} items`);
-
     const prompt = buildClassifyPrompt(items.map(i => ({ title: i.title, abstract: i.snippet })));
     const raw = callClaude(prompt);
 
-    let results: { idx: number; topics: string[]; summary_cn?: string; relevance_score?: number }[];
+    let results: ClassifyResult[];
     try { results = JSON.parse(raw); } catch { console.error("[ai] JSON parse failed"); break; }
 
     let updated = 0;
@@ -199,6 +183,11 @@ export async function classifyNews(batchSize = 30): Promise<{ processed: number;
       const updateData: Record<string, any> = { ai_classified: true };
       if (r.topics?.length) updateData.ai_topics = r.topics;
       if (r.relevance_score) updateData.relevance_score = r.relevance_score;
+      // Merge AI-detected companies
+      if (r.companies?.length) {
+        const existing = (item as any).companies ?? [];
+        updateData.companies = [...new Set([...existing, ...r.companies])];
+      }
       await supabase.from("news_items").update(updateData).eq("id", item.id);
       updated++;
     }
@@ -206,6 +195,5 @@ export async function classifyNews(batchSize = 30): Promise<{ processed: number;
     totalUpdated += updated;
     console.log(`[ai] News batch done: ${updated}/${items.length} updated`);
   }
-
   return { processed: totalProcessed, updated: totalUpdated };
 }

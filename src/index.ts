@@ -20,6 +20,8 @@ async function main() {
         const year = parseInt(process.env.SYNC_YEAR ?? String(new Date().getFullYear()), 10);
         const stats = await syncAllPapers(year);
         console.log(`[sync-worker] Papers sync complete:`, JSON.stringify(stats));
+        const cr = await classifyPapers(30);
+        console.log(`[sync-worker] AI classify: ${cr.updated}/${cr.processed}`);
         break;
       }
       case "arxiv": {
@@ -43,6 +45,8 @@ async function main() {
       case "feeds": {
         const stats = await syncAllFeeds();
         console.log(`[sync-worker] Feeds sync complete:`, JSON.stringify(stats));
+        const nr = await classifyNews(30);
+        console.log(`[sync-worker] AI classify news: ${nr.updated}/${nr.processed}`);
         break;
       }
       case "github": {
@@ -91,12 +95,16 @@ async function main() {
       case "all": {
         const year = parseInt(process.env.SYNC_YEAR ?? String(new Date().getFullYear()), 10);
         const results = await Promise.allSettled([
-          syncAllPapers(year).then((s) => ({ task: "papers", stats: s })),
-          syncAllFeeds().then((s) => ({ task: "feeds", stats: s })),
+          syncAllPapers(year).then(async (s) => {
+            const c = await classifyPapers(30);
+            return { task: "papers", stats: s, classified: c.updated };
+          }),
+          syncAllFeeds().then(async (s) => {
+            const c = await classifyNews(30);
+            return { task: "feeds", stats: s, classified: c.updated };
+          }),
           syncGitHubRepos().then((s) => ({ task: "github", stats: s })),
           syncRFCs().then((s) => ({ task: "rfcs", stats: s })),
-          classifyPapers(30).then((s) => ({ task: "classify-papers", stats: s })),
-          classifyNews(30).then((s) => ({ task: "classify-news", stats: s })),
         ]);
         for (const r of results) {
           if (r.status === "fulfilled") {
