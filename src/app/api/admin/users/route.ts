@@ -31,14 +31,12 @@ export async function POST(request: Request) {
   if (unauth) return unauth;
 
   const body = await request.json();
-  const { email, password } = body;
+  const { email } = body;
   if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
   const admin = await getAdminClient();
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password: password || undefined,
-    email_confirm: true,
+  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/register`,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

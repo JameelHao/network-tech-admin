@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/admin/Topbar";
 import { StatCard } from "@/components/admin/StatCard";
 import { EmptyState } from "@/components/admin/EmptyState";
-import { VendorTopicGrid } from "@/components/admin/charts/VendorTopicGrid";
+import { VendorIntelligenceGrid } from "@/components/admin/charts/VendorIntelligenceGrid";
 import { TechTrendChart } from "@/components/admin/charts/TechTrendChart";
 import { Watchlist } from "@/components/admin/Watchlist";
 
@@ -11,13 +11,13 @@ import { listOpenSource } from "@/lib/admin/opensource";
 import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
 import { listLeads } from "@/lib/admin/leads";
-import { buildVendorTopicMap, getTopicMonthlyTrend } from "@/lib/admin/ecosystem-stats";
+import { getTopicMonthlyTrend } from "@/lib/admin/ecosystem-stats";
 import { getDict } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 type TimelineEvent = {
-  type: "conference" | "paper" | "product" | "vendor" | "lead";
+  type: "conference" | "paper" | "product" | "lead";
   date: string;
   title: string;
   href: string;
@@ -25,7 +25,7 @@ type TimelineEvent = {
 
 const EVENT_DOT_COLORS: Record<TimelineEvent["type"], string> = {
   conference: "bg-violet-500", paper: "bg-blue-500", product: "bg-amber-500",
-  vendor: "bg-emerald-500", lead: "bg-rose-500",
+  lead: "bg-rose-500",
 };
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86_400_000).toISOString();
 
-  const [confResult, paperResult, osResult, productResult, vendorResult, leadResult, talentCount, newsCount, trendPage0, trendPage1] = await Promise.all([
+  const [confResult, paperResult, osResult, productResult, vendorResult, leadResult, talentCount, newsCount, trendPage0, trendPage1, trendPage2, trendPage3, vendorIntel] = await Promise.all([
     listConferences({ page: 1, pageSize: 100 }),
     listPapers({ page: 1, pageSize: 100 }),
     listOpenSource({ page: 1, pageSize: 100 }),
@@ -59,6 +59,13 @@ export default async function DashboardPage() {
     supabase.from("papers")
       .select("published_date, paper_topics(topic_slug)").not("published_date", "is", null)
       .order("published_date", { ascending: false }).range(1000, 1999),
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)").not("published_date", "is", null)
+      .order("published_date", { ascending: false }).range(2000, 2999),
+    supabase.from("papers")
+      .select("published_date, paper_topics(topic_slug)").not("published_date", "is", null)
+      .order("published_date", { ascending: false }).range(3000, 3999),
+    supabase.from("vendors").select("id, name, topics, ai_insights, paper_count, product_count, news_count").not("name", "is", null).order("paper_count", { ascending: false }),
   ]);
 
   const products = productResult.data;
@@ -68,10 +75,10 @@ export default async function DashboardPage() {
   const papers = paperResult.data;
   const leads = leadResult.data;
 
-  const vendorTopicMap = buildVendorTopicMap(vendors, products);
+  const vendorIntelData = (vendorIntel.data ?? []).filter((v: any) => v.name);
 
-  const trendPapers = [...(trendPage0.data ?? []), ...(trendPage1.data ?? [])]
-    .filter((r: any) => r.published_date)
+  const trendPapers = [...(trendPage0.data ?? []), ...(trendPage1.data ?? []), ...(trendPage2.data ?? []), ...(trendPage3.data ?? [])]
+    .filter((r: any) => r.published_date && r.published_date >= "2026-03-01")
     .map((r: any) => ({
       published_date: r.published_date,
       topics: (r.paper_topics ?? []).map((pt: any) => pt.topic_slug),
@@ -88,15 +95,13 @@ export default async function DashboardPage() {
       .map((p) => ({ type: "paper" as const, date: p.created_at.slice(0, 10), title: p.title, href: p.url || `/admin/papers` })),
     ...products.filter((p) => p.release_date && p.release_date >= thirtyDaysAgo.slice(0, 10))
       .map((p) => ({ type: "product" as const, date: p.release_date!, title: `${p.name} ${p.latest_version ?? ""}`.trim(), href: `/admin/products/${p.id}` })),
-    ...vendors.filter((v) => v.created_at >= thirtyDaysAgo)
-      .map((v) => ({ type: "vendor" as const, date: v.created_at.slice(0, 10), title: v.name, href: `/admin/vendors/${v.id}` })),
     ...leads.filter((l) => l.created_at >= thirtyDaysAgo)
       .map((l) => ({ type: "lead" as const, date: l.created_at.slice(0, 10), title: l.title, href: `/admin/leads/${l.id}` })),
   ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 15);
 
   const EVENT_LABEL: Record<string, string> = {
     conference: t.ecosystem.conferences, paper: t.ecosystem.papers, product: t.ecosystem.products,
-    vendor: t.ecosystem.vendors, lead: t.ecosystem.leads,
+    lead: t.ecosystem.leads,
   };
 
   return (
@@ -131,11 +136,11 @@ export default async function DashboardPage() {
           )}
         </SectionCard>
 
-        {/* Vendor positioning */}
+        {/* Vendor intelligence */}
         <div className="mt-6">
           <SectionCard title={t.ecosystem.vendorTopicLayout}>
-            {vendorTopicMap.length > 0 ? (
-              <VendorTopicGrid data={vendorTopicMap} lang={lang} />
+            {vendorIntelData.length > 0 ? (
+              <VendorIntelligenceGrid data={vendorIntelData} lang={lang} />
             ) : (
               <EmptyState title={t.empty.vendors} description={t.empty.vendorsDesc} compact />
             )}

@@ -39,7 +39,6 @@ export function Sidebar({ t }: { t: Dict }) {
       items: [
         { href: "/admin/leads", label: t.nav.leads },
         { href: "/admin/talents", label: t.nav.talents },
-        { href: "/admin/vendors", label: t.nav.vendors },
       ],
     },
   ], [t]);
