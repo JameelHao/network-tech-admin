@@ -1,12 +1,13 @@
 #!/bin/bash
 # Cron entry point for network-sync-worker
-# Usage: ./scripts/cron-entry.sh papers
 # Called from crontab:
-#   0 6 * * * /path/to/network-sync-worker/scripts/cron-entry.sh all
+#   0 */6 * * * /path/to/scripts/cron-entry.sh papers
+#   0 * * * * /path/to/scripts/cron-entry.sh feeds
+#
+# Or use scheduler.sh for continuous mode:
+#   nohup ./scripts/scheduler.sh &
 
-set -e
+set -euo pipefail
 cd "$(dirname "$0")/.."
-export $(grep -v '^#' .env | xargs) 2>/dev/null || true
-
-TASK="${1:-all}"
-npx tsx src/index.ts "$TASK" >> /var/log/sync-worker.log 2>&1
+if [ -f .env ]; then set -a; source .env; set +a; fi
+npx tsx src/index.ts "${1:-all}" >> /var/log/sync-worker/cron.log 2>&1

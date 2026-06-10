@@ -6,6 +6,7 @@ import { syncGitHubRepos } from "./sync/github.js";
 import { syncRFCs } from "./sync/rfcs.js";
 import { classifyPapers, classifyNews } from "./lib/ai-classify.js";
 import { generateConfSummary, generateAllConfSummaries } from "./sync/conf-ai.js";
+import { syncVendorIntelligence } from "./sync/vendor-intelligence.js";
 
 const task = process.argv[2] ?? "all";
 
@@ -80,6 +81,11 @@ async function main() {
         const id = process.argv[3];
         if (!id) { console.error("[sync-worker] Usage: conf-summary <conferenceId>"); process.exit(1); }
         await generateConfSummary(id);
+        break;
+      }
+      case "vendor-intel": {
+        const count = await syncVendorIntelligence();
+        console.log(`[sync-worker] Updated ${count} vendor profiles`);
         break;
       }
       case "all": {

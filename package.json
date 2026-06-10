@@ -6,10 +6,14 @@
   "scripts": {
     "sync:papers": "npx tsx src/index.ts papers",
     "sync:feeds": "npx tsx src/index.ts feeds",
-    "sync:products": "npx tsx src/index.ts products",
     "sync:github": "npx tsx src/index.ts github",
     "sync:rfcs": "npx tsx src/index.ts rfcs",
-    "sync:all": "npx tsx src/index.ts all"
+    "sync:classify": "npx tsx src/index.ts classify",
+    "sync:vendor-intel": "npx tsx src/index.ts vendor-intel",
+    "sync:conf-summaries": "npx tsx src/index.ts conf-summaries",
+    "sync:all": "npx tsx src/index.ts all",
+    "scheduler": "bash scripts/scheduler.sh",
+    "scheduler:once": "bash scripts/scheduler.sh once"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
