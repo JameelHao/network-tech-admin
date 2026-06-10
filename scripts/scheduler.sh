@@ -18,7 +18,7 @@
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
-LOG_DIR="${SYNC_LOG_DIR:-/var/log/sync-worker}"
+LOG_DIR="${SYNC_LOG_DIR:-$HOME/.local/log/sync-worker}"
 mkdir -p "$LOG_DIR"
 
 if [ -f .env ]; then set -a; source .env; set +a; fi

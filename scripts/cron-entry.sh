@@ -10,4 +10,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ -f .env ]; then set -a; source .env; set +a; fi
-npx tsx src/index.ts "${1:-all}" >> /var/log/sync-worker/cron.log 2>&1
+LOG_DIR="$HOME/.local/log/sync-worker"
+mkdir -p "$LOG_DIR"
+npx tsx src/index.ts "${1:-all}" >> "$LOG_DIR/cron.log" 2>&1
