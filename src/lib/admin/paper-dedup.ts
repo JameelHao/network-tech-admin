@@ -79,8 +79,8 @@ export function findDuplicateGroups(
     normalizeTitle(a.title).localeCompare(normalizeTitle(b.title)),
   );
 
-  const WINDOW = 20;
-  const THRESHOLD = 0.85;
+  const WINDOW = 10;
+  const THRESHOLD = 0.95;
 
   for (let i = 0; i < sorted.length; i++) {
     if (matched.has(sorted[i].id)) continue;

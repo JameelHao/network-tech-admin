@@ -20,5 +20,6 @@ create index if not exists idx_vendors_stage on vendors(stage);
 
 alter table vendors enable row level security;
 create policy "anon read vendors" on vendors for select to anon using (true);
+create policy "auth read vendors" on vendors for select to authenticated using (true);
 create policy "anon insert vendors" on vendors for insert to anon with check (true);
 create policy "anon update vendors" on vendors for update to anon using (true);

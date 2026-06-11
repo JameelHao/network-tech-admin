@@ -48,6 +48,7 @@ export async function listPapersForList(): Promise<{ papers: Paper[]; total: num
       .from("papers")
       .select("id, title, authors, venue, url, published_date, citation_count, source, created_at, paper_topics(topic_slug)")
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(from, from + pageSize - 1);
 
     if (error) throw error;

@@ -9,7 +9,14 @@ import { computePaperStats } from "@/lib/admin/paper-utils";
 
 export default async function PapersPage() {
   const { lang, t } = await getDict();
-  const { papers, total: dbTotal } = await listPapersForList();
+  const { papers: rawPapers, total: dbTotal } = await listPapersForList();
+  // Client-side dedup — guard against any pagination edge cases
+  const seen = new Set<string>();
+  const papers = rawPapers.filter(p => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
   const duplicateGroups = findDuplicateGroups(papers);
   const { total, thisWeek, arxivCount, venueCount } = computePaperStats(papers, Date.now(), dbTotal);
 
