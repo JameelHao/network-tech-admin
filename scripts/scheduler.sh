@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # network-sync-worker scheduler
 # Runs sync tasks on a loop with configurable intervals.
 # AI classify runs automatically after papers/feeds sync.
@@ -32,11 +32,14 @@ log() {
 run_task() {
   local task=$1
   local logfile="$LOG_DIR/${task}.log"
+  local start_ts=$(date +%s)
   log "START: $task"
-  if $TSX src/index.ts "$task" >> "$logfile" 2>&1; then
-    log "OK: $task"
+  if $TSX src/index.ts "$task" 2>&1 | tee -a "$logfile"; then
+    local elapsed=$(( $(date +%s) - start_ts ))
+    log "OK: $task (${elapsed}s)"
   else
-    log "FAIL: $task (exit $?)"
+    local elapsed=$(( $(date +%s) - start_ts ))
+    log "FAIL: $task (exit $?, ${elapsed}s)"
   fi
 }
 

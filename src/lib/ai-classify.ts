@@ -46,7 +46,7 @@ ${itemBlock}`;
 }
 
 function callClaude(prompt: string): string {
-  const r = spawnSync("claude", ["-p", "--print"], {
+  const r = spawnSync("claude", ["-p"], {
     input: prompt,
     encoding: "utf-8",
     timeout: 120_000,
@@ -140,8 +140,9 @@ export async function findSimilarPapers(paperIds: string[]): Promise<void> {
     const { data: candidates } = await supabase
       .from("papers").select("id, title").eq("ai_classified", true).neq("id", paper.id).or(wordQuery).limit(15);
     if (!candidates?.length) continue;
+
     const prompt = `From these papers, pick the 5 most similar to the reference. Return JSON: {"similar_ids": ["id1","id2","id3","id4","id5"]}\n\nReference: ${paper.title.slice(0, 200)}\n\nCandidates:\n${candidates.map((c, i) => `[${i + 1}] ${c.title.slice(0, 200)} (${c.id})`).join("\n")}`;
-    const r = spawnSync("claude", ["-p", "--print"], {
+    const r = spawnSync("claude", ["-p"], {
       input: prompt, encoding: "utf-8", timeout: 30_000, maxBuffer: 5 * 1024 * 1024,
     });
     if (r.error) continue;

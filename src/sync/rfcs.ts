@@ -34,7 +34,7 @@ export async function syncRFCs(): Promise<FeedStat[]> {
             summary: summary,
             published_date: updated ? updated.slice(0, 10) : null,
             url: link,
-            is_draft: true,
+            is_draft: false,
           });
           inserted++;
         }

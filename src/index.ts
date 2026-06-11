@@ -94,23 +94,30 @@ async function main() {
       }
       case "all": {
         const year = parseInt(process.env.SYNC_YEAR ?? String(new Date().getFullYear()), 10);
-        const results = await Promise.allSettled([
-          syncAllPapers(year).then(async (s) => {
-            const c = await classifyPapers(30);
-            return { task: "papers", stats: s, classified: c.updated };
-          }),
-          syncAllFeeds().then(async (s) => {
-            const c = await classifyNews(30);
-            return { task: "feeds", stats: s, classified: c.updated };
-          }),
+        // Phase 1: sync data sources in parallel
+        const syncResults = await Promise.allSettled([
+          syncAllPapers(year).then((s) => ({ task: "papers", stats: s })),
+          syncAllFeeds().then((s) => ({ task: "feeds", stats: s })),
           syncGitHubRepos().then((s) => ({ task: "github", stats: s })),
           syncRFCs().then((s) => ({ task: "rfcs", stats: s })),
         ]);
-        for (const r of results) {
+        for (const r of syncResults) {
           if (r.status === "fulfilled") {
             console.log(`[sync-worker] ${r.value.task}:`, JSON.stringify(r.value.stats));
           } else {
-            console.error(`[sync-worker] ${r.reason}`);
+            console.error(`[sync-worker] sync failed:`, r.reason);
+          }
+        }
+        // Phase 2: classify after sync completes so new items are available
+        const classifyResults = await Promise.allSettled([
+          classifyPapers(30).then((s) => ({ task: "classify-papers", stats: s })),
+          classifyNews(30).then((s) => ({ task: "classify-news", stats: s })),
+        ]);
+        for (const r of classifyResults) {
+          if (r.status === "fulfilled") {
+            console.log(`[sync-worker] ${r.value.task}:`, JSON.stringify(r.value.stats));
+          } else {
+            console.error(`[sync-worker] classify failed:`, r.reason);
           }
         }
         break;

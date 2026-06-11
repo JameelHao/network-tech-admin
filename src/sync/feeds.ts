@@ -4,13 +4,34 @@ import { filterQuality } from "../lib/ai-quality.js";
 import type { RSSItem, FeedStat } from "../types/index.js";
 
 const NEWS_FEEDS = [
+  // --- Tech blogs & engineering ---
   { url: "https://blog.cloudflare.com/rss/", source: "Cloudflare Blog" },
+  { url: "https://blog.cloudflare.com/zh-cn/rss/", source: "Cloudflare 中文" },
   { url: "https://aws.amazon.com/blogs/networking-and-content-delivery/feed/", source: "AWS Networking" },
-  { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
-  { url: "https://www.theregister.com/feed/", source: "The Register" },
+  { url: "https://azure.microsoft.com/en-us/blog/feed/", source: "Azure Blog" },
+  { url: "https://cloudblog.withgoogle.com/rss/", source: "Google Cloud Blog" },
   { url: "https://engineering.fb.com/category/networking-traffic/feed/", source: "Meta Engineering" },
   { url: "https://blogs.cisco.com/feed/", source: "Cisco Blogs" },
   { url: "https://developer.nvidia.com/blog/feed", source: "NVIDIA Developer" },
+  { url: "https://netflixtechblog.com/feed", source: "Netflix Tech Blog" },
+  { url: "https://www.uber.com/en-US/blog/engineering/rss/", source: "Uber Engineering" },
+  // --- News & media ---
+  { url: "https://feeds.arstechnica.com/arstechnica/technology-lab", source: "Ars Technica" },
+  { url: "https://www.theregister.com/feed/", source: "The Register" },
+  { url: "https://hnrss.org/newest?points=100&q=networking+OR+infrastructure+OR+datacenter+OR+BGP+OR+DNS+OR+CDN+OR+5G+OR+eBPF", source: "Hacker News" },
+  { url: "https://www.lightreading.com/rss.xml", source: "Light Reading" },
+  { url: "https://www.datacenterknowledge.com/rss.xml", source: "Data Center Knowledge" },
+  // --- Networking community ---
+  { url: "https://lwn.net/headlines/rss", source: "LWN.net" },
+  { url: "https://blog.apnic.net/feed/", source: "APNIC Blog" },
+  { url: "https://labs.ripe.net/rss/", source: "RIPE Labs" },
+  { url: "https://www.potaroo.net/ispcol/recentcolumns.xml", source: "Potaroo (Geoff Huston)" },
+  { url: "https://elegantnetwork.github.io/feed.xml", source: "Elegant Network" },
+  { url: "https://packetpushers.net/feed/", source: "Packet Pushers" },
+  // --- Chinese tech ---
+  { url: "https://www.infoq.cn/feed", source: "InfoQ 中文" },
+  { url: "https://www.oschina.net/news/rss", source: "开源中国" },
+  // --- Google News company watches ---
   { url: "https://news.google.com/rss/search?q=%22Ericsson%22+network+OR+5G+OR+6G+OR+RAN+when:7d", source: "Ericsson" },
   { url: "https://news.google.com/rss/search?q=%22Nokia%22+network+OR+5G+OR+6G+OR+IP+optical+when:7d", source: "Nokia" },
   { url: "https://news.google.com/rss/search?q=OpenAI+network+OR+infrastructure+OR+distributed+OR+training+when:7d", source: "OpenAI" },
@@ -26,10 +47,6 @@ const NEWS_FEEDS = [
   { url: "https://news.google.com/rss/search?q=%22Alibaba%22+network+OR+cloud+OR+datacenter+OR+infrastructure+when:7d", source: "Alibaba" },
   { url: "https://news.google.com/rss/search?q=%22Baidu%22+network+OR+cloud+OR+infrastructure+when:7d", source: "Baidu" },
   { url: "https://news.google.com/rss/search?q=%22ByteDance%22+network+OR+cloud+OR+infrastructure+OR+streaming+when:7d", source: "ByteDance" },
-  { url: "https://www.infoq.cn/feed", source: "InfoQ 中文" },
-  { url: "https://www.oschina.net/news/rss", source: "开源中国" },
-  { url: "https://blog.cloudflare.com/zh-cn/rss/", source: "Cloudflare 中文" },
-  { url: "https://lwn.net/headlines/rss", source: "LWN.net" },
 ];
 
 function parseRSSXml(xml: string, source: string): RSSItem[] {
@@ -43,13 +60,15 @@ function parseRSSXml(xml: string, source: string): RSSItem[] {
     const description = extractTag(block, "description");
     const pubDate = extractTag(block, "pubDate");
     if (title && link) {
+      const cleanTitle = decodeEntities(title);
+      const cleanSnippet = decodeEntities(stripHtml(description || "")).slice(0, 200);
       items.push({
-        title: decodeEntities(title),
+        title: cleanTitle,
         link,
-        snippet: decodeEntities(stripHtml(description || "")).slice(0, 200),
+        snippet: cleanSnippet,
         source,
         pubDate: pubDate || null,
-        companies: inferCompanies(`${title} ${description ?? ""}`),
+        companies: inferCompanies(`${cleanTitle} ${cleanSnippet}`),
       });
     }
   }
@@ -77,41 +96,9 @@ function decodeEntities(text: string): string {
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#x27;/g, "'").replace(/&#x2F;/g, "/");
 }
 
-async function fetchAndStoreFeed(feed: { url: string; source: string }): Promise<FeedStat> {
-  try {
-    const res = await fetch(feed.url, { signal: AbortSignal.timeout(12000) });
-    if (!res.ok) return { source: feed.source, status: "error", count: 0, error: `HTTP ${res.status}` };
-    const text = await res.text();
-    if (!text.includes("<item>") && !text.includes("<entry>")) {
-      return { source: feed.source, status: "error", count: 0, error: "not RSS/XML" };
-    }
-    const items = parseRSSXml(text, feed.source);
-
-    let inserted = 0;
-    for (const item of items) {
-      const { data: existing } = await supabase
-        .from("news_items")
-        .select("id")
-        .eq("link", item.link)
-        .maybeSingle();
-
-      if (!existing) {
-        await supabase.from("news_items").insert({
-          title: item.title, link: item.link, snippet: item.snippet,
-          source: item.source, category: "news",
-          pub_date: item.pubDate, companies: item.companies,
-        });
-        inserted++;
-      }
-    }
-    return { source: feed.source, status: "ok", count: inserted };
-  } catch (err) {
-    return { source: feed.source, status: "error", count: 0, error: err instanceof Error ? err.message : "unknown" };
-  }
-}
 
 export async function syncAllFeeds(): Promise<FeedStat[]> {
-  const limit = 50;
+  const limit = 500;
   const stats: FeedStat[] = [];
   const allItems: RSSItem[] = [];
 
@@ -166,7 +153,7 @@ export async function syncAllFeeds(): Promise<FeedStat[]> {
       .from("news_items").select("id").eq("link", item.link).maybeSingle();
     if (!existing) {
       await supabase.from("news_items").insert({
-        title: item.title, link: item.link,
+        title: item.title, link: item.link, snippet: item.snippet,
         source: item.source, category: "news",
         pub_date: item.pubDate, companies: item.companies,
         relevance_score: score,
