@@ -18,6 +18,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin", label: t.nav.dashboard },
         { href: "/admin/topics", label: t.nav.topics },
         { href: "/admin/favorites", label: t.nav.favorites },
+        { href: "/admin/signals", label: "Signals" },
         { href: "/admin/companies", label: t.nav.companies },
         { href: "/admin/users", label: "Users" },
       ],
@@ -37,7 +38,6 @@ export function Sidebar({ t }: { t: Dict }) {
     {
       label: t.nav.followUp,
       items: [
-        { href: "/admin/leads", label: t.nav.leads },
         { href: "/admin/talents", label: t.nav.talents },
       ],
     },
