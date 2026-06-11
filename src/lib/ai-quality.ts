@@ -7,7 +7,7 @@ type QualityVerdict = {
   reason: string;
 };
 
-const SYSTEM_PROMPT = `You are a quality filter for networking news. Rate each article on relevance to professional networking/cloud/infrastructure engineering and assign a relevance_score (1-10).
+const SYSTEM_PROMPT = `You are a quality filter for networking news. Rate each article on relevance to professional networking/cloud/infrastructure engineering and assign a relevance_score (1-10). Articles may be in English or Chinese — evaluate them equally regardless of language.
 
 Score guide:
 - 9-10: Direct networking content (protocols, architectures, deployments)
@@ -18,6 +18,7 @@ Score guide:
 
 Keep if score >= 4 (real technical content, industry analysis, product releases with detail, tangential but useful).
 Discard if score < 4 (press releases, fluff, irrelevant topics, stock/finance news, vague announcements).
+IMPORTANT: Chinese-language articles about networking, cloud, data centers, 5G/6G, SDN, etc. should receive the same scores as equivalent English articles.
 
 Return JSON only: {"verdicts": [{"idx": 1, "keep": true, "relevance_score": 8, "reason": "concrete technical details on X"}]}`;
 

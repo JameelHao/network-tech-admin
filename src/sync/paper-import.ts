@@ -189,19 +189,71 @@ export async function syncCompanyPapers(year: number): Promise<CategoryStat[]> {
 
 // ── DB upsert ──
 
+function normalizeTitle(title: string): string {
+  return title.toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+}
+
 async function upsertPaper(p: ImportedPaper): Promise<boolean> {
-  const { data: existing } = await supabase
+  // Check by exact title
+  const { data: byTitle } = await supabase
     .from("papers")
     .select("id, citation_count")
     .eq("title", p.title)
     .maybeSingle();
 
-  if (existing) {
-    if (p.citation_count !== undefined && existing.citation_count !== p.citation_count) {
-      await supabase.from("papers").update({ citation_count: p.citation_count }).eq("id", existing.id);
+  if (byTitle) {
+    if (p.citation_count !== undefined && byTitle.citation_count !== p.citation_count) {
+      await supabase.from("papers").update({ citation_count: p.citation_count }).eq("id", byTitle.id);
     }
     return false;
   }
+
+  // Check by URL (same arXiv paper from different queries)
+  if (p.url) {
+    const { data: byUrl } = await supabase
+      .from("papers")
+      .select("id, citation_count, companies")
+      .eq("url", p.url)
+      .maybeSingle();
+
+    if (byUrl) {
+      const updates: Record<string, any> = {};
+      if (p.citation_count !== undefined && byUrl.citation_count !== p.citation_count) {
+        updates.citation_count = p.citation_count;
+      }
+      const existingCo = (byUrl.companies as string[]) ?? [];
+      const merged = [...new Set([...existingCo, ...p.companies])];
+      if (merged.length > existingCo.length) updates.companies = merged;
+      if (Object.keys(updates).length > 0) {
+        await supabase.from("papers").update(updates).eq("id", byUrl.id);
+      }
+      return false;
+    }
+  }
+
+  // Fuzzy check: normalized title prefix match to catch "CRESS: Title" vs "Title"
+  const norm = normalizeTitle(p.title);
+  const words = norm.split(" ");
+  if (words.length >= 4) {
+    const coreWords = words.slice(0, 6).join(" ");
+    const { data: fuzzy } = await supabase
+      .from("papers")
+      .select("id, title")
+      .ilike("title", `%${coreWords.slice(0, 60)}%`)
+      .limit(5);
+
+    if (fuzzy?.length) {
+      for (const f of fuzzy) {
+        const fNorm = normalizeTitle(f.title);
+        if (fNorm === norm || fNorm.endsWith(norm) || norm.endsWith(fNorm)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  const existing = byTitle;
+  if (existing) return false;
 
   const { data: inserted } = await supabase
     .from("papers")
