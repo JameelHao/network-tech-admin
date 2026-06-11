@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
     const ADMIN = await getAdmin();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const siteUrl = process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? `https://${request.headers.get("host") ?? "localhost:3000"}`;
     const { data, error } = await ADMIN.auth.admin.inviteUserByEmail(email, { redirectTo: `${siteUrl}/register` });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(data);
