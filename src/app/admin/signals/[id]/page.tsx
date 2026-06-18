@@ -30,7 +30,10 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   if (s.signal_type === "surge" || s.signal_type === "emerging") {
     // Keyword-driven: search using regex terms from evidence
     const regex = (s.evidence?.keyword_regex as string) ?? "";
-    const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
+
+    // Convert regex patterns to LIKE-compatible wildcards (signal uses RegExp, DB uses LIKE)
+    const toLike = (t: string) => t.replace(/\.\*/g, "%").replace(/[.?+^$()\[\]{}|\\]/g, "").replace(/%+/g, "%");
+    const searchTerms = regex ? regex.split("|").map(toLike).filter(Boolean) : [];
 
     // Skip overly generic words (e.g. "timely" matches 41 papers, none about DC Transport)
     const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
@@ -61,7 +64,8 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   if (s.signal_type === "company-shift") {
     // Match the signal's own counting method: full-text regex on title+abstract + company tag
     const regex = (s.evidence?.keyword_regex as string) ?? "";
-    const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
+    const toLike = (t: string) => t.replace(/\.\*/g, "%").replace(/[.?+^$()\[\]{}|\\]/g, "").replace(/%+/g, "%");
+    const searchTerms = regex ? regex.split("|").map(toLike).filter(Boolean) : [];
     const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
     const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
     const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
