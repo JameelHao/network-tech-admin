@@ -59,53 +59,71 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   }
 
   if (s.signal_type === "company-shift") {
+    // Match the signal's own counting method: full-text regex on title+abstract + company tag
     const regex = (s.evidence?.keyword_regex as string) ?? "";
     const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
     const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
     const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
     const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
 
-    // Company + topic intersection
-    if (company && topic) {
-      const { data: p } = await supabase.from("papers")
-        .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-        .eq("paper_topics.topic_slug", topic)
-        .contains("companies", [company])
-        .order("published_date", { ascending: false }).limit(20);
-      papers = p ?? [];
+    if (company && effectiveTerms.length > 0) {
+      // Primary: full-text regex on title+abstract + company tag (same as signal counting)
+      const paperOr = effectiveTerms.slice(0, 5).map(t =>
+        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+      ).join(",");
+      const newsOr = effectiveTerms.slice(0, 5).map(t =>
+        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+      ).join(",");
 
-      // Try keyword regex match as fallback
-      if (papers.length === 0 && effectiveTerms.length > 0) {
-        const paperOr = effectiveTerms.slice(0, 5).map(t =>
-          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-        ).join(",");
-        const { data: p2 } = await supabase.from("papers")
+      const [pRes, nRes] = await Promise.all([
+        supabase.from("papers")
           .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
           .contains("companies", [company])
           .or(paperOr)
+          .order("published_date", { ascending: false }).limit(20),
+        supabase.from("news_items")
+          .select("id, title, link, pub_date, source")
+          .contains("companies", [company])
+          .or(newsOr)
+          .order("pub_date", { ascending: false }).limit(20),
+      ]);
+      papers = pRes.data ?? [];
+
+      // Fallback: topic + company intersection (broader)
+      if (papers.length === 0 && topic) {
+        const { data: p2 } = await supabase.from("papers")
+          .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
+          .eq("paper_topics.topic_slug", topic)
+          .contains("companies", [company])
           .order("published_date", { ascending: false }).limit(20);
         papers = p2 ?? [];
       }
 
-      // News: match ai_topics + companies
-      const { data: n } = await supabase.from("news_items")
-        .select("id, title, link, pub_date, source, relevance_score")
-        .contains("ai_topics", [topic])
-        .contains("companies", [company])
-        .order("pub_date", { ascending: false }).limit(20);
-      news = n ?? [];
-
-      if (news.length === 0 && effectiveTerms.length > 0) {
-        const newsOr = effectiveTerms.slice(0, 5).map(t =>
-          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-        ).join(",");
+      news = nRes.data ?? [];
+      if (news.length === 0 && topic) {
         const { data: n2 } = await supabase.from("news_items")
           .select("id, title, link, pub_date, source")
+          .contains("ai_topics", [topic])
           .contains("companies", [company])
-          .or(newsOr)
           .order("pub_date", { ascending: false }).limit(20);
         news = n2 ?? [];
       }
+    } else if (company && topic) {
+      // No keyword terms — fallback to topic+company intersection
+      const [pRes, nRes] = await Promise.all([
+        supabase.from("papers")
+          .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
+          .eq("paper_topics.topic_slug", topic)
+          .contains("companies", [company])
+          .order("published_date", { ascending: false }).limit(20),
+        supabase.from("news_items")
+          .select("id, title, link, pub_date, source")
+          .contains("ai_topics", [topic])
+          .contains("companies", [company])
+          .order("pub_date", { ascending: false }).limit(20),
+      ]);
+      papers = pRes.data ?? [];
+      news = nRes.data ?? [];
     }
   }
 
