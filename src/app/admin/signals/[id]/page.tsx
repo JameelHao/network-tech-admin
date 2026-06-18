@@ -13,15 +13,6 @@ type Signal = {
   status: string; detected_at: string; evidence: Record<string, any>;
 };
 
-const STOPWORDS = new Set(["the","a","an","for","and","or","in","of","to","with","on","by","is","are","was","were"]);
-
-/** Extract meaningful search terms from a keyword. Full phrase first, then individual words ≥ 3 chars. */
-function keywordTerms(kw: string): string[] {
-  const parts = kw.split(/[\s/+]+/).filter(Boolean).filter(w => w.length >= 3 && !STOPWORDS.has(w.toLowerCase()));
-  const result = [kw, ...parts];
-  return result.filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
-}
-
 export default async function SignalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { lang, t } = await getDict();
@@ -30,7 +21,6 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   const { data: signal } = await supabase.from("tech_signals").select("*").eq("id", id).single();
   if (!signal) notFound();
   const s = signal as Signal;
-  const kw = s.evidence?.keyword ?? "";
   const company = s.company_slugs?.[0] ?? "";
   const topic = s.topic_slug ?? "";
 
@@ -38,44 +28,34 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   let news: any[] = [];
 
   if (s.signal_type === "surge" || s.signal_type === "emerging") {
-    // Keyword-driven: search by full phrase first, individual words as fallback
-    if (kw) {
-      const like = `%${kw.slice(0, 30).replace(/'/g, "''")}%`;
+    // Keyword-driven: search using regex terms from evidence
+    const regex = (s.evidence?.keyword_regex as string) ?? "";
+    const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
+
+    if (searchTerms.length > 0) {
+      // Use OR across all regex terms — these are the actual words that triggered the signal
+      const orClause = searchTerms.slice(0, 5).map(t =>
+        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+      ).join(",");
       const { data: p } = await supabase.from("papers")
         .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-        .or(`title.ilike.${like},abstract.ilike.${like}`)
+        .or(orClause)
         .order("published_date", { ascending: false }).limit(20);
       papers = p ?? [];
       const { data: n } = await supabase.from("news_items")
         .select("id, title, link, pub_date, source")
-        .or(`title.ilike.${like},snippet.ilike.${like}`)
+        .or(orClause)
         .order("pub_date", { ascending: false }).limit(20);
       news = n ?? [];
-
-      // Fallback: individual meaningful words OR'd together
-      if (papers.length === 0 && news.length === 0) {
-        const terms = keywordTerms(kw).slice(1); // skip full phrase, just individual words
-        if (terms.length > 0) {
-          const orClause = terms.map(t => `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`).join(",");
-          const { data: p2 } = await supabase.from("papers")
-            .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-            .or(orClause)
-            .order("published_date", { ascending: false }).limit(20);
-          papers = p2 ?? [];
-          const { data: n2 } = await supabase.from("news_items")
-            .select("id, title, link, pub_date, source")
-            .or(orClause)
-            .order("pub_date", { ascending: false }).limit(20);
-          news = n2 ?? [];
-        }
-      }
     }
   }
 
   if (s.signal_type === "company-shift") {
-    // Company + topic intersection: search where both match
+    const regex = (s.evidence?.keyword_regex as string) ?? "";
+    const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
+
+    // Company + topic intersection
     if (company && topic) {
-      // Papers: match topic through paper_topics junction
       const { data: p } = await supabase.from("papers")
         .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
         .eq("paper_topics.topic_slug", topic)
@@ -83,12 +63,15 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
         .order("published_date", { ascending: false }).limit(20);
       papers = p ?? [];
 
-      // Also try keyword match within company+topic data
-      if (papers.length === 0 && kw) {
+      // Try keyword regex match as fallback
+      if (papers.length === 0 && searchTerms.length > 0) {
+        const orClause = searchTerms.slice(0, 5).map(t =>
+          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+        ).join(",");
         const { data: p2 } = await supabase.from("papers")
           .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
           .contains("companies", [company])
-          .or(`title.ilike.%${kw.slice(0, 30)}%,abstract.ilike.%${kw.slice(0, 30)}%`)
+          .or(orClause)
           .order("published_date", { ascending: false }).limit(20);
         papers = p2 ?? [];
       }
@@ -101,11 +84,14 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
         .order("pub_date", { ascending: false }).limit(20);
       news = n ?? [];
 
-      if (news.length === 0 && kw) {
+      if (news.length === 0 && searchTerms.length > 0) {
+        const orClause = searchTerms.slice(0, 5).map(t =>
+          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+        ).join(",");
         const { data: n2 } = await supabase.from("news_items")
           .select("id, title, link, pub_date, source")
           .contains("companies", [company])
-          .or(`title.ilike.%${kw.slice(0, 30)}%,snippet.ilike.%${kw.slice(0, 30)}%`)
+          .or(orClause)
           .order("pub_date", { ascending: false }).limit(20);
         news = n2 ?? [];
       }
