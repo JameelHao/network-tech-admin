@@ -33,18 +33,21 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
     const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
 
     if (searchTerms.length > 0) {
-      // Use OR across all regex terms — these are the actual words that triggered the signal
-      const orClause = searchTerms.slice(0, 5).map(t =>
-        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+      // Search title+abstract for papers, title+snippet for news (matching signal counting logic)
+      const paperOr = searchTerms.slice(0, 5).map(t =>
+        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+      ).join(",");
+      const newsOr = searchTerms.slice(0, 5).map(t =>
+        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
       ).join(",");
       const { data: p } = await supabase.from("papers")
         .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-        .or(orClause)
+        .or(paperOr)
         .order("published_date", { ascending: false }).limit(20);
       papers = p ?? [];
       const { data: n } = await supabase.from("news_items")
         .select("id, title, link, pub_date, source")
-        .or(orClause)
+        .or(newsOr)
         .order("pub_date", { ascending: false }).limit(20);
       news = n ?? [];
     }
@@ -65,13 +68,13 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
 
       // Try keyword regex match as fallback
       if (papers.length === 0 && searchTerms.length > 0) {
-        const orClause = searchTerms.slice(0, 5).map(t =>
-          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+        const paperOr = searchTerms.slice(0, 5).map(t =>
+          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
         ).join(",");
         const { data: p2 } = await supabase.from("papers")
           .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
           .contains("companies", [company])
-          .or(orClause)
+          .or(paperOr)
           .order("published_date", { ascending: false }).limit(20);
         papers = p2 ?? [];
       }
@@ -85,13 +88,13 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
       news = n ?? [];
 
       if (news.length === 0 && searchTerms.length > 0) {
-        const orClause = searchTerms.slice(0, 5).map(t =>
-          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
+        const newsOr = searchTerms.slice(0, 5).map(t =>
+          `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
         ).join(",");
         const { data: n2 } = await supabase.from("news_items")
           .select("id, title, link, pub_date, source")
           .contains("companies", [company])
-          .or(orClause)
+          .or(newsOr)
           .order("pub_date", { ascending: false }).limit(20);
         news = n2 ?? [];
       }
