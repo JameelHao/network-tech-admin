@@ -21,115 +21,25 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   const { data: signal } = await supabase.from("tech_signals").select("*").eq("id", id).single();
   if (!signal) notFound();
   const s = signal as Signal;
-  const company = s.company_slugs?.[0] ?? "";
-  const topic = s.topic_slug ?? "";
 
-  let papers: any[] = [];
-  let news: any[] = [];
+  // Use stored IDs from evidence (set during signal generation)
+  const paperIds: string[] = (s.evidence?.paper_ids as string[]) ?? [];
+  const newsIds: string[] = (s.evidence?.news_ids as string[]) ?? [];
 
-  if (s.signal_type === "surge" || s.signal_type === "emerging") {
-    // Keyword-driven: search using regex terms from evidence
-    const regex = (s.evidence?.keyword_regex as string) ?? "";
-
-    // Convert regex patterns to LIKE-compatible wildcards (signal uses RegExp, DB uses LIKE)
-    const toLike = (t: string) => t.replace(/\.\*/g, "%").replace(/[.?+^$()\[\]{}|\\]/g, "").replace(/%+/g, "%");
-    const searchTerms = regex ? regex.split("|").map(toLike).filter(Boolean) : [];
-
-    // Skip overly generic words (e.g. "timely" matches 41 papers, none about DC Transport)
-    const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
-    const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
-    const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
-
-    if (effectiveTerms.length > 0) {
-      // Search title+abstract for papers, title+snippet for news (matching signal counting logic)
-      const paperOr = effectiveTerms.slice(0, 5).map(t =>
-        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-      ).join(",");
-      const newsOr = effectiveTerms.slice(0, 5).map(t =>
-        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-      ).join(",");
-      const { data: p } = await supabase.from("papers")
-        .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-        .or(paperOr)
-        .order("published_date", { ascending: false }).limit(20);
-      papers = p ?? [];
-      const { data: n } = await supabase.from("news_items")
-        .select("id, title, link, pub_date, source")
-        .or(newsOr)
-        .order("pub_date", { ascending: false }).limit(20);
-      news = n ?? [];
-    }
-  }
-
-  if (s.signal_type === "company-shift") {
-    // Match the signal's own counting method: full-text regex on title+abstract + company tag
-    const regex = (s.evidence?.keyword_regex as string) ?? "";
-    const toLike = (t: string) => t.replace(/\.\*/g, "%").replace(/[.?+^$()\[\]{}|\\]/g, "").replace(/%+/g, "%");
-    const searchTerms = regex ? regex.split("|").map(toLike).filter(Boolean) : [];
-    const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
-    const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
-    const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
-
-    if (company && effectiveTerms.length > 0) {
-      // Primary: full-text regex on title+abstract + company tag (same as signal counting)
-      const paperOr = effectiveTerms.slice(0, 5).map(t =>
-        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-      ).join(",");
-      const newsOr = effectiveTerms.slice(0, 5).map(t =>
-        `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
-      ).join(",");
-
-      const [pRes, nRes] = await Promise.all([
-        supabase.from("papers")
+  const [papers, news] = await Promise.all([
+    paperIds.length > 0
+      ? supabase.from("papers")
           .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-          .contains("companies", [company])
-          .or(paperOr)
-          .order("published_date", { ascending: false }).limit(20),
-        supabase.from("news_items")
+          .in("id", paperIds.slice(0, 50))
+          .order("published_date", { ascending: false }).then(r => r.data ?? [])
+      : Promise.resolve([] as any[]),
+    newsIds.length > 0
+      ? supabase.from("news_items")
           .select("id, title, link, pub_date, source")
-          .contains("companies", [company])
-          .or(newsOr)
-          .order("pub_date", { ascending: false }).limit(20),
-      ]);
-      papers = pRes.data ?? [];
-
-      // Fallback: topic + company intersection (broader)
-      if (papers.length === 0 && topic) {
-        const { data: p2 } = await supabase.from("papers")
-          .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-          .eq("paper_topics.topic_slug", topic)
-          .contains("companies", [company])
-          .order("published_date", { ascending: false }).limit(20);
-        papers = p2 ?? [];
-      }
-
-      news = nRes.data ?? [];
-      if (news.length === 0 && topic) {
-        const { data: n2 } = await supabase.from("news_items")
-          .select("id, title, link, pub_date, source")
-          .contains("ai_topics", [topic])
-          .contains("companies", [company])
-          .order("pub_date", { ascending: false }).limit(20);
-        news = n2 ?? [];
-      }
-    } else if (company && topic) {
-      // No keyword terms — fallback to topic+company intersection
-      const [pRes, nRes] = await Promise.all([
-        supabase.from("papers")
-          .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-          .eq("paper_topics.topic_slug", topic)
-          .contains("companies", [company])
-          .order("published_date", { ascending: false }).limit(20),
-        supabase.from("news_items")
-          .select("id, title, link, pub_date, source")
-          .contains("ai_topics", [topic])
-          .contains("companies", [company])
-          .order("pub_date", { ascending: false }).limit(20),
-      ]);
-      papers = pRes.data ?? [];
-      news = nRes.data ?? [];
-    }
-  }
+          .in("id", newsIds.slice(0, 50))
+          .order("pub_date", { ascending: false }).then(r => r.data ?? [])
+      : Promise.resolve([] as any[]),
+  ]);
 
   return (
     <>
@@ -150,6 +60,11 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
             ))}
             <span className="ml-auto">{new Date(s.detected_at).toLocaleDateString()}</span>
           </div>
+          {!paperIds.length && !newsIds.length && (
+            <p className="mt-4 text-[11px] text-ink-400 bg-ink-50 rounded px-3 py-2">
+              ℹ️ Signal generated before ID tracking. Re-run signals to populate.
+            </p>
+          )}
         </header>
 
         <div className="grid lg:grid-cols-2 gap-6">
