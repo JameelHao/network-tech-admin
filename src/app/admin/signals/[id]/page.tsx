@@ -6,6 +6,8 @@ import { getDict } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
+const PAGE_SIZE = 10;
+
 type Signal = {
   id: string; signal_type: string; severity: number;
   title: string; description: string;
@@ -13,8 +15,33 @@ type Signal = {
   status: string; detected_at: string; evidence: Record<string, any>;
 };
 
-export default async function SignalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+function Pagination({ page, total, keyName, others, slug }: { page: number; total: number; keyName: string; others: string; slug: string }) {
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-3 px-5 py-3 border-t border-line">
+      {page > 1 ? (
+        <Link href={`/admin/signals/${slug}?${keyName}=${page - 1}&${others}`}
+          className="text-[12px] font-mono text-navy-500 hover:text-navy-700 transition-colors">← Prev</Link>
+      ) : (
+        <span className="text-[12px] font-mono text-ink-300">← Prev</span>
+      )}
+      <span className="text-[12px] font-mono text-ink-400">{page} / {totalPages}</span>
+      {page < totalPages ? (
+        <Link href={`/admin/signals/${slug}?${keyName}=${page + 1}&${others}`}
+          className="text-[12px] font-mono text-navy-500 hover:text-navy-700 transition-colors">Next →</Link>
+      ) : (
+        <span className="text-[12px] font-mono text-ink-300">Next →</span>
+      )}
+    </div>
+  );
+}
+
+export default async function SignalDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const papersPage = Math.max(1, Number(sp?.papersPage) || 1);
+  const newsPage = Math.max(1, Number(sp?.newsPage) || 1);
   const { lang, t } = await getDict();
   const supabase = await createClient();
 
@@ -22,24 +49,31 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   if (!signal) notFound();
   const s = signal as Signal;
 
-  // Use stored IDs from evidence (set during signal generation)
-  const paperIds: string[] = (s.evidence?.paper_ids as string[]) ?? [];
-  const newsIds: string[] = (s.evidence?.news_ids as string[]) ?? [];
+  const allPaperIds: string[] = (s.evidence?.paper_ids as string[]) ?? [];
+  const allNewsIds: string[] = (s.evidence?.news_ids as string[]) ?? [];
+
+  const paperTotal = allPaperIds.length;
+  const newsTotal = allNewsIds.length;
+  const paperPageIds = allPaperIds.slice((papersPage - 1) * PAGE_SIZE, papersPage * PAGE_SIZE);
+  const newsPageIds = allNewsIds.slice((newsPage - 1) * PAGE_SIZE, newsPage * PAGE_SIZE);
 
   const [papers, news] = await Promise.all([
-    paperIds.length > 0
+    paperPageIds.length > 0
       ? supabase.from("papers")
           .select("id, title, published_date, venue, citation_count, companies, paper_topics(topic_slug)")
-          .in("id", paperIds.slice(0, 50))
+          .in("id", paperPageIds)
           .order("published_date", { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([] as any[]),
-    newsIds.length > 0
+    newsPageIds.length > 0
       ? supabase.from("news_items")
           .select("id, title, link, pub_date, source")
-          .in("id", newsIds.slice(0, 50))
+          .in("id", newsPageIds)
           .order("pub_date", { ascending: false }).then(r => r.data ?? [])
       : Promise.resolve([] as any[]),
   ]);
+
+  const others = `newsPage=${newsPage}`;
+  const others2 = `papersPage=${papersPage}`;
 
   return (
     <>
@@ -60,17 +94,12 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
             ))}
             <span className="ml-auto">{new Date(s.detected_at).toLocaleDateString()}</span>
           </div>
-          {!paperIds.length && !newsIds.length && (
-            <p className="mt-4 text-[11px] text-ink-400 bg-ink-50 rounded px-3 py-2">
-              ℹ️ Signal generated before ID tracking. Re-run signals to populate.
-            </p>
-          )}
         </header>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <section className="rounded-lg border border-line bg-surface overflow-hidden">
             <div className="px-4 py-3 border-b border-line bg-paper/30">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">Papers ({papers.length})</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">Papers ({paperTotal})</p>
             </div>
             {papers.length === 0 ? (
               <p className="text-[12px] text-ink-400 p-6 text-center">No papers found</p>
@@ -88,11 +117,12 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
                 ))}
               </div>
             )}
+            <Pagination page={papersPage} total={paperTotal} keyName="papersPage" others={others} slug={id} />
           </section>
 
           <section className="rounded-lg border border-line bg-surface overflow-hidden">
             <div className="px-4 py-3 border-b border-line bg-paper/30">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">News ({news.length})</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">News ({newsTotal})</p>
             </div>
             {news.length === 0 ? (
               <p className="text-[12px] text-ink-400 p-6 text-center">No news found</p>
@@ -109,6 +139,7 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
                 ))}
               </div>
             )}
+            <Pagination page={newsPage} total={newsTotal} keyName="newsPage" others={others2} slug={id} />
           </section>
         </div>
       </main>
