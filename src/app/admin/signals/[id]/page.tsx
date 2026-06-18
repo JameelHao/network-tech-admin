@@ -32,12 +32,17 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
     const regex = (s.evidence?.keyword_regex as string) ?? "";
     const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
 
-    if (searchTerms.length > 0) {
+    // Skip overly generic words (e.g. "timely" matches 41 papers, none about DC Transport)
+    const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
+    const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
+    const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
+
+    if (effectiveTerms.length > 0) {
       // Search title+abstract for papers, title+snippet for news (matching signal counting logic)
-      const paperOr = searchTerms.slice(0, 5).map(t =>
+      const paperOr = effectiveTerms.slice(0, 5).map(t =>
         `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
       ).join(",");
-      const newsOr = searchTerms.slice(0, 5).map(t =>
+      const newsOr = effectiveTerms.slice(0, 5).map(t =>
         `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
       ).join(",");
       const { data: p } = await supabase.from("papers")
@@ -56,6 +61,9 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
   if (s.signal_type === "company-shift") {
     const regex = (s.evidence?.keyword_regex as string) ?? "";
     const searchTerms = regex ? regex.split("|").filter(Boolean) : [];
+    const GENERIC = new Set(["timely","loss","rtt","5g","6g","tcp","dns","bgp","p4","nfv","xdp","bpf","tls","ssl","vpn","ipu","mec","tsn","gpu","cpu","dhcp","nat","vlan","mpls","http","https","api","rest","json","xml","snmp"]);
+    const filtered = searchTerms.filter(t => !(t.length <= 6 && GENERIC.has(t.toLowerCase())));
+    const effectiveTerms = filtered.length > 0 ? filtered : searchTerms.slice(0, 2);
 
     // Company + topic intersection
     if (company && topic) {
@@ -67,8 +75,8 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
       papers = p ?? [];
 
       // Try keyword regex match as fallback
-      if (papers.length === 0 && searchTerms.length > 0) {
-        const paperOr = searchTerms.slice(0, 5).map(t =>
+      if (papers.length === 0 && effectiveTerms.length > 0) {
+        const paperOr = effectiveTerms.slice(0, 5).map(t =>
           `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,abstract.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
         ).join(",");
         const { data: p2 } = await supabase.from("papers")
@@ -87,8 +95,8 @@ export default async function SignalDetailPage({ params }: { params: Promise<{ i
         .order("pub_date", { ascending: false }).limit(20);
       news = n ?? [];
 
-      if (news.length === 0 && searchTerms.length > 0) {
-        const newsOr = searchTerms.slice(0, 5).map(t =>
+      if (news.length === 0 && effectiveTerms.length > 0) {
+        const newsOr = effectiveTerms.slice(0, 5).map(t =>
           `title.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%,snippet.ilike.%${t.slice(0, 30).replace(/'/g, "''")}%`
         ).join(",");
         const { data: n2 } = await supabase.from("news_items")
