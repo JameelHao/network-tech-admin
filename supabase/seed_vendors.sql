@@ -32,3 +32,6 @@ INSERT INTO vendors (name, type, website, description, hq_location, founded_year
 ('UCL NetSys', 'academic', 'https://netsys.doc.ic.ac.uk/', 'University College London network systems research group.', 'London, UK', NULL, NULL, ARRAY[], ARRAY['internet-measure','transport-protocols','traffic-analysis'], 'watching'),
 ('UC Berkeley NetSys', 'academic', 'https://netsys.cs.berkeley.edu/', 'UC Berkeley networked systems research lab.', 'Berkeley, USA', NULL, NULL, ARRAY[], ARRAY['distributed-sys','cloud-infra','network-ai'], 'watching'),
 ('ETH Zurich NetSec', 'academic', 'https://netsec.ethz.ch/', 'ETH Zurich network security group researching protocols and privacy.', 'Zurich, Switzerland', NULL, NULL, ARRAY[], ARRAY['protocol-security','privacy-anonymity','dns-bgp'], 'watching');
+
+
+
