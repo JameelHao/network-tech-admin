@@ -43,7 +43,6 @@ async function topicIsReferenced(slug: string) {
     supabase.from("conferences").select("id", { count: "exact", head: true }).contains("topics", [slug]),
     supabase.from("talent_leads").select("id", { count: "exact", head: true }).contains("topics", [slug]),
     supabase.from("opensource").select("id", { count: "exact", head: true }).contains("topics", [slug]),
-    supabase.from("products").select("id", { count: "exact", head: true }).contains("topics", [slug]),
     supabase.from("vendors").select("id", { count: "exact", head: true }).contains("topics", [slug]),
   ]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-export function ChartTooltip({ active, payload, label }: any) {
+export function ChartTooltip({ active, payload, label, labelMap }: any) {
   if (!active || !payload?.length) return null;
 
   return (
@@ -15,7 +15,7 @@ export function ChartTooltip({ active, payload, label }: any) {
           <div key={i} className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5 text-[11px] text-slate-300">
               {p.color && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />}
-              <span className="truncate max-w-[100px]">{p.name ?? p.dataKey ?? ""}</span>
+              <span className="truncate max-w-[100px]">{labelMap?.[p.name] ?? p.name ?? p.dataKey ?? ""}</span>
             </span>
             <span className="text-sm font-semibold tabular-nums text-slate-50">
               {typeof p.value === "number" ? p.value.toLocaleString() : String(p.value ?? "")}

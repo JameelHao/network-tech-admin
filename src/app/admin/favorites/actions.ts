@@ -45,32 +45,6 @@ export async function fetchFavoriteItems(
         url: `/admin/conferences/${r.id}`,
       }));
     }
-    case "leads": {
-      const { data } = await supabase
-        .from("leads")
-        .select("id, title, source_label")
-        .in("id", ids);
-      return (data ?? []).map((r) => ({
-        entity,
-        id: r.id,
-        title: r.title,
-        subtitle: r.source_label,
-        url: null,
-      }));
-    }
-    case "talents": {
-      const { data } = await supabase
-        .from("talent_leads")
-        .select("id, name, company")
-        .in("id", ids);
-      return (data ?? []).map((r) => ({
-        entity,
-        id: r.id,
-        title: r.name,
-        subtitle: r.company,
-        url: `/admin/talents/${r.id}`,
-      }));
-    }
     case "opensource": {
       const { data } = await supabase
         .from("opensource")
@@ -84,31 +58,17 @@ export async function fetchFavoriteItems(
         url: `/admin/opensource/${r.id}`,
       }));
     }
-    case "news":
-    case "jobs": {
+    case "news": {
       const { data } = await supabase
         .from("news_items")
         .select("id, title, source")
-        .eq("category", entity === "news" ? "news" : "job")
+        .eq("category", "news")
         .in("id", ids);
       return (data ?? []).map((r) => ({
         entity,
         id: r.id,
         title: r.title,
         subtitle: r.source,
-        url: null,
-      }));
-    }
-    case "products": {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, vendor")
-        .in("id", ids);
-      return (data ?? []).map((r) => ({
-        entity,
-        id: r.id,
-        title: r.name,
-        subtitle: r.vendor,
         url: null,
       }));
     }

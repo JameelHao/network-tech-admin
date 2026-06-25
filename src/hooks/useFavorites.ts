@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type EntityType = "conferences" | "papers" | "leads" | "talents" | "opensource" | "news" | "jobs" | "products" | "vendors";
+export type EntityType = "conferences" | "papers" | "opensource" | "news" | "vendors";
 
 type FavoriteEntry = { id: string; ts: number; label: string };
 type FavoritesData = Record<EntityType, FavoriteEntry[]>;
 
 function empty(): FavoritesData {
-  return { conferences: [], papers: [], leads: [], talents: [], opensource: [], news: [], jobs: [], products: [], vendors: [] };
+  return { conferences: [], papers: [], opensource: [], news: [], vendors: [] };
 }
 
 const FAV_CHANGED = "nta-fav-changed";

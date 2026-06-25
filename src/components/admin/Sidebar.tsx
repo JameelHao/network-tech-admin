@@ -2,46 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import type { Dict } from "@/lib/i18n/dict";
+import { createClient } from "@/lib/supabase/client";
 
 type Item = { href: string; label: string };
 type Section = { label: string; items: Item[] };
 
 export function Sidebar({ t }: { t: Dict }) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const sections: Section[] = useMemo(() => [
-    {
-      label: t.nav.overview,
-      items: [
-        { href: "/admin", label: t.nav.dashboard },
-        { href: "/admin/topics", label: t.nav.topics },
-        { href: "/admin/favorites", label: t.nav.favorites },
-        { href: "/admin/signals", label: "Signals" },
-        { href: "/admin/companies", label: t.nav.companies },
-        { href: "/admin/users", label: "Users" },
-      ],
-    },
-    {
-      label: t.nav.insights,
-      items: [
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      setIsAdmin(!!data.user);
+    });
+  }, []);
+
+  const sections: Section[] = useMemo(() => {
+    const items: Item[] = [{ href: "/admin", label: t.nav.dashboard }, { href: "/admin/favorites", label: t.nav.favorites }, { href: "/admin/signals", label: t.nav.signals }, { href: "/admin/companies", label: t.nav.companies }];
+    if (isAdmin) items.push({ href: "/admin/users", label: t.nav.users });
+    return [
+      { label: t.nav.overview, items },
+      { label: t.nav.insights, items: [
         { href: "/admin/conferences", label: t.nav.conferences },
         { href: "/admin/papers", label: t.nav.papers },
-        { href: "/admin/opensource", label: t.nav.opensource },
-        { href: "/admin/products", label: t.nav.products },
         { href: "/admin/news", label: t.nav.news },
         { href: "/admin/rfcs", label: t.nav.rfcs },
-        { href: "/admin/jobs", label: t.nav.jobs },
-      ],
-    },
-    {
-      label: t.nav.followUp,
-      items: [
-        { href: "/admin/talents", label: t.nav.talents },
-      ],
-    },
-  ], [t]);
+      ] },
+    ];
+  }, [t, isAdmin]);
 
   const isActive = useCallback((href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -139,9 +129,9 @@ function SidebarNav({
   return (
     <>
       <aside aria-label={t.a11y.navigation} className="hidden lg:flex flex-col w-[252px] shrink-0 bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50">
-        <div className="px-6 pt-7 pb-9">
+        <Link href="/admin" className="px-6 pt-7 pb-9 block">
           <span className="font-sans text-[17px] font-semibold tracking-tight text-navy-50">Tech Radar</span>
-        </div>
+        </Link>
         {navContent("desktop")}
       </aside>
 
@@ -159,9 +149,9 @@ function SidebarNav({
         tabIndex={-1}
         className="lg:hidden hidden [&.is-open]:flex flex-col fixed left-0 right-0 top-14 z-50 max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-gradient-to-b from-navy-700 to-navy-900 text-navy-50 border-b border-navy-500/30 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
       >
-        <div className="px-5 pt-5 pb-3">
+        <Link href="/admin" className="px-5 pt-5 pb-3 block">
           <span className="font-sans text-[15px] font-semibold tracking-tight text-navy-50">Tech Radar</span>
-        </div>
+        </Link>
         {navContent("mobile")}
       </div>
     </>

@@ -1,17 +1,14 @@
-import Link from "next/link";
 import { Topbar } from "@/components/admin/Topbar";
 import { DetailNav } from "@/components/admin/DetailNav";
 import { TierBadge } from "@/components/admin/TierBadge";
 import { FavoriteButton } from "@/components/admin/FavoriteButton";
 import { ConfSummarySection } from "@/components/admin/ConfSummarySection";
-import { RefreshButton } from "@/components/admin/RefreshButton";
-import { SessionStats } from "@/components/admin/SessionStats";
-import { SessionsPanel } from "@/components/admin/SessionsPanel";
-import { getConference, listConferenceSessions } from "@/lib/admin/conferences";
+import { getConference } from "@/lib/admin/conferences";
 import { getAdjacentItems } from "@/lib/admin/adjacent";
 import { getDict } from "@/lib/i18n/server";
 import { TOPIC_CATEGORIES } from "@/lib/admin/topics";
 import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function ConferenceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,17 +16,16 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
   const conf = await getConference(id);
   if (!conf) notFound();
 
-  const [sessions, adjacent] = await Promise.all([
-    listConferenceSessions(id),
-    getAdjacentItems("conferences", id, "abbreviation", "start_date", false),
-  ]);
+  const supabase = await createClient();
+  const adjacent = await getAdjacentItems("conferences", id, "abbreviation", "start_date", false);
   const today = new Date().toISOString().slice(0, 10);
   const isPast = (conf.end_date ?? conf.start_date) < today;
 
-  const KNOWN_COMPANIES = new Set(["Google","Microsoft","Microsoft Research","Microsoft Research Asia","Alibaba","Huawei","Intel","Meta","Amazon","Apple","ByteDance","Tencent","NVIDIA","Cloudflare","Cisco"]);
-  const allAffiliations = [...new Set(sessions.flatMap((s) => s.affiliations))];
-  const companies = allAffiliations.filter((a) => KNOWN_COMPANIES.has(a));
-  const universities = allAffiliations.filter((a) => !KNOWN_COMPANIES.has(a));
+  const { data: sessions } = await supabase
+    .from("conference_sessions")
+    .select("*")
+    .eq("conference_id", id)
+    .order("created_at", { ascending: true });
 
   return (
     <>
@@ -46,23 +42,12 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
         labels={{ backTo: t.detail.backTo, prev: t.detail.prev, next: t.detail.next }}
       />
       <main className="px-4 sm:px-6 xl:px-10 py-6 sm:py-10 space-y-4">
-        {/* Section 1: Conference Info */}
+        {/* Conference Info */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">
-            <div className="flex items-center gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-                {t.conf.confInfo}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <RefreshButton conferenceId={id} label={t.conf.refresh} />
-              <Link
-                href={`/admin/conferences/${id}/edit`}
-                className="rounded-md border border-line bg-surface px-3 py-1.5 text-[12.5px] text-ink-700 hover:border-line-strong transition-colors"
-              >
-                {t.conf.edit}
-              </Link>
-            </div>
+          <div className="px-5 py-3 border-b border-line bg-paper/30">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
+              {t.conf.confInfo}
+            </p>
           </div>
           <div className="p-6">
             <div className="flex items-center gap-4 mb-5">
@@ -99,77 +84,46 @@ export default async function ConferenceDetailPage({ params }: { params: Promise
                 </a>
               </div>
             )}
-            {conf.notes && (
-              <p className="mt-4 text-[13px] text-ink-600 leading-relaxed border-t border-line pt-4">{conf.notes}</p>
-            )}
           </div>
         </section>
 
         {/* AI Summary */}
         <ConfSummarySection confId={id} initialSummary={conf.ai_summary} />
 
-        {/* Section 2: Stats Cards */}
+        {/* Papers - simple waterfall */}
         <section className="rounded-lg border border-line bg-surface overflow-hidden">
-          <div className="px-5 py-3 border-b border-line bg-paper/30">
+          <header className="flex items-center gap-3 px-5 py-3 border-b border-line bg-paper/30">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-              {t.conf.statistics}
+              {t.conf.papersAndTalks}
             </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px bg-line">
-            <Stat label={t.conf.papersTalks} value={sessions.length} sub={t.conf.tracked} />
-            <Stat label={t.conf.companies} value={companies.length} sub={t.conf.companiesSub} />
-            <Stat label={t.conf.universities} value={universities.length} sub={t.conf.universitiesSub} />
-            <Stat label={t.conf.topicAreas} value={conf.topics.length} sub={t.conf.topicAreasSub} />
-            <Stat label={t.conf.affiliations} value={allAffiliations.length} sub={t.conf.total} />
-          </div>
-        </section>
-
-        {/* Section 3: Session Stats */}
-        <SessionStats sessions={sessions} lang={lang} labels={{
-          topAuthors: t.session.topAuthors,
-          topAffiliations: t.session.topAffiliations,
-          topicDistribution: t.session.topicDistribution,
-          papers: t.session.papers,
-        }} />
-
-        {/* Section 4: Papers List (grouped) */}
-        <section className="rounded-lg border border-line bg-surface overflow-hidden">
-          <header className="flex items-center justify-between px-5 py-3 border-b border-line bg-paper/30">
-            <div className="flex items-center gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-500">
-                {t.conf.papersAndTalks}
-              </p>
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
-                {sessions.length} {t.conf.entries}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <RefreshButton conferenceId={id} label={t.conf.fetchPapers} />
-            </div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-400">
+              {sessions?.length ?? 0} {t.conf.entries}
+            </span>
           </header>
 
-          {sessions.length === 0 ? (
-            <div className="px-4 sm:px-6 py-8 sm:py-16 text-center">
-              <div className="font-sans text-[20px] font-bold tracking-[-0.02em] text-ink-700">{t.conf.noPapers}</div>
-              <p className="mt-1 text-[13px] text-ink-500">{t.conf.noPapersHint}</p>
+          {sessions && sessions.length > 0 ? (
+            <div className="divide-y divide-line">
+              {sessions.map((s: any) => (
+                <div key={s.id} className="px-5 py-4">
+                  <p className="text-[13px] font-medium text-ink-800 leading-relaxed">{s.title}</p>
+                  {s.authors?.length > 0 && (
+                    <p className="text-[12px] text-ink-500 mt-1">{s.authors.slice(0, 6).join(", ")}{s.authors.length > 6 ? ` +${s.authors.length - 6}` : ""}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    {s.topics?.slice(0, 5).map((topic: string) => (
+                      <span key={topic} className="text-[10px] font-mono bg-navy-50 text-navy-600 px-1.5 py-0.5 rounded">{topic}</span>
+                    ))}
+                    {s.affiliations?.length > 0 && (
+                      <span className="text-[10px] font-mono text-ink-400">{s.affiliations.slice(0, 3).join(", ")}{s.affiliations.length > 3 ? "..." : ""}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
-            <SessionsPanel sessions={sessions} lang={lang} labels={{
-              searchSessions: t.session.searchSessions,
-              expandAll: t.session.expandAll,
-              collapseAll: t.session.collapseAll,
-              showAbstract: t.session.showAbstract,
-              hideAbstract: t.session.hideAbstract,
-              papers: t.session.papers,
-              noMatch: t.session.noMatch,
-              noMatchDesc: t.session.noMatchDesc,
-              entries: t.conf.entries,
-              groupedView: t.session.groupedView,
-              tableView: t.session.tableView,
-              affiliations: t.session.affiliations,
-              rows: t.common.rows,
-              page: t.common.page,
-            }} />
+            <div className="px-5 py-8 text-center">
+              <p className="text-[13px] text-ink-400">{t.conf.noPapers}</p>
+            </div>
           )}
         </section>
       </main>
@@ -182,16 +136,6 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
     <div>
       <dt className="tracked-label">{label}</dt>
       <dd className="mt-1.5">{value}</dd>
-    </div>
-  );
-}
-
-function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
-  return (
-    <div className="bg-surface p-6">
-      <p className="tracked-label">{label}</p>
-      <p className="mt-3 font-sans text-[30px] font-bold leading-none text-ink-900 tabular-nums">{value}</p>
-      <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
     </div>
   );
 }

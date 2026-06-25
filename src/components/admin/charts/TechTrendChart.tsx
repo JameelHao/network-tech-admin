@@ -12,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 import type { TrendPoint } from "@/lib/admin/ecosystem-stats";
-import { TOPIC_CATEGORIES, getTopicCategory, type TopicCategory } from "@/lib/admin/topics";
+import { TOPIC_CATEGORIES, getTopicCategory, getTopicLabel, type TopicCategory } from "@/lib/admin/topics";
 import { PIE_COLORS } from "@/lib/admin/chart-theme";
 import { ChartTooltip } from "./ChartTooltip";
 
@@ -32,6 +32,12 @@ export function TechTrendChart({ data, topicKeys, lang, height = 300 }: Props) {
     if (categoryFilter === "all") return topicKeys;
     return topicKeys.filter((k) => getTopicCategory(k) === categoryFilter);
   }, [topicKeys, categoryFilter]);
+
+  const labelMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const k of topicKeys) m[k] = getTopicLabel(k, lang);
+    return m;
+  }, [topicKeys, lang]);
 
   if (!data.length) return <p className="text-ink-400 text-sm">No data</p>;
 
@@ -59,8 +65,8 @@ export function TechTrendChart({ data, topicKeys, lang, height = 300 }: Props) {
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" strokeOpacity={0.5} />
           <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
           <YAxis tick={{ fontSize: 11 }} stroke="var(--color-ink-400)" />
-          <Tooltip content={(props) => <ChartTooltip {...props} />} />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Tooltip content={(props) => <ChartTooltip {...props} labelMap={labelMap} />} />
+          <Legend wrapperStyle={{ fontSize: 11 }} formatter={(value: string) => labelMap[value] || value} />
           {filteredKeys.map((key, i) => (
             <Line
               key={key}

@@ -2,7 +2,6 @@ import { Topbar } from "@/components/admin/Topbar";
 import { listAllPapersLight } from "@/lib/admin/papers";
 import { listAllConferencesLight } from "@/lib/admin/conferences";
 import { listAllOpenSourceLight } from "@/lib/admin/opensource";
-import { listAllTalentsLight } from "@/lib/admin/talents";
 import { aggregateTopics, detectDuplicates } from "@/lib/admin/topic-aggregator";
 import { getDict } from "@/lib/i18n/server";
 import { computeTopicPageStats } from "@/lib/admin/topics-utils";
@@ -13,15 +12,14 @@ import { TopicsClient } from "./TopicsClient";
 export default async function TopicsPage() {
   const { lang, t } = await getDict();
 
-  const [papers, conferences, opensource, talents, topics] = await Promise.all([
+  const [papers, conferences, opensource, topics] = await Promise.all([
     listAllPapersLight(),
     listAllConferencesLight(),
     listAllOpenSourceLight(),
-    listAllTalentsLight(),
     listTopicDefinitions(),
   ]);
 
-  const raw = aggregateTopics(papers, conferences, talents, opensource, { definitions: topics, includeDefinitions: true });
+  const raw = aggregateTopics(papers, conferences, [], opensource, { definitions: topics, includeDefinitions: true });
   const stats = detectDuplicates(raw);
   const pageStats = computeTopicPageStats(stats);
   const hottest = stats.find((s) => s.slug === pageStats.hottestTopic);

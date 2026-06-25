@@ -5,7 +5,7 @@ import { getTopicLabel } from "@/lib/admin/topics";
 import { HEATMAP_SCALE, getHeatColor } from "@/lib/admin/chart-theme";
 import type { Lang } from "@/lib/i18n/dict";
 
-const ENTITIES = ["papers", "conferences", "talents", "opensource"] as const;
+const ENTITIES = ["papers", "conferences", "opensource"] as const;
 
 function topicLabel(stat: TopicStat, lang: Lang) {
   return stat[lang] ?? getTopicLabel(stat.slug, lang);

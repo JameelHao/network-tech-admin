@@ -54,19 +54,17 @@ type TopicsLabels = {
   clear: string;
 };
 
-type SortKey = "slug" | "total" | "papers" | "conferences" | "talents" | "opensource";
+type SortKey = "slug" | "total" | "papers" | "conferences" | "opensource";
 
 const ENTITY_PATHS: Record<string, string> = {
   papers: "/admin/papers",
   conferences: "/admin/conferences",
-  talents: "/admin/talents",
   opensource: "/admin/opensource",
 };
 
 const ENTITY_ICONS: Record<string, string> = {
   papers: "📄",
   conferences: "🎤",
-  talents: "👤",
   opensource: "💻",
 };
 
@@ -254,7 +252,6 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
             entityLabels={{
               papers: labels.papers,
               conferences: labels.conferences,
-              talents: labels.talents,
               opensource: labels.opensource,
             }}
           />
@@ -271,7 +268,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                   <th className="px-5 py-3">
                     <SortableHeaderClient column="slug" label="Topic" currentSort={sortKey} currentDir={sortDir} onSort={handleSort} />
                   </th>
-                  {(["papers", "conferences", "talents", "opensource"] as const).map((e) => (
+                  {(["papers", "conferences", "opensource"] as const).map((e) => (
                     <th key={e} className="px-5 py-3">
                       <SortableHeaderClient
                         column={e}
@@ -333,7 +330,7 @@ export function TopicsClient({ stats, labels, lang }: { stats: TopicStat[]; labe
                       </td>
                       {!isExpanded && (
                         <>
-                          {(["papers", "conferences", "talents", "opensource"] as const).map((e) => (
+                          {(["papers", "conferences", "opensource"] as const).map((e) => (
                             <td key={e} className="px-5 py-3 text-[13px] tabular-nums text-ink-700">
                               {s.counts[e] || <span className="text-ink-200">—</span>}
                             </td>
@@ -498,7 +495,7 @@ function DrillDown({
   onCollapse: () => void;
   onEdit: () => void;
 }) {
-  const entities = ["papers", "conferences", "talents", "opensource"] as const;
+  const entities = ["papers", "conferences", "opensource"] as const;
 
   return (
     <div className="space-y-3 py-1">

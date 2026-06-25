@@ -52,7 +52,7 @@ async function collectVendorData(slug: string): Promise<VendorData | null> {
 
 const COMPANY_NAMES: Record<string, string> = {
   cisco: "Cisco", google: "Google", ericsson: "Ericsson", nokia: "Nokia",
-  aws: "AWS", microsoft: "Microsoft", openai: "OpenAI", nvidia: "NVIDIA",
+  aws: "AWS", microsoft: "Microsoft", openai: "OpenAI", anthropic: "Anthropic", nvidia: "NVIDIA",
   meta: "Meta", micron: "Micron", broadcom: "Broadcom", intel: "Intel",
   ibm: "IBM", huawei: "Huawei", cloudflare: "Cloudflare", apple: "Apple",
   amd: "AMD", tencent: "Tencent", alibaba: "Alibaba", baidu: "Baidu",

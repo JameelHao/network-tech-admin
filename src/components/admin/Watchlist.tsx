@@ -7,24 +7,16 @@ import { EmptyState } from "@/components/admin/EmptyState";
 const ENTITY_PATHS: Record<EntityType, string> = {
   conferences: "/admin/conferences",
   papers: "/admin/papers",
-  leads: "/admin/leads",
-  talents: "/admin/talents",
   opensource: "/admin/opensource",
   news: "/admin/news",
-  jobs: "/admin/jobs",
-  products: "/admin/products",
   vendors: "/admin/vendors",
 };
 
 const ENTITY_COLORS: Record<EntityType, string> = {
   conferences: "bg-navy-100 text-navy-600",
   papers: "bg-cobalt-100 text-cobalt-600",
-  leads: "bg-amber-100 text-amber-700",
-  talents: "bg-moss-100 text-moss-700",
   opensource: "bg-ink-100 text-ink-600",
   news: "bg-rust-100 text-rust-600",
-  jobs: "bg-violet-100 text-violet-600",
-  products: "bg-teal-100 text-teal-600",
   vendors: "bg-indigo-100 text-indigo-600",
 };
 

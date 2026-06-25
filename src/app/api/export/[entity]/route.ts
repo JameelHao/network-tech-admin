@@ -3,16 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminAuth } from "@/lib/admin/api-auth";
 import { listConferences } from "@/lib/admin/conferences";
 import { listPapers } from "@/lib/admin/papers";
-import { listLeads } from "@/lib/admin/leads";
-import { listTalentLeads } from "@/lib/admin/talents";
 import { listOpenSource } from "@/lib/admin/opensource";
 import {
   toCSV,
   toJSON,
   CONFERENCE_FIELDS,
   PAPER_FIELDS,
-  LEAD_FIELDS,
-  TALENT_FIELDS,
   NEWS_FIELDS,
   OPENSOURCE_FIELDS,
   RFC_FIELDS,
@@ -27,11 +23,6 @@ export async function GET(
   { params }: { params: Promise<{ entity: string }> },
 ) {
   const { entity } = await params;
-
-  if (entity === "talents") {
-    const unauth = await requireAdminAuth();
-    if (unauth) return unauth;
-  }
 
   const sp = request.nextUrl.searchParams;
   const format = sp.get("format") === "json" ? "json" : "csv";
@@ -65,8 +56,6 @@ function getFields(entity: string): any {
   const map: Record<string, unknown> = {
     conferences: CONFERENCE_FIELDS,
     papers: PAPER_FIELDS,
-    leads: LEAD_FIELDS,
-    talents: TALENT_FIELDS,
     news: NEWS_FIELDS,
     opensource: OPENSOURCE_FIELDS,
     rfcs: RFC_FIELDS,
@@ -89,15 +78,6 @@ async function fetchEntityData(
     case "papers": {
       const result = await listPapers(bulk);
       return { data: result.data as unknown as Record<string, unknown>[], filename: "papers" };
-    }
-    case "leads": {
-      const result = await listLeads(bulk);
-      return { data: result.data as unknown as Record<string, unknown>[], filename: "leads" };
-    }
-    case "talents": {
-      const stage = sp.get("stage") || undefined;
-      const result = await listTalentLeads(bulk, { stage });
-      return { data: result.data as unknown as Record<string, unknown>[], filename: "talents" };
     }
     case "news": {
       const supabase = await createClient();

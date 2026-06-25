@@ -39,26 +39,15 @@ export async function listPapersForList(): Promise<{ papers: Paper[]; total: num
     .from("papers")
     .select("*", { count: "exact", head: true });
 
-  const all: Paper[] = [];
-  const pageSize = 1000;
-  let from = 0;
+  const { data, error } = await supabase
+    .from("papers")
+    .select("id, title, authors, venue, url, published_date, citation_count, source, created_at, paper_topics(topic_slug)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(0, 199);
 
-  while (true) {
-    const { data, error } = await supabase
-      .from("papers")
-      .select("id, title, authors, venue, url, published_date, citation_count, source, created_at, paper_topics(topic_slug)")
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
-      .range(from, from + pageSize - 1);
-
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-    all.push(...data.map(mapRow));
-    if (data.length < pageSize) break;
-    from += pageSize;
-  }
-
-  return { papers: all, total: count ?? all.length };
+  if (error) throw error;
+  return { papers: (data ?? []).map(mapRow), total: count ?? 0 };
 }
 
 export async function getPaperFull(id: string): Promise<Paper | null> {
