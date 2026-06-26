@@ -28,6 +28,7 @@ export function Sidebar({ t }: { t: Dict }) {
         { href: "/admin/conferences", label: t.nav.conferences },
         { href: "/admin/papers", label: t.nav.papers },
         { href: "/admin/news", label: t.nav.news },
+        { href: "/admin/weekly", label: t.nav.weekly },
         { href: "/admin/rfcs", label: t.nav.rfcs },
       ] },
     ];
