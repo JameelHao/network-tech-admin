@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 const OWNER = "plutozc";
-const REPO = "Weekly-Report";
-const DIR = "reports";
-const BRANCH = "main";
+const REPO = "analise";
+const DIR = "weekly-report/reports";
+const BRANCH = "master";
 
 const GH_API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${DIR}`;
 const GH_RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${DIR}`;
